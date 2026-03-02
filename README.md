@@ -280,4 +280,4 @@ Line
 Visual Studio Code
 
 ## 15. สรุปการประชุม Retrospective Phase 2
-ลิงก์วิดีโอ: 
+ลิงก์วิดีโอ: https://youtu.be/j3Xpjw5YBVo?si=r-ShhXsesSQTKDc1
