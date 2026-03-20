@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <title>ทำข้อสอบ</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+
+<body class="bg-light">
+
+<div class="container mt-5">
+  <div id="quizCard" class="card p-4 shadow mx-auto" style="max-width: 700px;">
+    <h3 id="quizTitle" class="mb-4 text-center"></h3>
+    <div id="quizArea"></div>
+
+    <button class="btn btn-primary mt-3 w-100" onclick="submitQuiz()">
+      ส่งคำตอบ
+    </button>
+
+    <p class="mt-3 fw-bold text-center" id="result"></p>
+  </div>
+</div>
+
+<!-- Modal แจ้งเตือน -->
+<div class="modal fade" id="errorModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title text-danger">Notification</h5>
+      </div>
+      <div class="modal-body"></div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="goBack()">กลับหน้าแรก</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+const params = new URLSearchParams(window.location.search);
+const code = params.get("code");
+
+let quizData = null;
+let score = 0;
+
+// ❌ ไม่ใส่รหัส
+if (!code) {
+  showError("กรุณาใส่รหัสข้อสอบ");
+  throw new Error("No quiz code");
+}
+
+// โหลดข้อสอบ
+fetch(`http://localhost:3000/api/quizzes/${code}`)
+  .then(res => {
+    if (!res.ok) throw new Error();
+    return res.json();
+  })
+  .then(data => {
+    quizData = data;
+    document.getElementById("quizTitle").innerText = data.title;
+
+    let html = "";
+    data.questions.forEach((q, i) => {
+      html += `
+        <div class="mb-4">
+          <p><b>${i + 1}. ${q.question}</b></p>
+
+          ${["A","B","C","D"].map(c => `
+            <div class="form-check">
+              <input class="form-check-input" type="radio" name="q${i}" value="${c}">
+              <label class="form-check-label">
+                ${c}. ${q[c]}
+              </label>
+            </div>
+          `).join("")}
+
+          <p id="result-${i}" class="mt-2 fw-bold"></p>
+        </div>
+      `;
+    });
+
+    document.getElementById("quizArea").innerHTML = html;
+  })
+  .catch(() => {
+    showError("ไม่พบรหัสข้อสอบ");
+  });
+
+function submitQuiz() {
+  if (!quizData) return;
+
+  score = 0;
+
+  quizData.questions.forEach((q, i) => {
+    const answer = document.querySelector(`input[name="q${i}"]:checked`);
+    const resultEl = document.getElementById(`result-${i}`);
+
+    if (!answer) {
+      resultEl.innerText = "❗ กรุณาเลือกคำตอบ";
+      resultEl.className = "text-warning fw-bold";
+      return;
+    }
+
+    if (answer.value === q.correct) {
+      score++;
+      resultEl.innerText = "✅ ถูกต้อง";
+      resultEl.className = "text-success fw-bold";
+    } else {
+      resultEl.innerText = `❌ ผิด (คำตอบที่ถูกคือ ${q.correct})`;
+      resultEl.className = "text-danger fw-bold";
+    }
+  });
+
+  document.getElementById("result").innerText =
+    `ได้คะแนน ${score} / ${quizData.questions.length}`;
+}
+
+// ===== modal =====
+function showError(message) {
+  document.getElementById("quizCard").style.display = "none";
+  document.querySelector("#errorModal .modal-body").innerText = message;
+
+  const modal = new bootstrap.Modal(
+    document.getElementById("errorModal")
+  );
+  modal.show();
+}
+
+function goBack() {
+  window.location.href = "index.html";
+}
+</script>
+
+</body>
+</html>
