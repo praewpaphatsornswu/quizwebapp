@@ -344,7 +344,6 @@ describe("Quiz App Test", () => {
 | Branches   | 100%     |
 | Functions  | 100%     |
 | Lines      | 100%     |
-![alt text](image-1.png)
 แสดงให้เห็นว่า:
 ไม่มีส่วนของโค้ดที่ไม่ได้รับการทดสอบ (No dead code)
 ลดความเสี่ยงของ bug ใน logic หลักของระบบ
