@@ -281,3 +281,97 @@ Visual Studio Code
 
 ## 15. สรุปการประชุม Retrospective Phase 2
 ลิงก์วิดีโอ: https://youtu.be/j3Xpjw5YBVo?si=r-ShhXsesSQTKDc1
+
+## 16. อธิบายการทำงานของ program (เช่น มี get กี่ method, post กี่ method, ใช้ template อย่างไร, มีการเรียก API หรือไม่อย่างไร, มีการคำนวนอะไร หรือ graph อะไร)
+
+## 17. Test cases
+### 17.1 ตาราง Unit Test Cases (Data Structure)
+| TC | Function       | Input                        | Expected Output |
+| -- | -------------- | ---------------------------- | --------------- |
+| 1  | checkAnswer    | ("A","A")                    | true            |
+| 2  | checkAnswer    | ("B","A")                    | false           |
+| 3  | checkAnswer    | ("","A")                     | false           |
+| 4  | calculateScore | ["A","B","C"], ["A","B","C"] | 3               |
+| 5  | calculateScore | ["A","B","D"], ["A","B","C"] | 2               |
+| 6  | calculateScore | ["D","D","D"], ["A","B","C"] | 0               |
+| 7  | calculateScore | ["A","B"], ["A","B","C"]     | 2               |
+| 8  | getQuestion    | ["Q1","Q2","Q3"], 1          | "Q2"            |
+| 9  | getQuestion    | ["Q1","Q2"], 5               | null            |
+| 10 | getQuestion    | ["Q1","Q2"], -1              | null            |
+| 11 | getQuestion    | [], 0                        | null            |
+
+
+### 17.2 ตาราง Unit Test Cases (Function / Class อื่น)
+| TC | Function       | Input         | Expected Result |
+| -- | -------------- | ------------- | --------------- |
+| 1  | checkAnswer    | correct input | true            |
+| 2  | checkAnswer    | wrong input   | false           |
+| 3  | calculateScore | valid array   | correct score   |
+| 4  | calculateScore | empty array   | 0               |
+| 5  | getQuestion    | valid index   | question        |
+| 6  | getQuestion    | invalid index | null            |
+ ### 17.3 ตัวอย่าง Test Case Code
+ const {
+  checkAnswer,
+  calculateScore,
+  getQuestion
+} = require("../quiz");
+
+describe("Quiz App Test", () => {
+
+  test("correct answer", () => {
+    expect(checkAnswer("A","A")).toBe(true);
+  });
+
+  test("wrong answer", () => {
+    expect(checkAnswer("B","A")).toBe(false);
+  });
+
+  test("calculate score", () => {
+    expect(calculateScore(["A","B"],["A","B"])).toBe(2);
+  });
+
+  test("get question", () => {
+    expect(getQuestion(["Q1","Q2"],1)).toBe("Q2");
+  });
+
+});
+
+### 17.4 Test Coverage Report
+| Metric     | Coverage |
+| ---------- | -------- |
+| Statements | 100%     |
+| Branches   | 100%     |
+| Functions  | 100%     |
+| Lines      | 100%     |
+![alt text](image-1.png)
+แสดงให้เห็นว่า:
+ไม่มีส่วนของโค้ดที่ไม่ได้รับการทดสอบ (No dead code)
+ลดความเสี่ยงของ bug ใน logic หลักของระบบ
+รองรับการพัฒนาใน Phase ถัดไปได้ง่าย
+
+## 18. รายงาน Static profiling และ Dynamic profiling (Structural method)
+### 18.1 Static profiling
+| Metric                | Value         |
+| --------------------- | ------------- |
+| Lines of Code (LOC)   | 30            |
+| Number of Functions   | 3             |
+| Cyclomatic Complexity | Low           |
+| Data Structures Used  | Array, Object |
+
+### 18.2 Dynamic profiling
+| Function       | Execution Time | Memory Usage |
+| -------------- | -------------- | ------------ |
+| checkAnswer    | ~1 ms          | low          |
+| calculateScore | ~2 ms          | low          |
+| getQuestion    | ~1 ms          | low          |
+
+## 19. สิ่งที่ยังไม่เสร็จสมบูรณ์
+
+## 20. Website screenshot
+
+## 21. สิ่งเปลี่ยนแปลงจาก รายงาน phase 1 and 2 และ เหดุผลที่เปลี่ยน
+
+## 22. อธิบายกระบวนการทำงาน โดยใช้ process, methods, and tools ที่เพิ่มเติมจาก phase 1 and 2 เช่น การบริหาร project, การ monitor build, การจัดการ bugs  
+
+## 23. สรุปการประชุม Retrospective Phase 3
