@@ -216,13 +216,19 @@
 </footer>
 
 <!-- ===== SCRIPT LOGIN SYSTEM ===== -->
+<script src="auth.js"></script>
 <script>
-const user = localStorage.getItem("currentUser");
+
+/* =====================
+   LOAD USER (ใช้ระบบเดียว)
+===================== */
+
+const user = JSON.parse(localStorage.getItem("user"));
 const userDisplay = document.getElementById("userDisplay");
 
-if(user){
+if(user && user.username){
     userDisplay.innerHTML = `
-        👤 ${user}
+        👤 ${user.username}
         <a href="#" onclick="logout()" style="margin-left:10px;">Logout</a>
     `;
 }else{
@@ -232,11 +238,6 @@ if(user){
     `;
 }
 
-function logout(){
-    localStorage.removeItem("currentUser");
-    location.reload();
-}
 </script>
-
 </body>
 </html>

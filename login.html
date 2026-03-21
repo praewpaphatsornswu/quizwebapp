@@ -154,12 +154,14 @@ button:hover{
 </div>
 
 <script>
-const authArea = document.getElementById("authArea");
-const currentUser = localStorage.getItem("currentUser");
 
-if(currentUser){
+/* โหลด user */
+const authArea = document.getElementById("authArea");
+const user = JSON.parse(localStorage.getItem("user"));
+
+if(user && user.username){
     authArea.innerHTML = `
-        <span style="margin-left:20px;">👤 ${currentUser}</span>
+        <span style="margin-left:20px;">👤 ${user.username}</span>
         <a href="#" onclick="logout()">ออกจากระบบ</a>
     `;
 }else{
@@ -169,20 +171,28 @@ if(currentUser){
     `;
 }
 
+/* LOGIN */
 function login(){
     const username = document.getElementById("username").value;
+
     if(username.trim() === ""){
         alert("กรุณากรอก Username");
         return;
     }
-    localStorage.setItem("currentUser", username);
+
+    localStorage.setItem("user", JSON.stringify({
+        username: username
+    }));
+
     window.location.href = "index.html";
 }
 
+/* LOGOUT */
 function logout(){
-    localStorage.removeItem("currentUser");
+    localStorage.removeItem("user");
     window.location.href = "index.html";
 }
+
 </script>
 
 </body>
