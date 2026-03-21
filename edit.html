@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<title>แก้ไขควิซ | quizWeb</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Prompt:wght@400;500;600&display=swap" rel="stylesheet">
+
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:'Prompt',sans-serif;}
+
+body{
+    background:linear-gradient(135deg,#e8fdf5,#ffffff);
+}
+
+/* NAV */
+nav{
+    background:#fff;
+    padding:15px 40px;
+    display:flex;
+    justify-content:space-between;
+    box-shadow:0 2px 10px rgba(0,0,0,0.05);
+}
+
+.logo{
+    color:#2d6a4f;
+    font-weight:600;
+}
+
+/* CONTAINER */
+.container{
+    max-width:900px;
+    margin:40px auto;
+    background:white;
+    padding:30px;
+    border-radius:15px;
+}
+
+/* INPUT */
+input{
+    width:100%;
+    padding:10px;
+    border-radius:8px;
+    border:1px solid #ccc;
+    margin-top:5px;
+}
+
+/* QUESTION BOX */
+.question-box{
+    border:1px solid #ddd;
+    padding:15px;
+    border-radius:10px;
+    margin-top:20px;
+}
+
+/* OPTION */
+.option-row{
+    display:flex;
+    gap:10px;
+    margin-top:10px;
+    align-items:center;
+}
+
+/* BUTTON */
+button{
+    padding:10px 15px;
+    border:none;
+    border-radius:8px;
+    background:#2d6a4f;
+    color:white;
+    cursor:pointer;
+    margin-top:10px;
+}
+
+button:hover{background:#1b4332;}
+
+.small{
+    padding:5px 10px;
+    font-size:12px;
+    background:#888;
+}
+
+.delete{
+    background:#d00000;
+}
+
+.top-actions{
+    display:flex;
+    gap:10px;
+    margin-top:20px;
+}
+
+</style>
+</head>
+
+<body>
+
+<nav>
+    <div class="logo">quizWeb</div>
+    <div>แก้ไขควิซ</div>
+</nav>
+
+<div class="container">
+
+<h2 id="title"></h2>
+
+<div id="questions"></div>
+
+<div class="top-actions">
+    <button onclick="addQuestion()">+ เพิ่มคำถาม</button>
+    <button onclick="saveQuiz()">💾 บันทึก</button>
+    <button onclick="goPlay()">▶ ไปทำควิซ</button>
+</div>
+
+</div>
+
+<script>
+
+/* =====================
+   LOAD QUIZ
+===================== */
+const params = new URLSearchParams(window.location.search);
+const code = params.get("code");
+
+let quizzes = JSON.parse(localStorage.getItem("myQuizzes")) || [];
+let quiz = quizzes.find(q => q.code === code);
+
+if(!quiz){
+    alert("ไม่พบควิซ");
+    location.href = "create.html";
+}
+
+if(!quiz.questions) quiz.questions = [];
+
+document.getElementById("title").innerText = quiz.title;
+
+/* =====================
+   ADD QUESTION
+===================== */
+function addQuestion(){
+
+    quiz.questions.push({
+        text:"",
+        options:["","","",""], // default 4 ตัวเลือก
+        correct:null
+    });
+
+    render();
+}
+
+/* =====================
+   DELETE QUESTION
+===================== */
+function deleteQuestion(i){
+    if(confirm("ลบคำถามนี้?")){
+        quiz.questions.splice(i,1);
+        render();
+    }
+}
+
+/* =====================
+   ADD OPTION
+===================== */
+function addOption(i){
+
+    if(quiz.questions[i].options.length >= 5){
+        alert("ได้สูงสุด 5 ตัวเลือก");
+        return;
+    }
+
+    quiz.questions[i].options.push("");
+    render();
+}
+
+/* =====================
+   DELETE OPTION
+===================== */
+function deleteOption(i,j){
+
+    if(quiz.questions[i].options.length <= 4){
+        alert("ต้องมีอย่างน้อย 4 ตัวเลือก");
+        return;
+    }
+
+    quiz.questions[i].options.splice(j,1);
+    render();
+}
+
+/* =====================
+   UPDATE
+===================== */
+function updateQuestion(i,val){
+    quiz.questions[i].text = val;
+}
+
+function updateOption(i,j,val){
+    quiz.questions[i].options[j] = val;
+}
+
+function setCorrect(i,j){
+    quiz.questions[i].correct = j;
+}
+
+/* =====================
+   RENDER
+===================== */
+function render(){
+
+    const container = document.getElementById("questions");
+    container.innerHTML = "";
+
+    quiz.questions.forEach((q,i)=>{
+
+        let html = `
+        <div class="question-box">
+
+            <b>คำถาม ${i+1}</b>
+            <input placeholder="พิมพ์คำถาม..."
+                value="${q.text}"
+                onchange="updateQuestion(${i},this.value)">
+
+            <div>
+        `;
+
+        q.options.forEach((opt,j)=>{
+            html += `
+            <div class="option-row">
+                <input value="${opt}"
+                    onchange="updateOption(${i},${j},this.value)">
+
+                <input type="radio" name="correct${i}"
+                    ${q.correct==j?"checked":""}
+                    onclick="setCorrect(${i},${j})">
+
+                <button class="small delete" onclick="deleteOption(${i},${j})">ลบ</button>
+            </div>
+            `;
+        });
+
+        html += `
+            </div>
+
+            <button class="small" onclick="addOption(${i})">+ ตัวเลือก</button>
+            <button class="small delete" onclick="deleteQuestion(${i})">ลบคำถาม</button>
+
+        </div>
+        `;
+
+        container.innerHTML += html;
+    });
+}
+
+/* =====================
+   SAVE
+===================== */
+function saveQuiz(){
+
+    // validate
+    for(let i=0;i<quiz.questions.length;i++){
+        const q = quiz.questions[i];
+
+        if(!q.text){
+            alert(`ข้อ ${i+1} ยังไม่มีคำถาม`);
+            return;
+        }
+
+        if(q.options.length < 4){
+            alert(`ข้อ ${i+1} ต้องมี 4 ตัวเลือก`);
+            return;
+        }
+
+        if(q.correct === null){
+            alert(`ข้อ ${i+1} ยังไม่ได้เลือกคำตอบ`);
+            return;
+        }
+    }
+
+    const index = quizzes.findIndex(q=>q.code===code);
+    quizzes[index] = quiz;
+
+    localStorage.setItem("myQuizzes", JSON.stringify(quizzes));
+
+    
+}
+
+/* =====================
+   GO PLAY
+===================== */
+function goPlay(){
+    saveQuiz();
+    window.location.href = `play.html?code=${code}`;
+}
+
+/* INIT */
+render();
+
+</script>
+
+</body>
+</html>

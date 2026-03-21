@@ -7,118 +7,54 @@
 <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@400;500;600&display=swap" rel="stylesheet">
 
 <style>
-*{
-    margin:0;
-    padding:0;
-    box-sizing:border-box;
-    font-family:'Prompt',sans-serif;
-}
+*{margin:0;padding:0;box-sizing:border-box;font-family:'Prompt',sans-serif;}
 
 body{
     background:linear-gradient(135deg,#e8fdf5,#ffffff);
-    min-height:100vh;
 }
 
-/* ===== Navbar ===== */
+/* NAV */
 nav{
     background:#fff;
     padding:15px 40px;
     display:flex;
     justify-content:space-between;
-    align-items:center;
     box-shadow:0 2px 10px rgba(0,0,0,0.05);
 }
 
 .logo{
-    font-weight:600;
     color:#2d6a4f;
+    font-weight:600;
 }
 
-.nav-right a{
-    margin-left:20px;
-    text-decoration:none;
-    color:#333;
+/* CONTAINER */
+.container{
+    max-width:500px;
+    margin:80px auto;
+    background:white;
+    padding:30px;
+    border-radius:15px;
+    box-shadow:0 5px 20px rgba(0,0,0,0.05);
 }
 
-/* ===== Hamburger ===== */
-.menu-btn{
-    font-size:22px;
-    cursor:pointer;
-}
-
-/* ===== Sidebar ===== */
-.sidebar{
-    position:fixed;
-    top:0;
-    left:-300px;
-    width:260px;
-    height:100%;
-    background:#f7f7f7;
-    padding:20px;
-    transition:0.3s;
-    overflow-y:auto;
-    box-shadow:2px 0 10px rgba(0,0,0,0.1);
-}
-
-.sidebar.active{
-    left:0;
-}
-
-.quiz-card{
-    background:#fff;
-    padding:15px;
-    border-radius:10px;
-    margin-bottom:15px;
-    box-shadow:0 4px 10px rgba(0,0,0,0.05);
-}
-
-.quiz-card h4{
-    margin-bottom:5px;
-}
-
-.small{
-    font-size:12px;
-    color:#666;
-}
-
-/* ===== Buttons in card ===== */
-.card-actions{
-    margin-top:10px;
-}
-
-.card-actions button{
-    margin-right:5px;
-    padding:5px 10px;
-    border:none;
-    border-radius:6px;
-    cursor:pointer;
-    font-size:12px;
-}
-
-/* สีปุ่ม */
-.edit-btn{background:#40916c;color:white;}
-.toggle-btn{background:#fca311;color:white;}
-.delete-btn{background:#e63946;color:white;}
-
-/* ===== Main ===== */
-.main{
-    display:flex;
-    justify-content:center;
-    align-items:center;
-    height:80vh;
-    text-align:center;
-}
-
-.create-box h1{
-    margin-bottom:10px;
-}
-
-.create-box p{
+h2{
     margin-bottom:20px;
 }
 
-.create-btn{
-    padding:12px 25px;
+/* INPUT */
+input{
+    width:100%;
+    padding:12px;
+    border-radius:10px;
+    border:1px solid #ccc;
+    margin-top:10px;
+}
+
+/* BUTTON */
+button{
+    width:100%;
+    margin-top:20px;
+    padding:12px;
     border:none;
     border-radius:10px;
     background:#2d6a4f;
@@ -127,168 +63,68 @@ nav{
     cursor:pointer;
 }
 
-.create-btn:hover{
+button:hover{
     background:#1b4332;
 }
+
 </style>
 </head>
 
 <body>
 
-<!-- ===== Navbar ===== -->
 <nav>
-    <div class="menu-btn" onclick="toggleSidebar()">☰</div>
     <div class="logo">quizWeb</div>
-    <div class="nav-right">
-        <a href="index.html">หน้าแรก</a>
-        <span id="userDisplay">Login</span>
-    </div>
+    <div>สร้างควิซ</div>
 </nav>
 
-<!-- ===== Sidebar ===== -->
-<div class="sidebar" id="sidebar">
-    <h3>📚 ควิซของฉัน</h3>
-    <div id="quizList"></div>
-</div>
+<div class="container">
 
-<!-- ===== Main ===== -->
-<div class="main">
-    <div class="create-box">
-        <h1>สร้างควิซ</h1>
-        <p>Single Choice / Multiple Choice / Fill Answer / Drag & Drop</p>
-        <button class="create-btn" onclick="createQuiz()">+ Create</button>
-    </div>
+    <h2>สร้างควิซใหม่</h2>
+
+    <label>ชื่อควิซ</label>
+    <input type="text" id="title" placeholder="เช่น ควิซวิชา Network">
+
+    <label>⏱️ เวลา (วินาที)</label>
+    <input type="number" id="time" placeholder="เช่น 60">
+
+    <button onclick="createQuiz()">สร้างควิซ</button>
+
 </div>
 
 <script>
 
-/* =========================
-   Toggle Sidebar
-========================= */
-function toggleSidebar(){
-    document.getElementById("sidebar").classList.toggle("active");
-}
-
-/* =========================
-   Generate Code
-========================= */
-function generateCode(){
-    return "QZ" + Math.floor(10000 + Math.random()*90000);
-}
-
-/* =========================
-   Create Quiz
-========================= */
+/* =====================
+   CREATE QUIZ
+===================== */
 function createQuiz(){
 
-    const title = prompt("ตั้งชื่อควิซ:");
-    if(!title) return;
+    const title = document.getElementById("title").value.trim();
+    const time = parseInt(document.getElementById("time").value) || 60;
 
-    const code = generateCode();
+    if(!title){
+        alert("กรุณาใส่ชื่อควิซ");
+        return;
+    }
+
+    // สร้าง code
+    const code = "Q" + Date.now();
+
+    const newQuiz = {
+        code: code,
+        title: title,
+        time: time,
+        questions: []
+    };
 
     let quizzes = JSON.parse(localStorage.getItem("myQuizzes")) || [];
 
-    quizzes.push({
-        title: title,
-        code: code,
-        public: false
-    });
+    quizzes.push(newQuiz);
 
     localStorage.setItem("myQuizzes", JSON.stringify(quizzes));
 
     // ไปหน้า edit
-    window.location.href = "edit.html?code=" + code;
+    window.location.href = `edit.html?code=${code}`;
 }
-
-/* =========================
-   Load Sidebar List
-========================= */
-function loadSidebar(){
-
-    const list = document.getElementById("quizList");
-    list.innerHTML = "";
-
-    let quizzes = JSON.parse(localStorage.getItem("myQuizzes")) || [];
-
-    quizzes.forEach((q,index)=>{
-
-        list.innerHTML += `
-        <div class="quiz-card">
-
-            <h4>${q.title}</h4>
-            <div class="small">${q.public ? "public" : "private"}</div>
-            <div class="small">${q.code}</div>
-
-            <div class="card-actions">
-
-                <!-- ปุ่ม EDIT -->
-                <button class="edit-btn" onclick="editQuiz('${q.code}')">
-                    Edit
-                </button>
-
-                <!-- toggle public -->
-                <button class="toggle-btn" onclick="togglePublic(${index})">
-                    ${q.public ? "Make Private" : "Make Public"}
-                </button>
-
-                <!-- delete -->
-                <button class="delete-btn" onclick="deleteQuiz(${index})">
-                    Delete
-                </button>
-
-            </div>
-        </div>
-        `;
-    });
-}
-
-/* =========================
-   Edit Quiz
-========================= */
-function editQuiz(code){
-    window.location.href = "edit.html?code=" + code;
-}
-
-/* =========================
-   Toggle Public
-========================= */
-function togglePublic(index){
-
-    let quizzes = JSON.parse(localStorage.getItem("myQuizzes")) || [];
-
-    quizzes[index].public = !quizzes[index].public;
-
-    localStorage.setItem("myQuizzes", JSON.stringify(quizzes));
-
-    loadSidebar();
-}
-
-/* =========================
-   Delete Quiz
-========================= */
-function deleteQuiz(index){
-
-    let quizzes = JSON.parse(localStorage.getItem("myQuizzes")) || [];
-
-    quizzes.splice(index,1);
-
-    localStorage.setItem("myQuizzes", JSON.stringify(quizzes));
-
-    loadSidebar();
-}
-
-/* =========================
-   Load User
-========================= */
-const user = localStorage.getItem("currentUser");
-if(user){
-    document.getElementById("userDisplay").textContent = user;
-}
-
-/* =========================
-   Init
-========================= */
-loadSidebar();
 
 </script>
 

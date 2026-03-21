@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<title>Quiz Player</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Prompt:wght@400;500;600&display=swap" rel="stylesheet">
+
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:'Prompt',sans-serif;}
+
+body{
+    background:#eef5f2;
+}
+
+/* NAVBAR */
+nav{
+    background:#fff;
+    padding:15px 40px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+}
+
+.logo{
+    font-size:22px;
+    color:#2d6a4f;
+    font-weight:600;
+}
+
+.menu{
+    display:flex;
+    gap:20px;
+    color:#40916c;
+}
+
+.timer-box{
+    background:#b7e4c7;
+    padding:10px 20px;
+    border-radius:12px;
+    text-align:center;
+}
+
+.timer-box div:first-child{
+    font-size:12px;
+}
+
+.timer{
+    font-size:22px;
+    font-weight:bold;
+}
+
+/* TOP PROGRESS */
+.top{
+    padding:10px 40px;
+}
+
+.progress-bar{
+    height:10px;
+    background:#ddd;
+    border-radius:10px;
+    margin-top:5px;
+}
+
+.progress{
+    height:10px;
+    background:#52b788;
+    border-radius:10px;
+}
+
+/* MAIN */
+.container{
+    display:flex;
+    gap:20px;
+    padding:30px 40px;
+}
+
+/* LEFT */
+.left{
+    flex:2;
+}
+
+.card{
+    background:white;
+    padding:25px;
+    border-radius:15px;
+}
+
+.badge{
+    display:inline-block;
+    background:#b7e4c7;
+    padding:8px 15px;
+    border-radius:20px;
+    color:#2d6a4f;
+    margin-bottom:10px;
+}
+
+.option{
+    border:1px solid #ccc;
+    padding:15px;
+    border-radius:12px;
+    margin-top:10px;
+    cursor:pointer;
+    display:flex;
+    gap:15px;
+    align-items:center;
+}
+
+.option:hover{
+    background:#f1fdf6;
+}
+
+.option.active{
+    background:#d8f3dc;
+}
+
+.letter{
+    background:#ddd;
+    width:40px;
+    height:40px;
+    border-radius:10px;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+}
+
+/* BUTTONS */
+.actions{
+    display:flex;
+    justify-content:space-between;
+    margin-top:20px;
+}
+
+button{
+    padding:10px 20px;
+    border:none;
+    border-radius:10px;
+    cursor:pointer;
+}
+
+.next{
+    background:#52b788;
+    color:white;
+}
+
+/* RIGHT */
+.right{
+    flex:1;
+}
+
+.nav-card{
+    background:white;
+    padding:20px;
+    border-radius:15px;
+}
+
+.nav-grid{
+    margin-top:10px;
+}
+
+.nav-item{
+    width:45px;
+    height:45px;
+    display:inline-flex;
+    justify-content:center;
+    align-items:center;
+    border-radius:10px;
+    margin:5px;
+    cursor:pointer;
+    background:#ddd;
+}
+
+.nav-item.answered{
+    background:#52b788;
+    color:white;
+}
+
+.nav-item.current{
+    background:#9d4edd;
+    color:white;
+}
+
+.legend{
+    margin-top:20px;
+    background:#eee;
+    padding:10px;
+    border-radius:10px;
+}
+
+.legend div{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    margin-top:5px;
+}
+
+.box{
+    width:20px;
+    height:20px;
+    border-radius:5px;
+}
+
+.green{background:#52b788;}
+.gray{background:#ddd;}
+.purple{background:#9d4edd;}
+
+.next-big{
+    margin-top:15px;
+    width:100%;
+    background:#52b788;
+    color:white;
+}
+
+</style>
+</head>
+
+<body>
+
+<nav>
+    <div class="logo">quizWeb</div>
+
+    <div class="menu">
+        <div>หน้าแรก</div>
+        <div>เกี่ยวกับ</div>
+        <div>คลังข้อสอบ</div>
+        <div>ออกจากระบบ</div>
+    </div>
+
+    <div class="timer-box">
+        <div>Time Remaining</div>
+        <div class="timer" id="timer">00:00</div>
+    </div>
+</nav>
+
+<div class="top">
+    <div id="progressText"></div>
+    <div class="progress-bar">
+        <div class="progress" id="progressBar"></div>
+    </div>
+</div>
+
+<div class="container">
+
+    <!-- LEFT -->
+    <div class="left">
+        <div class="card" id="questionBox"></div>
+    </div>
+
+    <!-- RIGHT -->
+    <div class="right">
+        <div class="nav-card">
+            <h2>Question Navigator</h2>
+            <p>Click on any question number</p>
+
+            <div class="nav-grid" id="nav"></div>
+
+            <div class="legend">
+                <div><div class="box green"></div> Answered</div>
+                <div><div class="box gray"></div> Not Answered</div>
+                <div><div class="box purple"></div> Current</div>
+            </div>
+
+            <button class="next-big" onclick="next()">NEXT ></button>
+        </div>
+    </div>
+
+</div>
+
+<script>
+
+/* LOAD DATA */
+const params = new URLSearchParams(window.location.search);
+const code = params.get("code");
+
+let quizzes = JSON.parse(localStorage.getItem("myQuizzes")) || [];
+let quiz = quizzes.find(q => q.code === code);
+
+/* STATE */
+let current = 0;
+let answers = new Array(quiz.questions.length).fill(null);
+let timeLeft = quiz.time || 60;
+
+/* RENDER QUESTION */
+function render(){
+
+    const q = quiz.questions[current];
+
+    let html = `
+        <div class="badge">Question ${current+1} of ${quiz.questions.length}</div>
+        <h2>${q.text}</h2>
+    `;
+
+    q.options.forEach((opt,i)=>{
+        html += `
+        <div class="option ${answers[current]==i?"active":""}" onclick="select(${i})">
+            <div class="letter">${String.fromCharCode(65+i)}</div>
+            ${opt}
+        </div>
+        `;
+    });
+
+    html += `
+    <div class="actions">
+        <button onclick="prev()"> < Previous</button>
+        <button class="next" onclick="next()">Next ></button>
+    </div>
+    `;
+
+    document.getElementById("questionBox").innerHTML = html;
+
+    renderNav();
+    updateProgress();
+}
+
+/* SELECT */
+function select(i){
+    answers[current] = i;
+    render();
+}
+
+/* NAV */
+function renderNav(){
+
+    const nav = document.getElementById("nav");
+    nav.innerHTML = "";
+
+    quiz.questions.forEach((q,i)=>{
+
+        let cls = "nav-item";
+
+        if(answers[i]!==null) cls += " answered";
+        if(i===current) cls += " current";
+
+        nav.innerHTML += `<div class="${cls}" onclick="jump(${i})">${i+1}</div>`;
+    });
+}
+
+/* ACTION */
+function next(){
+    if(current < quiz.questions.length-1){
+        current++;
+        render();
+    }else{
+        submit();
+    }
+}
+
+function prev(){
+    if(current > 0){
+        current--;
+        render();
+    }
+}
+
+function jump(i){
+    current = i;
+    render();
+}
+
+/* PROGRESS */
+function updateProgress(){
+
+    let answered = answers.filter(a=>a!==null).length;
+    document.getElementById("progressText").innerText =
+        `${answered} of ${quiz.questions.length} answered`;
+
+    document.getElementById("progressBar").style.width =
+        (answered/quiz.questions.length*100)+"%";
+}
+
+/* TIMER */
+setInterval(()=>{
+    let m = Math.floor(timeLeft/60);
+    let s = timeLeft%60;
+
+    document.getElementById("timer").innerText =
+        `${String(m).padStart(2,'0')} : ${String(s).padStart(2,'0')}`;
+
+    timeLeft--;
+
+    if(timeLeft < 0){
+        submit();
+    }
+},1000);
+
+/* SUBMIT */
+function submit(){
+
+    let score = 0;
+
+    quiz.questions.forEach((q,i)=>{
+        if(answers[i] === q.correct) score++;
+    });
+
+    document.body.innerHTML = `
+        <div style="text-align:center;margin-top:100px;">
+            <h1>เสร็จแล้ว</h1>
+            <h2>${score} / ${quiz.questions.length}</h2>
+        </div>
+    `;
+}
+
+/* INIT */
+render();
+
+</script>
+
+</body>
+</html>
