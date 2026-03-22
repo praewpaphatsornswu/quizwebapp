@@ -278,7 +278,8 @@ button{
         <div class="head">
             <h1>สร้างควิซใหม่</h1>
             <p>
-                ตั้งชื่อควิซ กำหนดเวลา และกำหนดจำนวนครั้งที่ผู้เล่นทำได้
+                ตั้งชื่อควิซ กำหนดเวลา จำนวนครั้งที่ผู้เล่นทำได้
+                และกำหนดว่าผู้เล่นสามารถ review ข้อสอบหลังทำเสร็จได้หรือไม่
                 จากนั้นระบบจะพาไปหน้าแก้ไขข้อสอบทันที
             </p>
         </div>
@@ -300,9 +301,16 @@ button{
             <option value="0">ไม่จำกัด</option>
         </select>
 
+        <label class="label" for="allowReview">อนุญาตให้ review ข้อสอบนี้ไหม</label>
+        <select class="input" id="allowReview">
+            <option value="true">อนุญาต</option>
+            <option value="false">ไม่อนุญาต</option>
+        </select>
+
         <div class="info-box">
             • ถ้าคุณเคยสร้างควิซชื่อเดิมไว้แล้ว แต่ยังไม่ได้ใส่คำถาม ระบบจะพาไปแก้ฉบับเดิม<br>
-            • ถ้าเจ้าของควิซเล่นเอง ระบบจะถือเป็นโหมดทดลองเล่นและไม่เก็บสถิติ
+            • ถ้าเจ้าของควิซเล่นเอง ระบบจะถือเป็นโหมดทดลองเล่นและไม่เก็บสถิติ<br>
+            • ถ้าเลือกไม่อนุญาต review ผู้เล่นจะไม่สามารถดูเฉลยย้อนหลังได้
         </div>
 
         <div class="error" id="errorText"></div>
@@ -384,8 +392,9 @@ function goToExistingDraft(){
 
 function forceCreateNewQuiz(){
     if (!pendingPayload) return;
-    const { title, time, attemptsLimit } = pendingPayload;
-    actuallyCreateQuiz(title, time, attemptsLimit);
+
+    const { title, time, attemptsLimit, allowReview } = pendingPayload;
+    actuallyCreateQuiz(title, time, attemptsLimit, allowReview);
 }
 
 function createQuiz(){
@@ -396,6 +405,7 @@ function createQuiz(){
     const minute = parseInt(document.getElementById("minute").value) || 0;
     const second = parseInt(document.getElementById("second").value) || 0;
     const attemptsLimit = parseInt(document.getElementById("attemptsLimit").value) || 0;
+    const allowReview = document.getElementById("allowReview").value === "true";
 
     const time = (minute * 60) + second;
 
@@ -426,15 +436,15 @@ function createQuiz(){
     );
 
     if (existingDraft){
-        pendingPayload = { title, time, attemptsLimit };
+        pendingPayload = { title, time, attemptsLimit, allowReview };
         openDuplicateModal(existingDraft);
         return;
     }
 
-    actuallyCreateQuiz(title, time, attemptsLimit);
+    actuallyCreateQuiz(title, time, attemptsLimit, allowReview);
 }
 
-function actuallyCreateQuiz(title, time, attemptsLimit){
+function actuallyCreateQuiz(title, time, attemptsLimit, allowReview){
     let quizzes = JSON.parse(localStorage.getItem("myQuizzes")) || [];
 
     const code = "Q" + Date.now();
@@ -446,7 +456,8 @@ function actuallyCreateQuiz(title, time, attemptsLimit){
         questions: [],
         createdAt: new Date().toLocaleString("th-TH"),
         owner: currentUser.username,
-        attemptsLimit: attemptsLimit
+        attemptsLimit: attemptsLimit,
+        allowReview: allowReview
     };
 
     quizzes.push(newQuiz);

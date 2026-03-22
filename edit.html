@@ -19,7 +19,6 @@ body{
     background:#eef5f2;
 }
 
-/* NAVBAR */
 nav{
     background:#fff;
     padding:15px 40px;
@@ -57,7 +56,6 @@ nav{
     font-weight:500;
 }
 
-/* PAGE */
 .page{
     max-width:1200px;
     margin:30px auto;
@@ -142,7 +140,6 @@ nav{
     background:#c1121f;
 }
 
-/* LAYOUT */
 .content{
     display:grid;
     grid-template-columns: 2fr 1fr;
@@ -169,7 +166,6 @@ nav{
     margin-bottom:18px;
 }
 
-/* QUESTION CARD */
 .question-card{
     background:linear-gradient(180deg,#ffffff,#f8fffb);
     border:1px solid #e0efe8;
@@ -229,7 +225,6 @@ nav{
     resize:vertical;
 }
 
-/* OPTIONS */
 .options{
     margin-top:18px;
     display:grid;
@@ -292,7 +287,6 @@ nav{
     cursor:pointer;
 }
 
-/* RIGHT SIDE */
 .summary-card{
     background:linear-gradient(180deg,#ffffff,#f8fffb);
     border:1px solid #e0efe8;
@@ -341,7 +335,6 @@ nav{
     line-height:1.7;
 }
 
-/* MODAL */
 .modal{
     position:fixed;
     inset:0;
@@ -421,7 +414,6 @@ nav{
     flex-wrap:wrap;
 }
 
-/* RESPONSIVE */
 @media (max-width: 900px){
     .content{
         grid-template-columns: 1fr;
@@ -497,7 +489,7 @@ nav{
 <div class="page">
     <div class="topbar">
         <div class="quiz-head">
-            <h1 id="title">แก้ไขควิซ</h1>
+            <h1 id="pageTitle">แก้ไขควิซ</h1>
             <div class="quiz-meta" id="quizMeta">โหมดแก้ไขข้อสอบ</div>
         </div>
 
@@ -519,8 +511,8 @@ nav{
         </div>
 
         <div class="right-panel">
-            <div class="section-title">สรุปควิซ</div>
-            <div class="section-sub">ข้อมูลเบื้องต้นของแบบทดสอบนี้</div>
+            <div class="section-title">ตั้งค่าควิซ</div>
+            <div class="section-sub">แก้ไขข้อมูลพื้นฐานของแบบทดสอบนี้</div>
 
             <div class="summary-card">
                 <div class="summary-list">
@@ -532,6 +524,17 @@ nav{
                     <div class="summary-item">
                         <span>จำนวนข้อ</span>
                         <strong id="questionCount">0</strong>
+                    </div>
+
+                    <div class="summary-item-column">
+                        <label class="label" for="quizTitleInput">ชื่อควิซ</label>
+                        <input
+                            id="quizTitleInput"
+                            class="input"
+                            type="text"
+                            placeholder="เช่น ควิซวิชา Network"
+                            oninput="updateQuizTitle(this.value)"
+                        >
                     </div>
 
                     <div class="summary-item-column">
@@ -555,24 +558,30 @@ nav{
                             <option value="3">3 ครั้ง</option>
                         </select>
                     </div>
+
+                    <div class="summary-item-column">
+                        <label class="label" for="allowReview">อนุญาตให้ review / ดูเฉลย</label>
+                        <select id="allowReview" class="select" onchange="updateAllowReview(this.value)">
+                            <option value="true">อนุญาต</option>
+                            <option value="false">ไม่อนุญาต</option>
+                        </select>
+                    </div>
                 </div>
             </div>
 
             <div class="summary-card">
                 <div class="section-title" style="font-size:18px;margin-bottom:8px;">คำแนะนำ</div>
                 <div class="hint">
-                    1) พิมพ์คำถามให้ชัดเจน<br>
+                    1) สามารถแก้ชื่อควิซ เวลา จำนวนครั้ง และการ review ได้<br>
                     2) ใส่ตัวเลือกให้ครบทั้ง 4 ข้อ<br>
                     3) เลือกคำตอบที่ถูกเพียง 1 ข้อ<br>
-                    4) ตั้งเวลาและจำนวนครั้งที่เล่นได้ตามต้องการ<br>
-                    5) กดบันทึกก่อนทดลองเล่น
+                    4) กดบันทึกก่อนทดลองเล่น
                 </div>
             </div>
         </div>
     </div>
 </div>
 
-<!-- SAVE MODAL -->
 <div class="modal" id="saveModal">
     <div class="modal-card">
         <div class="modal-icon">✅</div>
@@ -599,9 +608,6 @@ if (!requireLogin()) {
 
 loadUserUI();
 
-/* =====================
-   LOAD QUIZ
-===================== */
 const params = new URLSearchParams(window.location.search);
 const code = params.get("code");
 
@@ -624,18 +630,19 @@ if (quiz.owner && quiz.owner !== currentUser.username) {
 if (!quiz.questions) quiz.questions = [];
 if (quiz.time == null) quiz.time = 0;
 if (quiz.attemptsLimit == null) quiz.attemptsLimit = 0;
+if (quiz.allowReview == null) quiz.allowReview = true;
+if (!quiz.title) quiz.title = "ไม่มีชื่อควิซ";
 
-document.getElementById("title").innerText = `แก้ไขควิซ: ${quiz.title}`;
+document.getElementById("pageTitle").innerText = `แก้ไขควิซ: ${quiz.title}`;
 document.getElementById("quizCode").innerText = quiz.code;
 document.getElementById("modalQuizCode").innerText = quiz.code;
 document.getElementById("quizMeta").innerText = `รหัสข้อสอบ ${quiz.code} • สำหรับผู้สร้างควิซ`;
 
+document.getElementById("quizTitleInput").value = quiz.title;
 document.getElementById("quizTimeInput").value = Math.floor((quiz.time || 0) / 60);
 document.getElementById("attemptsLimit").value = String(quiz.attemptsLimit ?? 0);
+document.getElementById("allowReview").value = String(quiz.allowReview);
 
-/* =====================
-   HELPERS
-===================== */
 function goHome(){
     window.location.href = "index.html";
 }
@@ -655,6 +662,12 @@ function escapeHtml(text){
 
 function updateSummary(){
     document.getElementById("questionCount").innerText = quiz.questions.length;
+    document.getElementById("pageTitle").innerText = `แก้ไขควิซ: ${quiz.title || "ไม่มีชื่อควิซ"}`;
+}
+
+function updateQuizTitle(value){
+    quiz.title = value;
+    updateSummary();
 }
 
 function updateQuizTime(value){
@@ -666,9 +679,10 @@ function updateAttemptsLimit(value){
     quiz.attemptsLimit = Number(value);
 }
 
-/* =====================
-   QUESTION LOGIC
-===================== */
+function updateAllowReview(value){
+    quiz.allowReview = value === "true";
+}
+
 function addQuestion(){
     quiz.questions.push({
         text: "",
@@ -698,9 +712,6 @@ function setCorrect(i, j){
     quiz.questions[i].correct = j;
 }
 
-/* =====================
-   RENDER
-===================== */
 function render(){
     const container = document.getElementById("questions");
     container.innerHTML = "";
@@ -717,6 +728,9 @@ function render(){
     }
 
     quiz.questions.forEach((q, i) => {
+        const safeText = q.text || "";
+        const safeOptions = Array.isArray(q.options) ? q.options : ["", "", "", ""];
+
         let html = `
             <div class="question-card">
                 <div class="question-header">
@@ -729,12 +743,12 @@ function render(){
                     class="textarea"
                     placeholder="พิมพ์คำถามที่นี่..."
                     oninput="updateQuestion(${i}, this.value)"
-                >${escapeHtml(q.text)}</textarea>
+                >${escapeHtml(safeText)}</textarea>
 
                 <div class="options">
         `;
 
-        q.options.forEach((opt, j) => {
+        safeOptions.forEach((opt, j) => {
             const letter = String.fromCharCode(65 + j);
             html += `
                 <div class="option-box">
@@ -767,24 +781,28 @@ function render(){
             </div>
         `;
 
-        container.innerHTML += html;
+        container.insertAdjacentHTML("beforeend", html);
     });
 
     updateSummary();
 }
 
-/* =====================
-   VALIDATE + SAVE
-===================== */
 function validateQuiz(){
-    if (quiz.questions.length === 0) {
-        alert("กรุณาเพิ่มคำถามอย่างน้อย 1 ข้อ");
+    const title = (quiz.title || "").trim();
+
+    if (!title) {
+        alert("กรุณาใส่ชื่อควิซ");
         return false;
     }
 
     const timeMinutes = Number(document.getElementById("quizTimeInput").value);
     if (isNaN(timeMinutes) || timeMinutes < 0) {
         alert("กรุณากรอกเวลาให้ถูกต้อง");
+        return false;
+    }
+
+    if (quiz.questions.length === 0) {
+        alert("กรุณาเพิ่มคำถามอย่างน้อย 1 ข้อ");
         return false;
     }
 
@@ -796,6 +814,11 @@ function validateQuiz(){
             return false;
         }
 
+        if (!Array.isArray(q.options) || q.options.length !== 4) {
+            alert(`ข้อ ${i + 1} มีตัวเลือกไม่ครบ 4 ข้อ`);
+            return false;
+        }
+
         for (let j = 0; j < q.options.length; j++) {
             if (!q.options[j] || !q.options[j].trim()) {
                 alert(`ข้อ ${i + 1} ตัวเลือก ${String.fromCharCode(65 + j)} ยังว่างอยู่`);
@@ -803,7 +826,7 @@ function validateQuiz(){
             }
         }
 
-        if (q.correct === null) {
+        if (q.correct === null || q.correct === undefined) {
             alert(`ข้อ ${i + 1} ยังไม่ได้เลือกคำตอบที่ถูก`);
             return false;
         }
@@ -815,8 +838,10 @@ function validateQuiz(){
 function saveQuiz(showPopup = true){
     if (!validateQuiz()) return false;
 
+    quiz.title = document.getElementById("quizTitleInput").value.trim();
     quiz.time = Number(document.getElementById("quizTimeInput").value || 0) * 60;
     quiz.attemptsLimit = Number(document.getElementById("attemptsLimit").value || 0);
+    quiz.allowReview = document.getElementById("allowReview").value === "true";
 
     const index = quizzes.findIndex(q => q.code === code);
     if (index === -1) {
@@ -824,8 +849,11 @@ function saveQuiz(showPopup = true){
         return false;
     }
 
-    quizzes[index] = quiz;
+    quizzes[index] = { ...quiz };
     localStorage.setItem("myQuizzes", JSON.stringify(quizzes));
+
+    document.getElementById("pageTitle").innerText = `แก้ไขควิซ: ${quiz.title}`;
+    document.getElementById("quizMeta").innerText = `รหัสข้อสอบ ${quiz.code} • สำหรับผู้สร้างควิซ`;
 
     if (showPopup) {
         openModal();
@@ -834,9 +862,6 @@ function saveQuiz(showPopup = true){
     return true;
 }
 
-/* =====================
-   MODAL
-===================== */
 function openModal(){
     document.getElementById("saveModal").classList.add("show");
 }
@@ -854,9 +879,6 @@ async function copyQuizCode(){
     }
 }
 
-/* =====================
-   PREVIEW PLAY
-===================== */
 function goPlay(){
     const ok = saveQuiz(false);
     if (!ok) return;
@@ -864,7 +886,6 @@ function goPlay(){
     window.location.href = `play.html?code=${code}&preview=1`;
 }
 
-/* INIT */
 render();
 </script>
 

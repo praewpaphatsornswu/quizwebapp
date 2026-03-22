@@ -279,12 +279,7 @@ function getQuizStats(quizCode){
     const records = quizResults.filter(r => r.quizCode === quizCode);
 
     if (records.length === 0) {
-        return {
-            players: 0,
-            avg: 0,
-            max: 0,
-            min: 0
-        };
+        return { players: 0, avg: 0, max: 0, min: 0 };
     }
 
     const bestPercents = records.map(r => Number(r.bestPercent) || 0);
@@ -317,6 +312,10 @@ function loadQuizzes(){
     let html = `<div class="grid">`;
 
     quizzes.forEach(q => {
+
+        // 🔥 FIX: รองรับควิซเก่า
+        if (q.allowReview == null) q.allowReview = true;
+
         const minutes = Math.floor((q.time || 0) / 60);
         const seconds = (q.time || 0) % 60;
         const stats = getQuizStats(q.code);
@@ -351,6 +350,12 @@ function loadQuizzes(){
                     <div class="info-row">
                         <span>จำนวนครั้งที่เล่นได้</span>
                         <strong>${Number(q.attemptsLimit) === 0 ? "ไม่จำกัด" : `${q.attemptsLimit} ครั้ง`}</strong>
+                    </div>
+
+                    <!-- 🔥 เพิ่มตรงนี้ -->
+                    <div class="info-row">
+                        <span>Review</span>
+                        <strong>${q.allowReview ? "อนุญาต" : "ไม่อนุญาต"}</strong>
                     </div>
 
                     <div class="info-row">
