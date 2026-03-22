@@ -280,11 +280,30 @@ nav{
     font-weight:500;
 }
 
-.correct-radio{
+.correct-radio,
+.correct-checkbox{
     width:18px;
     height:18px;
     accent-color:#52b788;
     cursor:pointer;
+}
+
+.type-row{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:12px;
+    margin-bottom:14px;
+}
+
+.helper-note{
+    margin-top:12px;
+    padding:12px 14px;
+    border-radius:12px;
+    background:#f6fbf8;
+    color:#52796f;
+    font-size:13px;
+    line-height:1.7;
+    border:1px solid #dcefe5;
 }
 
 .summary-card{
@@ -416,7 +435,7 @@ nav{
 
 @media (max-width: 900px){
     .content{
-        grid-template-columns: 1fr;
+        grid-template-columns:1fr;
     }
 
     .menu{
@@ -465,6 +484,10 @@ nav{
         width:100%;
         justify-content:flex-end;
     }
+
+    .type-row{
+        grid-template-columns:1fr;
+    }
 }
 </style>
 </head>
@@ -503,7 +526,7 @@ nav{
     <div class="content">
         <div class="left-panel">
             <div class="section-title">รายการคำถาม</div>
-            <div class="section-sub">ตอนนี้รองรับคำถามแบบเลือกตอบข้อเดียว โดยแต่ละข้อมี 4 ตัวเลือก</div>
+            <div class="section-sub">รองรับทั้งคำถามแบบ Single Choice และ Multiple Choice</div>
 
             <div id="questions"></div>
 
@@ -572,9 +595,9 @@ nav{
             <div class="summary-card">
                 <div class="section-title" style="font-size:18px;margin-bottom:8px;">คำแนะนำ</div>
                 <div class="hint">
-                    1) สามารถแก้ชื่อควิซ เวลา จำนวนครั้ง และการ review ได้<br>
-                    2) ใส่ตัวเลือกให้ครบทั้ง 4 ข้อ<br>
-                    3) เลือกคำตอบที่ถูกเพียง 1 ข้อ<br>
+                    1) เลือกชนิดคำถามได้ว่าเป็น Single Choice หรือ Multiple Choice<br>
+                    2) ถ้าเป็น Single Choice ต้องมีคำตอบถูก 1 ข้อ<br>
+                    3) ถ้าเป็น Multiple Choice ต้องมีคำตอบถูกอย่างน้อย 1 ข้อ และเลือกได้หลายข้อ<br>
                     4) กดบันทึกก่อนทดลองเล่น
                 </div>
             </div>
@@ -627,7 +650,42 @@ if (quiz.owner && quiz.owner !== currentUser.username) {
     throw new Error("Unauthorized");
 }
 
+function normalizeQuestion(q){
+    const normalized = {
+        text: q?.text || "",
+        type: q?.type === "multiple" ? "multiple" : "single",
+        options: Array.isArray(q?.options) ? [...q.options] : ["", "", "", ""],
+        correctAnswers: []
+    };
+
+    while (normalized.options.length < 4) {
+        normalized.options.push("");
+    }
+    normalized.options = normalized.options.slice(0, 4);
+
+    if (Array.isArray(q?.correctAnswers)) {
+        normalized.correctAnswers = q.correctAnswers
+            .map(v => Number(v))
+            .filter(v => Number.isInteger(v) && v >= 0 && v < 4);
+    } else if (q?.correct !== null && q?.correct !== undefined && q.correct !== "") {
+        const one = Number(q.correct);
+        if (Number.isInteger(one) && one >= 0 && one < 4) {
+            normalized.correctAnswers = [one];
+        }
+    }
+
+    normalized.correctAnswers = [...new Set(normalized.correctAnswers)];
+
+    if (normalized.type === "single" && normalized.correctAnswers.length > 1) {
+        normalized.correctAnswers = [normalized.correctAnswers[0]];
+    }
+
+    return normalized;
+}
+
 if (!quiz.questions) quiz.questions = [];
+quiz.questions = quiz.questions.map(normalizeQuestion);
+
 if (quiz.time == null) quiz.time = 0;
 if (quiz.attemptsLimit == null) quiz.attemptsLimit = 0;
 if (quiz.allowReview == null) quiz.allowReview = true;
@@ -686,8 +744,9 @@ function updateAllowReview(value){
 function addQuestion(){
     quiz.questions.push({
         text: "",
+        type: "single",
         options: ["", "", "", ""],
-        correct: null
+        correctAnswers: []
     });
     render();
 }
@@ -704,12 +763,76 @@ function updateQuestion(i, val){
     quiz.questions[i].text = val;
 }
 
+function updateQuestionType(i, val){
+    const q = quiz.questions[i];
+    q.type = val === "multiple" ? "multiple" : "single";
+
+    if (!Array.isArray(q.correctAnswers)) {
+        q.correctAnswers = [];
+    }
+
+    q.correctAnswers = [...new Set(q.correctAnswers)];
+
+    if (q.type === "single" && q.correctAnswers.length > 1) {
+        q.correctAnswers = [q.correctAnswers[0]];
+    }
+
+    render();
+}
+
 function updateOption(i, j, val){
     quiz.questions[i].options[j] = val;
 }
 
-function setCorrect(i, j){
-    quiz.questions[i].correct = j;
+function setSingleCorrect(i, j){
+    quiz.questions[i].correctAnswers = [j];
+}
+
+function toggleMultipleCorrect(i, j){
+    const arr = Array.isArray(quiz.questions[i].correctAnswers)
+        ? [...quiz.questions[i].correctAnswers]
+        : [];
+
+    const idx = arr.indexOf(j);
+
+    if (idx === -1) {
+        arr.push(j);
+    } else {
+        arr.splice(idx, 1);
+    }
+
+    quiz.questions[i].correctAnswers = arr.sort((a, b) => a - b);
+}
+
+function renderOptionSelector(q, i, j){
+    const checked = Array.isArray(q.correctAnswers) && q.correctAnswers.includes(j);
+
+    if (q.type === "multiple") {
+        return `
+            <label class="correct-wrap">
+                <input
+                    class="correct-checkbox"
+                    type="checkbox"
+                    ${checked ? "checked" : ""}
+                    onclick="toggleMultipleCorrect(${i}, ${j})"
+                >
+                คำตอบที่ถูก
+            </label>
+        `;
+    }
+
+    return `
+        <label class="correct-wrap">
+            <input
+                class="correct-radio"
+                type="radio"
+                name="correct${i}"
+                ${checked ? "checked" : ""}
+                onclick="setSingleCorrect(${i}, ${j})"
+            >
+            คำตอบที่ถูก
+        </label>
+    `;
 }
 
 function render(){
@@ -728,8 +851,8 @@ function render(){
     }
 
     quiz.questions.forEach((q, i) => {
-        const safeText = q.text || "";
-        const safeOptions = Array.isArray(q.options) ? q.options : ["", "", "", ""];
+        const safeQ = normalizeQuestion(q);
+        quiz.questions[i] = safeQ;
 
         let html = `
             <div class="question-card">
@@ -738,18 +861,38 @@ function render(){
                     <button class="btn btn-danger" onclick="deleteQuestion(${i})">ลบคำถาม</button>
                 </div>
 
+                <div class="type-row">
+                    <div>
+                        <label class="label">ชนิดคำถาม</label>
+                        <select class="select" onchange="updateQuestionType(${i}, this.value)">
+                            <option value="single" ${safeQ.type === "single" ? "selected" : ""}>Single Choice</option>
+                            <option value="multiple" ${safeQ.type === "multiple" ? "selected" : ""}>Multiple Choice</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="label">รูปแบบคำตอบ</label>
+                        <div class="helper-note" style="margin-top:0;">
+                            ${safeQ.type === "single"
+                                ? "ผู้เล่นเลือกได้ 1 ข้อ และต้องมีคำตอบถูก 1 ข้อ"
+                                : "ผู้เล่นเลือกได้หลายข้อ และต้องมีคำตอบถูกอย่างน้อย 1 ข้อ"}
+                        </div>
+                    </div>
+                </div>
+
                 <label class="label">คำถาม</label>
                 <textarea
                     class="textarea"
                     placeholder="พิมพ์คำถามที่นี่..."
                     oninput="updateQuestion(${i}, this.value)"
-                >${escapeHtml(safeText)}</textarea>
+                >${escapeHtml(safeQ.text)}</textarea>
 
                 <div class="options">
         `;
 
-        safeOptions.forEach((opt, j) => {
+        safeQ.options.forEach((opt, j) => {
             const letter = String.fromCharCode(65 + j);
+
             html += `
                 <div class="option-box">
                     <div class="option-letter">${letter}</div>
@@ -762,21 +905,18 @@ function render(){
                         oninput="updateOption(${i}, ${j}, this.value)"
                     >
 
-                    <label class="correct-wrap">
-                        <input
-                            class="correct-radio"
-                            type="radio"
-                            name="correct${i}"
-                            ${q.correct === j ? "checked" : ""}
-                            onclick="setCorrect(${i}, ${j})"
-                        >
-                        คำตอบที่ถูก
-                    </label>
+                    ${renderOptionSelector(safeQ, i, j)}
                 </div>
             `;
         });
 
         html += `
+                </div>
+
+                <div class="helper-note">
+                    ${safeQ.type === "single"
+                        ? "สำหรับ Single Choice ให้เลือกคำตอบที่ถูกเพียง 1 ข้อ"
+                        : "สำหรับ Multiple Choice สามารถติ๊กคำตอบที่ถูกได้หลายข้อ"}
                 </div>
             </div>
         `;
@@ -807,7 +947,8 @@ function validateQuiz(){
     }
 
     for (let i = 0; i < quiz.questions.length; i++) {
-        const q = quiz.questions[i];
+        const q = normalizeQuestion(quiz.questions[i]);
+        quiz.questions[i] = q;
 
         if (!q.text || !q.text.trim()) {
             alert(`ข้อ ${i + 1} ยังไม่มีคำถาม`);
@@ -826,8 +967,13 @@ function validateQuiz(){
             }
         }
 
-        if (q.correct === null || q.correct === undefined) {
+        if (!Array.isArray(q.correctAnswers) || q.correctAnswers.length === 0) {
             alert(`ข้อ ${i + 1} ยังไม่ได้เลือกคำตอบที่ถูก`);
+            return false;
+        }
+
+        if (q.type === "single" && q.correctAnswers.length !== 1) {
+            alert(`ข้อ ${i + 1} เป็น Single Choice จึงต้องมีคำตอบถูกเพียง 1 ข้อ`);
             return false;
         }
     }
@@ -842,6 +988,18 @@ function saveQuiz(showPopup = true){
     quiz.time = Number(document.getElementById("quizTimeInput").value || 0) * 60;
     quiz.attemptsLimit = Number(document.getElementById("attemptsLimit").value || 0);
     quiz.allowReview = document.getElementById("allowReview").value === "true";
+
+    quiz.questions = quiz.questions.map(q => {
+        const nq = normalizeQuestion(q);
+
+        return {
+            text: nq.text,
+            type: nq.type,
+            options: nq.options,
+            correctAnswers: nq.correctAnswers,
+            correct: nq.type === "single" && nq.correctAnswers.length > 0 ? nq.correctAnswers[0] : null
+        };
+    });
 
     const index = quizzes.findIndex(q => q.code === code);
     if (index === -1) {

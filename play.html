@@ -171,7 +171,13 @@ nav{
     color:#1b4332;
     font-size:28px;
     line-height:1.5;
-    margin-bottom:20px;
+    margin-bottom:14px;
+}
+
+.question-type{
+    margin-bottom:18px;
+    color:#52796f;
+    font-size:14px;
 }
 
 .option{
@@ -214,6 +220,13 @@ nav{
     color:#222;
     font-size:16px;
     line-height:1.5;
+    flex:1;
+}
+
+.option-mark{
+    font-size:14px;
+    color:#2d6a4f;
+    font-weight:600;
 }
 
 .actions{
@@ -351,7 +364,7 @@ button{
     border-radius:24px;
     box-shadow:0 20px 50px rgba(0,0,0,0.08);
     text-align:center;
-    max-width:900px;
+    max-width:920px;
     width:100%;
 }
 
@@ -412,8 +425,14 @@ button{
 .review-question{
     font-weight:600;
     color:#1b4332;
-    margin-bottom:14px;
+    margin-bottom:10px;
     line-height:1.6;
+}
+
+.review-meta{
+    font-size:13px;
+    color:#52796f;
+    margin-bottom:12px;
 }
 
 .review-option{
@@ -574,6 +593,39 @@ if (!quiz) {
     throw new Error("Quiz not found");
 }
 
+function normalizeQuestion(q){
+    const normalized = {
+        text: q?.text || "",
+        type: q?.type === "multiple" ? "multiple" : "single",
+        options: Array.isArray(q?.options) ? [...q.options] : ["", "", "", ""],
+        correctAnswers: []
+    };
+
+    while (normalized.options.length < 4) {
+        normalized.options.push("");
+    }
+    normalized.options = normalized.options.slice(0, 4);
+
+    if (Array.isArray(q?.correctAnswers)) {
+        normalized.correctAnswers = q.correctAnswers
+            .map(v => Number(v))
+            .filter(v => Number.isInteger(v) && v >= 0 && v < 4);
+    } else if (q?.correct !== null && q?.correct !== undefined && q.correct !== "") {
+        const one = Number(q.correct);
+        if (Number.isInteger(one) && one >= 0 && one < 4) {
+            normalized.correctAnswers = [one];
+        }
+    }
+
+    normalized.correctAnswers = [...new Set(normalized.correctAnswers)].sort((a, b) => a - b);
+
+    if (normalized.type === "single" && normalized.correctAnswers.length > 1) {
+        normalized.correctAnswers = [normalized.correctAnswers[0]];
+    }
+
+    return normalized;
+}
+
 if (!quiz.questions || quiz.questions.length === 0) {
     alert("ข้อสอบนี้ยังไม่มีคำถาม");
     if (currentUser.username === quiz.owner) {
@@ -583,6 +635,8 @@ if (!quiz.questions || quiz.questions.length === 0) {
     }
     throw new Error("Quiz has no questions");
 }
+
+quiz.questions = quiz.questions.map(normalizeQuestion);
 
 if (quiz.allowReview == null) quiz.allowReview = true;
 if (quiz.attemptsLimit == null) quiz.attemptsLimit = 0;
@@ -616,7 +670,7 @@ if (!isCreator) {
 }
 
 let current = 0;
-let answers = new Array(quiz.questions.length).fill(null);
+let answers = quiz.questions.map(() => []);
 let timeLeft = Number(quiz.time) || 60;
 let submitted = false;
 let timerId = null;
@@ -634,19 +688,58 @@ function escapeHtml(text){
         .replace(/'/g, "&#039;");
 }
 
+function getSelectedAnswers(index){
+    return Array.isArray(answers[index]) ? answers[index] : [];
+}
+
+function isQuestionAnswered(index){
+    return getSelectedAnswers(index).length > 0;
+}
+
+function isSameAnswer(a, b){
+    const arrA = Array.isArray(a) ? [...a].sort((x, y) => x - y) : [];
+    const arrB = Array.isArray(b) ? [...b].sort((x, y) => x - y) : [];
+
+    if (arrA.length !== arrB.length) return false;
+
+    for (let i = 0; i < arrA.length; i++) {
+        if (arrA[i] !== arrB[i]) return false;
+    }
+
+    return true;
+}
+
+function formatAnswerLetters(arr){
+    if (!Array.isArray(arr) || arr.length === 0) return "-";
+    return arr
+        .slice()
+        .sort((a, b) => a - b)
+        .map(v => String.fromCharCode(65 + v))
+        .join(", ");
+}
+
 function render(){
     const q = quiz.questions[current];
+    const selected = getSelectedAnswers(current);
 
     let html = `
         <div class="badge">Question ${current + 1} of ${quiz.questions.length}</div>
         <div class="question-text">${escapeHtml(q.text)}</div>
+        <div class="question-type">
+            ${q.type === "multiple"
+                ? "คำถามแบบหลายคำตอบ: เลือกได้มากกว่า 1 ข้อ"
+                : "คำถามแบบคำตอบเดียว: เลือกได้ 1 ข้อ"}
+        </div>
     `;
 
     q.options.forEach((opt, i) => {
+        const active = selected.includes(i);
+
         html += `
-            <div class="option ${answers[current] === i ? "active" : ""}" onclick="selectAnswer(${i})">
+            <div class="option ${active ? "active" : ""}" onclick="selectAnswer(${i})">
                 <div class="letter">${String.fromCharCode(65 + i)}</div>
                 <div class="option-text">${escapeHtml(opt)}</div>
+                <div class="option-mark">${active ? "เลือกแล้ว" : ""}</div>
             </div>
         `;
     });
@@ -665,7 +758,23 @@ function render(){
 }
 
 function selectAnswer(i){
-    answers[current] = i;
+    const q = quiz.questions[current];
+
+    if (q.type === "multiple") {
+        const currentAnswers = getSelectedAnswers(current);
+        const idx = currentAnswers.indexOf(i);
+
+        if (idx === -1) {
+            answers[current] = [...currentAnswers, i].sort((a, b) => a - b);
+        } else {
+            const cloned = [...currentAnswers];
+            cloned.splice(idx, 1);
+            answers[current] = cloned;
+        }
+    } else {
+        answers[current] = [i];
+    }
+
     render();
 }
 
@@ -696,7 +805,7 @@ function renderNav(){
 
     quiz.questions.forEach((q, i) => {
         let cls = "nav-item";
-        if (answers[i] !== null) cls += " answered";
+        if (isQuestionAnswered(i)) cls += " answered";
         if (i === current) cls += " current";
 
         nav.innerHTML += `
@@ -706,7 +815,7 @@ function renderNav(){
 }
 
 function updateProgress(){
-    const answered = answers.filter(a => a !== null).length;
+    const answered = answers.filter(arr => Array.isArray(arr) && arr.length > 0).length;
 
     document.getElementById("progressText").innerText =
         `${answered} of ${quiz.questions.length} answered`;
@@ -787,31 +896,34 @@ function buildReviewHTML(){
     `;
 
     quiz.questions.forEach((q, i) => {
-        const userAnswer = answers[i];
-        const correctAnswer = q.correct;
-        const isCorrect = userAnswer === correctAnswer;
+        const userAnswers = getSelectedAnswers(i);
+        const correctAnswers = Array.isArray(q.correctAnswers) ? q.correctAnswers : [];
+        const isCorrect = isSameAnswer(userAnswers, correctAnswers);
 
         html += `
             <div class="review-card">
                 <div class="review-question">
                     ข้อ ${i + 1}: ${escapeHtml(q.text)}
                 </div>
+                <div class="review-meta">
+                    ${q.type === "multiple" ? "Multiple Choice" : "Single Choice"}
+                </div>
         `;
 
         q.options.forEach((opt, j) => {
             let className = "review-option";
 
-            if (j === correctAnswer) {
+            if (correctAnswers.includes(j)) {
                 className += " correct";
             }
 
-            if (j === userAnswer && j !== correctAnswer) {
+            if (userAnswers.includes(j) && !correctAnswers.includes(j)) {
                 className += " wrong";
             }
 
             let suffix = "";
-            if (j === correctAnswer) suffix = " ✅ คำตอบที่ถูก";
-            if (j === userAnswer && j !== correctAnswer) suffix = " ❌ คำตอบของคุณ";
+            if (correctAnswers.includes(j)) suffix += " ✅ คำตอบที่ถูก";
+            if (userAnswers.includes(j) && !correctAnswers.includes(j)) suffix += " ❌ คำตอบของคุณ";
 
             html += `
                 <div class="${className}">
@@ -823,11 +935,11 @@ function buildReviewHTML(){
         html += `
                 <div class="review-note">
                     ${
-                        userAnswer === null
-                        ? "คุณไม่ได้ตอบข้อนี้"
+                        userAnswers.length === 0
+                        ? `คุณไม่ได้ตอบข้อนี้ • คำตอบที่ถูกคือ ${formatAnswerLetters(correctAnswers)}`
                         : isCorrect
-                            ? "คุณตอบถูก"
-                            : `คุณตอบ ${String.fromCharCode(65 + userAnswer)} แต่คำตอบที่ถูกคือ ${String.fromCharCode(65 + correctAnswer)}`
+                            ? `คุณตอบถูก • คำตอบคือ ${formatAnswerLetters(correctAnswers)}`
+                            : `คุณตอบ ${formatAnswerLetters(userAnswers)} แต่คำตอบที่ถูกคือ ${formatAnswerLetters(correctAnswers)}`
                     }
                 </div>
             </div>
@@ -847,7 +959,10 @@ function submitQuiz(){
     let score = 0;
 
     quiz.questions.forEach((q, i) => {
-        if (answers[i] === q.correct) {
+        const userAnswers = getSelectedAnswers(i);
+        const correctAnswers = Array.isArray(q.correctAnswers) ? q.correctAnswers : [];
+
+        if (isSameAnswer(userAnswers, correctAnswers)) {
             score++;
         }
     });
