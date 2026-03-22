@@ -20,7 +20,6 @@ body{
     background:linear-gradient(135deg,#e8fdf5,#ffffff);
 }
 
-/* NAVBAR */
 nav{
     background:#fff;
     padding:15px 40px;
@@ -58,7 +57,6 @@ nav{
     font-weight:500;
 }
 
-/* PAGE */
 .page{
     max-width:760px;
     margin:40px auto;
@@ -176,7 +174,6 @@ button{
     font-size:14px;
 }
 
-/* MODAL */
 .modal{
     position:fixed;
     inset:0;
@@ -281,8 +278,8 @@ button{
         <div class="head">
             <h1>สร้างควิซใหม่</h1>
             <p>
-                ตั้งชื่อควิซและกำหนดเวลาให้เรียบร้อย จากนั้นระบบจะพาไปหน้าแก้ไขข้อสอบทันที
-                ถ้ามีควิซชื่อเดิมที่ยังเป็นฉบับร่าง ระบบจะช่วยกันสร้างซ้ำให้เอง
+                ตั้งชื่อควิซ กำหนดเวลา และกำหนดจำนวนครั้งที่ผู้เล่นทำได้
+                จากนั้นระบบจะพาไปหน้าแก้ไขข้อสอบทันที
             </p>
         </div>
 
@@ -295,9 +292,17 @@ button{
             <input class="input" type="number" id="second" placeholder="วินาที" min="0" max="59">
         </div>
 
+        <label class="label" for="attemptsLimit">จำนวนครั้งที่ผู้เล่นทำได้</label>
+        <select class="input" id="attemptsLimit">
+            <option value="1">1 ครั้ง</option>
+            <option value="2">2 ครั้ง</option>
+            <option value="3">3 ครั้ง</option>
+            <option value="0">ไม่จำกัด</option>
+        </select>
+
         <div class="info-box">
             • ถ้าคุณเคยสร้างควิซชื่อเดิมไว้แล้ว แต่ยังไม่ได้ใส่คำถาม ระบบจะพาไปแก้ฉบับเดิม<br>
-            • ถ้าต้องการสร้างใหม่จริง ๆ ให้เปลี่ยนชื่อควิซ หรือยืนยันสร้างใหม่ในขั้นถัดไป
+            • ถ้าเจ้าของควิซเล่นเอง ระบบจะถือเป็นโหมดทดลองเล่นและไม่เก็บสถิติ
         </div>
 
         <div class="error" id="errorText"></div>
@@ -309,11 +314,10 @@ button{
     </div>
 </div>
 
-<!-- MODAL -->
 <div class="modal" id="duplicateModal">
     <div class="modal-card">
         <h3>พบควิซชื่อเดิม</h3>
-        <p id="duplicateText">
+        <p>
             คุณมีควิซชื่อเดียวกันที่ยังเป็นฉบับร่างอยู่ ต้องการกลับไปแก้ไขควิซเดิมหรือสร้างใหม่?
         </p>
 
@@ -340,9 +344,6 @@ const errorText = document.getElementById("errorText");
 let draftToReuse = null;
 let pendingPayload = null;
 
-/* =====================
-   NAV
-===================== */
 function goHome(){
     window.location.href = "index.html";
 }
@@ -351,9 +352,6 @@ function goDashboard(){
     window.location.href = "dashboard.html";
 }
 
-/* =====================
-   UI HELPERS
-===================== */
 function setCreateButtonLoading(isLoading){
     createBtn.disabled = isLoading;
     createBtn.innerText = isLoading ? "กำลังสร้าง..." : "สร้างควิซใหม่";
@@ -367,9 +365,6 @@ function normalizeTitle(text){
     return String(text || "").trim().toLowerCase();
 }
 
-/* =====================
-   MODAL
-===================== */
 function openDuplicateModal(existingQuiz){
     draftToReuse = existingQuiz;
     document.getElementById("duplicateModal").classList.add("show");
@@ -389,14 +384,10 @@ function goToExistingDraft(){
 
 function forceCreateNewQuiz(){
     if (!pendingPayload) return;
-
-    const { title, time } = pendingPayload;
-    actuallyCreateQuiz(title, time);
+    const { title, time, attemptsLimit } = pendingPayload;
+    actuallyCreateQuiz(title, time, attemptsLimit);
 }
 
-/* =====================
-   CREATE LOGIC
-===================== */
 function createQuiz(){
     showError("");
     setCreateButtonLoading(true);
@@ -404,6 +395,8 @@ function createQuiz(){
     const title = document.getElementById("title").value.trim();
     const minute = parseInt(document.getElementById("minute").value) || 0;
     const second = parseInt(document.getElementById("second").value) || 0;
+    const attemptsLimit = parseInt(document.getElementById("attemptsLimit").value) || 0;
+
     const time = (minute * 60) + second;
 
     if (!title){
@@ -426,7 +419,6 @@ function createQuiz(){
 
     let quizzes = JSON.parse(localStorage.getItem("myQuizzes")) || [];
 
-    // หา draft ชื่อเดิมของ user คนเดิม ที่ยังไม่มีคำถาม
     const existingDraft = quizzes.find(q =>
         q.owner === currentUser.username &&
         normalizeTitle(q.title) === normalizeTitle(title) &&
@@ -434,15 +426,15 @@ function createQuiz(){
     );
 
     if (existingDraft){
-        pendingPayload = { title, time };
+        pendingPayload = { title, time, attemptsLimit };
         openDuplicateModal(existingDraft);
         return;
     }
 
-    actuallyCreateQuiz(title, time);
+    actuallyCreateQuiz(title, time, attemptsLimit);
 }
 
-function actuallyCreateQuiz(title, time){
+function actuallyCreateQuiz(title, time, attemptsLimit){
     let quizzes = JSON.parse(localStorage.getItem("myQuizzes")) || [];
 
     const code = "Q" + Date.now();
@@ -453,7 +445,8 @@ function actuallyCreateQuiz(title, time){
         time: time,
         questions: [],
         createdAt: new Date().toLocaleString("th-TH"),
-        owner: currentUser.username
+        owner: currentUser.username,
+        attemptsLimit: attemptsLimit
     };
 
     quizzes.push(newQuiz);

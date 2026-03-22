@@ -19,7 +19,6 @@ body{
     background:linear-gradient(135deg,#e8fdf5,#ffffff);
 }
 
-/* NAVBAR */
 nav{
     background:#fff;
     padding:15px 40px;
@@ -57,7 +56,6 @@ nav{
     font-weight:500;
 }
 
-/* CONTENT */
 .page{
     max-width:1200px;
     margin:30px auto 40px;
@@ -104,7 +102,7 @@ nav{
 
 .grid{
     display:grid;
-    grid-template-columns:repeat(auto-fit,minmax(280px,1fr));
+    grid-template-columns:repeat(auto-fit,minmax(300px,1fr));
     gap:20px;
 }
 
@@ -242,7 +240,7 @@ nav{
     <div class="header">
         <div>
             <h1>คลังข้อสอบของฉัน</h1>
-            <p>รวมข้อสอบที่คุณสร้างไว้ทั้งหมด</p>
+            <p>รวมข้อสอบที่คุณสร้างไว้ทั้งหมด พร้อมสถิติผู้เล่น</p>
         </div>
 
         <button class="btn btn-primary" onclick="window.location.href='create.html'">+ สร้างควิซใหม่</button>
@@ -267,11 +265,43 @@ function goHome(){
     window.location.href = "index.html";
 }
 
+function escapeHtml(text){
+    return String(text ?? "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+}
+
+function getQuizStats(quizCode){
+    const quizResults = JSON.parse(localStorage.getItem("quizResults")) || [];
+    const records = quizResults.filter(r => r.quizCode === quizCode);
+
+    if (records.length === 0) {
+        return {
+            players: 0,
+            avg: 0,
+            max: 0,
+            min: 0
+        };
+    }
+
+    const bestPercents = records.map(r => Number(r.bestPercent) || 0);
+    const sum = bestPercents.reduce((a, b) => a + b, 0);
+
+    return {
+        players: records.length,
+        avg: Math.round(sum / bestPercents.length),
+        max: Math.max(...bestPercents),
+        min: Math.min(...bestPercents)
+    };
+}
+
 function loadQuizzes(){
     const container = document.getElementById("quizContainer");
     let quizzes = JSON.parse(localStorage.getItem("myQuizzes")) || [];
 
-    // เอาเฉพาะของ user คนนี้
     quizzes = quizzes.filter(q => q.owner === currentUser.username);
 
     if (quizzes.length === 0) {
@@ -289,6 +319,7 @@ function loadQuizzes(){
     quizzes.forEach(q => {
         const minutes = Math.floor((q.time || 0) / 60);
         const seconds = (q.time || 0) % 60;
+        const stats = getQuizStats(q.code);
 
         html += `
             <div class="card">
@@ -316,11 +347,36 @@ function loadQuizzes(){
                         <span>วันที่สร้าง</span>
                         <strong>${escapeHtml(q.createdAt || "-")}</strong>
                     </div>
+
+                    <div class="info-row">
+                        <span>จำนวนครั้งที่เล่นได้</span>
+                        <strong>${Number(q.attemptsLimit) === 0 ? "ไม่จำกัด" : `${q.attemptsLimit} ครั้ง`}</strong>
+                    </div>
+
+                    <div class="info-row">
+                        <span>ผู้เล่น</span>
+                        <strong>${stats.players} คน</strong>
+                    </div>
+
+                    <div class="info-row">
+                        <span>Average</span>
+                        <strong>${stats.avg}%</strong>
+                    </div>
+
+                    <div class="info-row">
+                        <span>Max</span>
+                        <strong>${stats.max}%</strong>
+                    </div>
+
+                    <div class="info-row">
+                        <span>Min</span>
+                        <strong>${stats.min}%</strong>
+                    </div>
                 </div>
 
                 <div class="actions">
                     <button class="btn btn-light" onclick="editQuiz('${q.code}')">แก้ไข</button>
-                    <button class="btn btn-primary" onclick="previewQuiz('${q.code}')">ทดลองเล่น</button>
+                    <button class="btn btn-primary" onclick="playQuiz('${q.code}')">เล่น/ทดลองเล่น</button>
                     <button class="btn btn-danger" onclick="deleteQuiz('${q.code}')">ลบ</button>
                 </div>
             </div>
@@ -335,8 +391,8 @@ function editQuiz(code){
     window.location.href = `edit.html?code=${code}`;
 }
 
-function previewQuiz(code){
-    window.location.href = `play.html?code=${code}&preview=1`;
+function playQuiz(code){
+    window.location.href = `play.html?code=${code}`;
 }
 
 function deleteQuiz(code){
@@ -345,18 +401,13 @@ function deleteQuiz(code){
 
     let quizzes = JSON.parse(localStorage.getItem("myQuizzes")) || [];
     quizzes = quizzes.filter(q => !(q.code === code && q.owner === currentUser.username));
-
     localStorage.setItem("myQuizzes", JSON.stringify(quizzes));
-    loadQuizzes();
-}
 
-function escapeHtml(text){
-    return String(text ?? "")
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;")
-        .replace(/'/g, "&#039;");
+    let quizResults = JSON.parse(localStorage.getItem("quizResults")) || [];
+    quizResults = quizResults.filter(r => r.quizCode !== code);
+    localStorage.setItem("quizResults", JSON.stringify(quizResults));
+
+    loadQuizzes();
 }
 
 loadQuizzes();

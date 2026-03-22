@@ -19,7 +19,6 @@ body{
     background:#eef5f2;
 }
 
-/* NAVBAR */
 nav{
     background:#fff;
     padding:15px 40px;
@@ -57,7 +56,6 @@ nav{
     font-weight:500;
 }
 
-/* TOP */
 .top-wrap{
     max-width:1280px;
     margin:24px auto 0;
@@ -142,7 +140,6 @@ nav{
     transition:0.25s;
 }
 
-/* MAIN */
 .container{
     max-width:1280px;
     margin:20px auto 40px;
@@ -152,7 +149,6 @@ nav{
     gap:20px;
 }
 
-/* LEFT */
 .left{
     background:#fff;
     border-radius:22px;
@@ -257,7 +253,6 @@ button{
     background:#40916c;
 }
 
-/* RIGHT */
 .right{
     background:#fff;
     border-radius:22px;
@@ -341,7 +336,6 @@ button{
     margin-top:16px;
 }
 
-/* RESULT */
 .result-wrap{
     min-height:100vh;
     display:flex;
@@ -395,7 +389,6 @@ button{
     flex-wrap:wrap;
 }
 
-/* RESPONSIVE */
 @media (max-width: 980px){
     .container{
         grid-template-columns:1fr;
@@ -508,12 +501,8 @@ if (!requireLogin()) {
 
 loadUserUI();
 
-/* =====================
-   LOAD QUIZ
-===================== */
 const params = new URLSearchParams(window.location.search);
 const code = params.get("code");
-const isPreview = params.get("preview") === "1";
 
 let quizzes = JSON.parse(localStorage.getItem("myQuizzes")) || [];
 let quiz = quizzes.find(q => q.code === code);
@@ -521,21 +510,22 @@ const currentUser = getUser();
 
 if (!quiz) {
     alert("ไม่พบข้อสอบ");
-    window.location.href = "dashboard.html";
+    window.location.href = "index.html";
     throw new Error("Quiz not found");
-}
-
-if (quiz.owner && quiz.owner !== currentUser.username && isPreview) {
-    alert("คุณไม่มีสิทธิ์ทดลองเล่นข้อสอบนี้");
-    window.location.href = "dashboard.html";
-    throw new Error("Unauthorized preview");
 }
 
 if (!quiz.questions || quiz.questions.length === 0) {
     alert("ข้อสอบนี้ยังไม่มีคำถาม");
-    window.location.href = `edit.html?code=${code}`;
+    if (currentUser.username === quiz.owner) {
+        window.location.href = `edit.html?code=${code}`;
+    } else {
+        window.location.href = "index.html";
+    }
     throw new Error("Quiz has no questions");
 }
+
+const isCreator = currentUser.username === quiz.owner;
+const isPreview = isCreator;
 
 document.getElementById("quizTitle").innerText = quiz.title || "Quiz";
 document.getElementById("quizSubtitle").innerText =
@@ -546,25 +536,32 @@ if (isPreview) {
     document.title = "โหมดทดลองเล่น | quizWeb";
 }
 
-/* =====================
-   STATE
-===================== */
+let quizResults = JSON.parse(localStorage.getItem("quizResults")) || [];
+let playerRecord = quizResults.find(r =>
+    r.quizCode === quiz.code && r.player === currentUser.username
+);
+
+if (!isCreator) {
+    const attemptsLimit = Number(quiz.attemptsLimit ?? 1);
+    const attemptsUsed = playerRecord ? playerRecord.attemptsUsed : 0;
+
+    if (attemptsLimit > 0 && attemptsUsed >= attemptsLimit) {
+        alert(`คุณใช้สิทธิ์ทำควิซนี้ครบ ${attemptsLimit} ครั้งแล้ว`);
+        window.location.href = "index.html";
+        throw new Error("Attempt limit reached");
+    }
+}
+
 let current = 0;
 let answers = new Array(quiz.questions.length).fill(null);
 let timeLeft = Number(quiz.time) || 60;
 let submitted = false;
 let timerId = null;
 
-/* =====================
-   NAV
-===================== */
 function goHome(){
     window.location.href = "index.html";
 }
 
-/* =====================
-   RENDER
-===================== */
 function render(){
     const q = quiz.questions[current];
 
@@ -595,9 +592,6 @@ function render(){
     updateProgress();
 }
 
-/* =====================
-   ESCAPE HTML
-===================== */
 function escapeHtml(text){
     return String(text ?? "")
         .replace(/&/g, "&amp;")
@@ -607,9 +601,6 @@ function escapeHtml(text){
         .replace(/'/g, "&#039;");
 }
 
-/* =====================
-   ACTIONS
-===================== */
 function selectAnswer(i){
     answers[current] = i;
     render();
@@ -636,9 +627,6 @@ function jumpQuestion(i){
     render();
 }
 
-/* =====================
-   NAV GRID
-===================== */
 function renderNav(){
     const nav = document.getElementById("nav");
     nav.innerHTML = "";
@@ -654,9 +642,6 @@ function renderNav(){
     });
 }
 
-/* =====================
-   PROGRESS
-===================== */
 function updateProgress(){
     const answered = answers.filter(a => a !== null).length;
 
@@ -667,9 +652,6 @@ function updateProgress(){
         `${(answered / quiz.questions.length) * 100}%`;
 }
 
-/* =====================
-   TIMER
-===================== */
 function updateTimerUI(){
     const m = Math.floor(timeLeft / 60);
     const s = timeLeft % 60;
@@ -691,9 +673,48 @@ function startTimer(){
     }, 1000);
 }
 
-/* =====================
-   SUBMIT
-===================== */
+function saveOfficialResult(score, total){
+    let quizResults = JSON.parse(localStorage.getItem("quizResults")) || [];
+    let recordIndex = quizResults.findIndex(r =>
+        r.quizCode === quiz.code && r.player === currentUser.username
+    );
+
+    const percent = Math.round((score / total) * 100);
+    const newAttempt = {
+        score: score,
+        percent: percent,
+        submittedAt: new Date().toLocaleString("th-TH")
+    };
+
+    if (recordIndex === -1) {
+        quizResults.push({
+            quizCode: quiz.code,
+            quizTitle: quiz.title,
+            player: currentUser.username,
+            total: total,
+            attemptsUsed: 1,
+            bestScore: score,
+            bestPercent: percent,
+            attempts: [newAttempt]
+        });
+    } else {
+        const record = quizResults[recordIndex];
+        record.attempts.push(newAttempt);
+        record.attemptsUsed = record.attempts.length;
+
+        if (score > record.bestScore) {
+            record.bestScore = score;
+            record.bestPercent = percent;
+        } else if (score === record.bestScore && percent > record.bestPercent) {
+            record.bestPercent = percent;
+        }
+
+        quizResults[recordIndex] = record;
+    }
+
+    localStorage.setItem("quizResults", JSON.stringify(quizResults));
+}
+
 function submitQuiz(){
     if (submitted) return;
     submitted = true;
@@ -708,24 +729,12 @@ function submitQuiz(){
         }
     });
 
-    // ถ้าไม่ใช่ preview ค่อยเก็บสถิติ
-    if (!isPreview) {
-        let quizResults = JSON.parse(localStorage.getItem("quizResults")) || [];
-
-        quizResults.push({
-            quizCode: quiz.code,
-            quizTitle: quiz.title,
-            player: currentUser.username,
-            score: score,
-            total: quiz.questions.length,
-            submittedAt: new Date().toLocaleString("th-TH")
-        });
-
-        localStorage.setItem("quizResults", JSON.stringify(quizResults));
+    if (!isCreator) {
+        saveOfficialResult(score, quiz.questions.length);
     }
 
-    const heading = isPreview ? "โหมดทดลองเล่นสำหรับผู้สร้าง" : "ทำควิซเสร็จแล้ว";
-    const subText = isPreview
+    const heading = isCreator ? "โหมดทดลองเล่นสำหรับผู้สร้าง" : "ทำควิซเสร็จแล้ว";
+    const subText = isCreator
         ? "คะแนนนี้เป็นเพียงการทดลองเล่น และจะไม่ถูกนับเป็นสถิติ"
         : "ระบบบันทึกผลการเล่นเรียบร้อยแล้ว";
 
@@ -741,7 +750,7 @@ function submitQuiz(){
 
                 <div class="result-actions">
                     ${
-                        isPreview
+                        isCreator
                         ? `<button class="btn-light" onclick="window.location.href='edit.html?code=${quiz.code}'">กลับไปแก้ไข</button>`
                         : `<button class="btn-light" onclick="window.location.href='index.html'">กลับหน้าแรก</button>`
                     }
@@ -752,7 +761,6 @@ function submitQuiz(){
     `;
 }
 
-/* INIT */
 render();
 startTimer();
 </script>
