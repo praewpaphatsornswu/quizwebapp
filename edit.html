@@ -205,7 +205,8 @@ nav{
 }
 
 .input,
-.textarea{
+.textarea,
+.select{
     width:100%;
     border:1px solid #d6d6d6;
     border-radius:14px;
@@ -217,7 +218,8 @@ nav{
 }
 
 .input:focus,
-.textarea:focus{
+.textarea:focus,
+.select:focus{
     border-color:#52b788;
     box-shadow:0 0 0 4px rgba(82,183,136,0.12);
 }
@@ -309,10 +311,28 @@ nav{
     display:flex;
     justify-content:space-between;
     align-items:center;
+    gap:10px;
     padding:10px 12px;
     background:#f6fbf8;
     border-radius:12px;
     color:#2d6a4f;
+}
+
+.summary-item-column{
+    display:block;
+    padding:12px;
+    background:#f6fbf8;
+    border-radius:12px;
+    color:#2d6a4f;
+}
+
+.summary-item-column .label{
+    margin-bottom:10px;
+}
+
+.summary-item-column .input,
+.summary-item-column .select{
+    background:#fff;
 }
 
 .hint{
@@ -508,13 +528,32 @@ nav{
                         <span>รหัสข้อสอบ</span>
                         <strong id="quizCode">-</strong>
                     </div>
+
                     <div class="summary-item">
                         <span>จำนวนข้อ</span>
                         <strong id="questionCount">0</strong>
                     </div>
-                    <div class="summary-item">
-                        <span>เวลา</span>
-                        <strong id="quizTime">0 นาที</strong>
+
+                    <div class="summary-item-column">
+                        <label class="label" for="quizTimeInput">เวลาในการทำควิซ (นาที)</label>
+                        <input
+                            id="quizTimeInput"
+                            class="input"
+                            type="number"
+                            min="0"
+                            placeholder="เช่น 10"
+                            oninput="updateQuizTime(this.value)"
+                        >
+                    </div>
+
+                    <div class="summary-item-column">
+                        <label class="label" for="attemptsLimit">จำนวนครั้งที่เล่นได้</label>
+                        <select id="attemptsLimit" class="select" onchange="updateAttemptsLimit(this.value)">
+                            <option value="0">ไม่จำกัด</option>
+                            <option value="1">1 ครั้ง</option>
+                            <option value="2">2 ครั้ง</option>
+                            <option value="3">3 ครั้ง</option>
+                        </select>
                     </div>
                 </div>
             </div>
@@ -525,7 +564,8 @@ nav{
                     1) พิมพ์คำถามให้ชัดเจน<br>
                     2) ใส่ตัวเลือกให้ครบทั้ง 4 ข้อ<br>
                     3) เลือกคำตอบที่ถูกเพียง 1 ข้อ<br>
-                    4) กดบันทึกก่อนทดลองเล่น
+                    4) ตั้งเวลาและจำนวนครั้งที่เล่นได้ตามต้องการ<br>
+                    5) กดบันทึกก่อนทดลองเล่น
                 </div>
             </div>
         </div>
@@ -582,15 +622,16 @@ if (quiz.owner && quiz.owner !== currentUser.username) {
 }
 
 if (!quiz.questions) quiz.questions = [];
+if (quiz.time == null) quiz.time = 0;
+if (quiz.attemptsLimit == null) quiz.attemptsLimit = 0;
 
 document.getElementById("title").innerText = `แก้ไขควิซ: ${quiz.title}`;
 document.getElementById("quizCode").innerText = quiz.code;
 document.getElementById("modalQuizCode").innerText = quiz.code;
-
-const minuteText = Math.floor((quiz.time || 0) / 60);
-const secondText = (quiz.time || 0) % 60;
-document.getElementById("quizTime").innerText = `${minuteText} นาที ${secondText} วินาที`;
 document.getElementById("quizMeta").innerText = `รหัสข้อสอบ ${quiz.code} • สำหรับผู้สร้างควิซ`;
+
+document.getElementById("quizTimeInput").value = Math.floor((quiz.time || 0) / 60);
+document.getElementById("attemptsLimit").value = String(quiz.attemptsLimit ?? 0);
 
 /* =====================
    HELPERS
@@ -614,6 +655,15 @@ function escapeHtml(text){
 
 function updateSummary(){
     document.getElementById("questionCount").innerText = quiz.questions.length;
+}
+
+function updateQuizTime(value){
+    const minutes = Number(value);
+    quiz.time = (isNaN(minutes) || minutes < 0) ? 0 : minutes * 60;
+}
+
+function updateAttemptsLimit(value){
+    quiz.attemptsLimit = Number(value);
 }
 
 /* =====================
@@ -732,6 +782,12 @@ function validateQuiz(){
         return false;
     }
 
+    const timeMinutes = Number(document.getElementById("quizTimeInput").value);
+    if (isNaN(timeMinutes) || timeMinutes < 0) {
+        alert("กรุณากรอกเวลาให้ถูกต้อง");
+        return false;
+    }
+
     for (let i = 0; i < quiz.questions.length; i++) {
         const q = quiz.questions[i];
 
@@ -758,6 +814,9 @@ function validateQuiz(){
 
 function saveQuiz(showPopup = true){
     if (!validateQuiz()) return false;
+
+    quiz.time = Number(document.getElementById("quizTimeInput").value || 0) * 60;
+    quiz.attemptsLimit = Number(document.getElementById("attemptsLimit").value || 0);
 
     const index = quizzes.findIndex(q => q.code === code);
     if (index === -1) {
