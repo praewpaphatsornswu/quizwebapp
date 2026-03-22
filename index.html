@@ -31,34 +31,20 @@
             font-size: 24px;
             font-weight: 600;
             color: #2d6a4f;
+            cursor: pointer;
+        }
+
+        .nav-links {
+            display: flex;
+            align-items: center;
+            gap: 18px;
+            flex-wrap: wrap;
         }
 
         .nav-links a, .nav-links span {
-            margin-left: 20px;
             text-decoration: none;
             color: #1b4332;
             font-weight: 500;
-        }
-
-        .btn {
-            padding: 8px 16px;
-            border-radius: 6px;
-            border: 2px solid #2d6a4f;
-            transition: 0.3s;
-        }
-
-        .btn-primary {
-            background: #2d6a4f;
-            color: white !important;
-        }
-
-        .btn-primary:hover {
-            background: #1b4332;
-        }
-
-        .btn-outline:hover {
-            background: #2d6a4f;
-            color: white !important;
         }
 
         .hero {
@@ -67,6 +53,7 @@
             justify-content: space-between;
             padding: 80px 8%;
             flex-wrap: wrap;
+            gap: 30px;
         }
 
         .hero-text {
@@ -87,6 +74,7 @@
         .hero-buttons button {
             padding: 12px 22px;
             margin-right: 15px;
+            margin-bottom: 10px;
             border-radius: 8px;
             border: none;
             cursor: pointer;
@@ -154,40 +142,57 @@
             color: white;
             margin-top: 50px;
         }
+
+        @media (max-width: 768px) {
+            nav {
+                padding: 15px 20px;
+                align-items: flex-start;
+                gap: 12px;
+            }
+
+            .hero {
+                padding: 50px 20px;
+            }
+
+            .hero-text h1 {
+                font-size: 30px;
+            }
+
+            .features {
+                padding: 50px 20px;
+            }
+        }
     </style>
 </head>
 <body>
 
-<!-- Navbar -->
 <nav>
-    <div class="logo"> quizWeb </div>
+    <div class="logo" onclick="location.href='index.html'">quizWeb</div>
 
     <div class="nav-links">
-        <a href="index.html"> หน้าแรก </a>
-        <a href="#"> เกี่ยวกับ </a>
-        <a href="dashboard.html"> คลังข้อสอบ </a>
-
-        <!-- ตรงนี้จะเปลี่ยนตาม login -->
-        <span id="userDisplay"></span>
+        <a href="index.html">หน้าแรก</a>
+        <a href="dashboard.html">คลังข้อสอบ</a>
+        <a href="create.html">สร้างควิซ</a>
+        <span id="authArea"></span>
     </div>
 </nav>
 
-<!-- Hero -->
 <section class="hero">
     <div class="hero-text">
         <h1>สร้างควิซออนไลน์ง่ายๆ ด้วย quizWeb</h1>
         <p>
-            สร้างข้อสอบในบทบาท "ผู้สร้าง" และแชร์รหัสให้ผู้เล่นเข้าทำข้อสอบได้ทันที
+            สร้างข้อสอบในบทบาทผู้สร้าง และแชร์รหัสให้ผู้เล่นเข้าทำข้อสอบได้ทันที
             ใช้งานง่าย สวยงาม และรวดเร็ว
         </p>
+
         <div class="hero-buttons">
-            <button class="create-btn" onclick="location.href='create.html'">สร้างควิซ</button>
-            <button class="play-btn">กรอกรหัสเพื่อเล่น</button>
+            <button class="create-btn" onclick="goCreate()">สร้างควิซ</button>
+            <button class="play-btn" onclick="goJoin()">กรอกรหัสเพื่อเล่น</button>
         </div>
     </div>
 
     <div class="hero-image">
-        <img src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png">
+        <img src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png" alt="quiz illustration">
     </div>
 </section>
 
@@ -215,14 +220,21 @@
     © 2026 quizWeb | ระบบสร้างและเล่นควิซออนไลน์
 </footer>
 
-<!-- ===== SCRIPT LOGIN SYSTEM ===== -->
 <script src="auth.js"></script>
 <script>
-if (!requireLogin()) {
-    // กันไม่ให้รันต่อ
-} else {
-    loadAuthArea();
-    loadUserUI();
+loadAuthArea();
+
+function goCreate(){
+    const user = getUser();
+    if(!user){
+        window.location.href = "login.html";
+        return;
+    }
+    window.location.href = "create.html";
+}
+
+function goJoin(){
+    window.location.href = "join.html";
 }
 </script>
 </body>

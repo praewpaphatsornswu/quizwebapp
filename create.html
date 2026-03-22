@@ -2,16 +2,22 @@
 <html lang="th">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>สร้างควิซ | quizWeb</title>
 
 <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@400;500;600&display=swap" rel="stylesheet">
 
 <style>
-*{margin:0;padding:0;box-sizing:border-box;font-family:'Prompt',sans-serif;}
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:'Prompt',sans-serif;
+}
 
 body{
-    background:linear-gradient(135deg,#e8fdf5,#ffffff);
     min-height:100vh;
+    background:linear-gradient(135deg,#e8fdf5,#ffffff);
 }
 
 /* NAVBAR */
@@ -52,55 +58,203 @@ nav{
     font-weight:500;
 }
 
-/* CONTAINER */
+/* PAGE */
+.page{
+    max-width:760px;
+    margin:40px auto;
+    padding:0 20px;
+}
+
 .container{
-    max-width:500px;
-    margin:80px auto;
     background:white;
-    padding:30px;
-    border-radius:15px;
-    box-shadow:0 5px 20px rgba(0,0,0,0.05);
+    padding:34px;
+    border-radius:22px;
+    box-shadow:0 10px 30px rgba(0,0,0,0.06);
 }
 
-h2{
-    margin-bottom:20px;
-    color:#2d6a4f;
-    text-align:center;
+.head{
+    margin-bottom:24px;
 }
 
-label{
+.head h1{
+    color:#1b4332;
+    font-size:34px;
+    margin-bottom:8px;
+}
+
+.head p{
+    color:#52796f;
+    line-height:1.7;
+}
+
+.label{
     display:block;
-    margin-top:15px;
-    font-weight:500;
+    margin-top:18px;
+    margin-bottom:8px;
+    font-weight:600;
+    color:#2d6a4f;
 }
 
-input{
+.input{
     width:100%;
-    padding:12px;
-    border-radius:10px;
-    border:1px solid #ccc;
-    margin-top:10px;
+    padding:14px 16px;
+    border-radius:14px;
+    border:1px solid #d5ddd8;
+    outline:none;
+    font-size:16px;
+    transition:0.2s;
+    background:#fff;
+}
+
+.input:focus{
+    border-color:#52b788;
+    box-shadow:0 0 0 4px rgba(82,183,136,0.12);
 }
 
 .time-row{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:12px;
+}
+
+.info-box{
+    margin-top:18px;
+    background:#f7fbf8;
+    border:1px solid #dcefe5;
+    border-radius:16px;
+    padding:16px;
+    color:#2d6a4f;
+    line-height:1.8;
+    font-size:14px;
+}
+
+.actions{
     display:flex;
-    gap:10px;
+    gap:12px;
+    margin-top:24px;
+    flex-wrap:wrap;
 }
 
 button{
-    width:100%;
-    margin-top:20px;
-    padding:12px;
     border:none;
-    border-radius:10px;
-    background:#2d6a4f;
-    color:white;
-    font-size:16px;
+    border-radius:14px;
+    padding:13px 18px;
     cursor:pointer;
+    font-size:15px;
+    font-weight:600;
+    transition:0.2s;
 }
 
-button:hover{
-    background:#1b4332;
+.btn-primary{
+    background:#52b788;
+    color:white;
+    flex:1;
+}
+
+.btn-primary:hover{
+    background:#40916c;
+}
+
+.btn-primary:disabled{
+    background:#9fd9bf;
+    cursor:not-allowed;
+}
+
+.btn-light{
+    background:white;
+    color:#2d6a4f;
+    border:1px solid #cfe9db;
+}
+
+.btn-light:hover{
+    background:#f7fffb;
+}
+
+.error{
+    color:#d00000;
+    margin-top:10px;
+    font-size:14px;
+}
+
+/* MODAL */
+.modal{
+    position:fixed;
+    inset:0;
+    background:rgba(0,0,0,0.35);
+    display:none;
+    justify-content:center;
+    align-items:center;
+    z-index:999;
+    padding:20px;
+}
+
+.modal.show{
+    display:flex;
+}
+
+.modal-card{
+    width:min(500px,100%);
+    background:#fff;
+    border-radius:22px;
+    padding:28px;
+    box-shadow:0 20px 50px rgba(0,0,0,0.15);
+}
+
+.modal-card h3{
+    color:#1b4332;
+    font-size:28px;
+    margin-bottom:10px;
+}
+
+.modal-card p{
+    color:#555;
+    line-height:1.8;
+    margin-bottom:18px;
+}
+
+.modal-actions{
+    display:flex;
+    gap:12px;
+    flex-wrap:wrap;
+}
+
+.modal-actions button{
+    flex:1;
+}
+
+@media (max-width: 720px){
+    nav{
+        padding:14px 20px;
+        align-items:flex-start;
+        gap:14px;
+    }
+
+    .menu{
+        gap:14px;
+        font-size:15px;
+        flex-wrap:wrap;
+        justify-content:flex-end;
+    }
+
+    .logo{
+        font-size:22px;
+    }
+
+    .page{
+        padding:0 14px;
+    }
+
+    .container{
+        padding:22px;
+    }
+
+    .head h1{
+        font-size:28px;
+    }
+
+    .time-row{
+        grid-template-columns:1fr;
+    }
 }
 </style>
 </head>
@@ -122,19 +276,53 @@ button:hover{
     </div>
 </nav>
 
-<div class="container">
-    <h2>สร้างควิซใหม่</h2>
+<div class="page">
+    <div class="container">
+        <div class="head">
+            <h1>สร้างควิซใหม่</h1>
+            <p>
+                ตั้งชื่อควิซและกำหนดเวลาให้เรียบร้อย จากนั้นระบบจะพาไปหน้าแก้ไขข้อสอบทันที
+                ถ้ามีควิซชื่อเดิมที่ยังเป็นฉบับร่าง ระบบจะช่วยกันสร้างซ้ำให้เอง
+            </p>
+        </div>
 
-    <label for="title">ชื่อควิซ</label>
-    <input type="text" id="title" placeholder="เช่น ควิซวิชา Network">
+        <label class="label" for="title">ชื่อควิซ</label>
+        <input class="input" type="text" id="title" placeholder="เช่น ควิซวิชา Network">
 
-    <label>เวลา</label>
-    <div class="time-row">
-        <input type="number" id="minute" placeholder="นาที" min="0">
-        <input type="number" id="second" placeholder="วินาที" min="0" max="59">
+        <label class="label">เวลา</label>
+        <div class="time-row">
+            <input class="input" type="number" id="minute" placeholder="นาที" min="0">
+            <input class="input" type="number" id="second" placeholder="วินาที" min="0" max="59">
+        </div>
+
+        <div class="info-box">
+            • ถ้าคุณเคยสร้างควิซชื่อเดิมไว้แล้ว แต่ยังไม่ได้ใส่คำถาม ระบบจะพาไปแก้ฉบับเดิม<br>
+            • ถ้าต้องการสร้างใหม่จริง ๆ ให้เปลี่ยนชื่อควิซ หรือยืนยันสร้างใหม่ในขั้นถัดไป
+        </div>
+
+        <div class="error" id="errorText"></div>
+
+        <div class="actions">
+            <button class="btn-light" onclick="goDashboard()">ไปคลังข้อสอบ</button>
+            <button class="btn-primary" id="createBtn" onclick="createQuiz()">สร้างควิซใหม่</button>
+        </div>
     </div>
+</div>
 
-    <button onclick="createQuiz()">สร้างควิซ</button>
+<!-- MODAL -->
+<div class="modal" id="duplicateModal">
+    <div class="modal-card">
+        <h3>พบควิซชื่อเดิม</h3>
+        <p id="duplicateText">
+            คุณมีควิซชื่อเดียวกันที่ยังเป็นฉบับร่างอยู่ ต้องการกลับไปแก้ไขควิซเดิมหรือสร้างใหม่?
+        </p>
+
+        <div class="modal-actions">
+            <button class="btn-light" onclick="closeDuplicateModal()">ยกเลิก</button>
+            <button class="btn-light" onclick="goToExistingDraft()">ไปแก้ฉบับเดิม</button>
+            <button class="btn-primary" onclick="forceCreateNewQuiz()">สร้างใหม่ต่อ</button>
+        </div>
+    </div>
 </div>
 
 <script src="auth.js"></script>
@@ -145,28 +333,116 @@ if (!requireLogin()) {
 
 loadUserUI();
 
+const currentUser = getUser();
+const createBtn = document.getElementById("createBtn");
+const errorText = document.getElementById("errorText");
+
+let draftToReuse = null;
+let pendingPayload = null;
+
+/* =====================
+   NAV
+===================== */
 function goHome(){
     window.location.href = "index.html";
 }
 
+function goDashboard(){
+    window.location.href = "dashboard.html";
+}
+
+/* =====================
+   UI HELPERS
+===================== */
+function setCreateButtonLoading(isLoading){
+    createBtn.disabled = isLoading;
+    createBtn.innerText = isLoading ? "กำลังสร้าง..." : "สร้างควิซใหม่";
+}
+
+function showError(message){
+    errorText.innerText = message || "";
+}
+
+function normalizeTitle(text){
+    return String(text || "").trim().toLowerCase();
+}
+
+/* =====================
+   MODAL
+===================== */
+function openDuplicateModal(existingQuiz){
+    draftToReuse = existingQuiz;
+    document.getElementById("duplicateModal").classList.add("show");
+}
+
+function closeDuplicateModal(){
+    document.getElementById("duplicateModal").classList.remove("show");
+    draftToReuse = null;
+    pendingPayload = null;
+    setCreateButtonLoading(false);
+}
+
+function goToExistingDraft(){
+    if (!draftToReuse) return;
+    window.location.href = `edit.html?code=${draftToReuse.code}`;
+}
+
+function forceCreateNewQuiz(){
+    if (!pendingPayload) return;
+
+    const { title, time } = pendingPayload;
+    actuallyCreateQuiz(title, time);
+}
+
+/* =====================
+   CREATE LOGIC
+===================== */
 function createQuiz(){
-    const currentUser = getUser();
+    showError("");
+    setCreateButtonLoading(true);
+
     const title = document.getElementById("title").value.trim();
     const minute = parseInt(document.getElementById("minute").value) || 0;
     const second = parseInt(document.getElementById("second").value) || 0;
-
     const time = (minute * 60) + second;
 
-    if(!title){
-        alert("กรุณาใส่ชื่อควิซ");
+    if (!title){
+        showError("กรุณาใส่ชื่อควิซ");
+        setCreateButtonLoading(false);
         return;
     }
 
-    if(time <= 0){
-        alert("กรุณาใส่เวลาให้มากกว่า 0");
+    if (time <= 0){
+        showError("กรุณาใส่เวลาให้มากกว่า 0");
+        setCreateButtonLoading(false);
         return;
     }
 
+    if (second > 59){
+        showError("วินาทีต้องไม่เกิน 59");
+        setCreateButtonLoading(false);
+        return;
+    }
+
+    let quizzes = JSON.parse(localStorage.getItem("myQuizzes")) || [];
+
+    // หา draft ชื่อเดิมของ user คนเดิม ที่ยังไม่มีคำถาม
+    const existingDraft = quizzes.find(q =>
+        q.owner === currentUser.username &&
+        normalizeTitle(q.title) === normalizeTitle(title) &&
+        (!q.questions || q.questions.length === 0)
+    );
+
+    if (existingDraft){
+        pendingPayload = { title, time };
+        openDuplicateModal(existingDraft);
+        return;
+    }
+
+    actuallyCreateQuiz(title, time);
+}
+
+function actuallyCreateQuiz(title, time){
     let quizzes = JSON.parse(localStorage.getItem("myQuizzes")) || [];
 
     const code = "Q" + Date.now();
