@@ -2,119 +2,562 @@
 <html lang="th">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>แก้ไขควิซ | quizWeb</title>
-
 <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@400;500;600&display=swap" rel="stylesheet">
 
 <style>
-*{margin:0;padding:0;box-sizing:border-box;font-family:'Prompt',sans-serif;}
-
-body{
-    background:linear-gradient(135deg,#e8fdf5,#ffffff);
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:'Prompt',sans-serif;
 }
 
-/* NAV */
+body{
+    min-height:100vh;
+    background:#eef5f2;
+}
+
+/* NAVBAR */
 nav{
     background:#fff;
     padding:15px 40px;
     display:flex;
     justify-content:space-between;
+    align-items:center;
     box-shadow:0 2px 10px rgba(0,0,0,0.05);
 }
 
 .logo{
-    color:#2d6a4f;
+    font-size:26px;
     font-weight:600;
-}
-
-/* CONTAINER */
-.container{
-    max-width:900px;
-    margin:40px auto;
-    background:white;
-    padding:30px;
-    border-radius:15px;
-}
-
-/* INPUT */
-input{
-    width:100%;
-    padding:10px;
-    border-radius:8px;
-    border:1px solid #ccc;
-    margin-top:5px;
-}
-
-/* QUESTION BOX */
-.question-box{
-    border:1px solid #ddd;
-    padding:15px;
-    border-radius:10px;
-    margin-top:20px;
-}
-
-/* OPTION */
-.option-row{
-    display:flex;
-    gap:10px;
-    margin-top:10px;
-    align-items:center;
-}
-
-/* BUTTON */
-button{
-    padding:10px 15px;
-    border:none;
-    border-radius:8px;
-    background:#2d6a4f;
-    color:white;
+    color:#2d6a4f;
     cursor:pointer;
-    margin-top:10px;
 }
 
-button:hover{background:#1b4332;}
-
-.small{
-    padding:5px 10px;
-    font-size:12px;
-    background:#888;
+.menu{
+    display:flex;
+    align-items:center;
+    gap:25px;
+    font-size:18px;
+    color:#2d6a4f;
 }
 
-.delete{
-    background:#d00000;
+.menu a{
+    text-decoration:none;
+    color:#2d6a4f;
+    font-weight:500;
+}
+
+.user{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    font-weight:500;
+}
+
+/* PAGE */
+.page{
+    max-width:1200px;
+    margin:30px auto;
+    padding:0 24px 40px;
+}
+
+.topbar{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:20px;
+    margin-bottom:20px;
+    flex-wrap:wrap;
+}
+
+.quiz-head{
+    display:flex;
+    flex-direction:column;
+    gap:6px;
+}
+
+.quiz-head h1{
+    color:#1b4332;
+    font-size:32px;
+}
+
+.quiz-meta{
+    color:#52796f;
+    font-size:14px;
 }
 
 .top-actions{
     display:flex;
-    gap:10px;
-    margin-top:20px;
+    gap:12px;
+    flex-wrap:wrap;
 }
 
+.btn{
+    border:none;
+    border-radius:12px;
+    padding:12px 18px;
+    cursor:pointer;
+    font-size:15px;
+    font-weight:600;
+    transition:0.2s;
+}
+
+.btn-primary{
+    background:#52b788;
+    color:#fff;
+}
+
+.btn-primary:hover{
+    background:#40916c;
+}
+
+.btn-dark{
+    background:#2d6a4f;
+    color:#fff;
+}
+
+.btn-dark:hover{
+    background:#1b4332;
+}
+
+.btn-light{
+    background:#fff;
+    color:#2d6a4f;
+    border:1px solid #cfe9db;
+}
+
+.btn-light:hover{
+    background:#f7fffb;
+}
+
+.btn-danger{
+    background:#e63946;
+    color:#fff;
+}
+
+.btn-danger:hover{
+    background:#c1121f;
+}
+
+/* LAYOUT */
+.content{
+    display:grid;
+    grid-template-columns: 2fr 1fr;
+    gap:20px;
+}
+
+.left-panel,
+.right-panel{
+    background:#fff;
+    border-radius:20px;
+    box-shadow:0 10px 30px rgba(0,0,0,0.05);
+    padding:24px;
+}
+
+.section-title{
+    font-size:20px;
+    color:#1b4332;
+    margin-bottom:10px;
+}
+
+.section-sub{
+    color:#666;
+    font-size:14px;
+    margin-bottom:18px;
+}
+
+/* QUESTION CARD */
+.question-card{
+    background:linear-gradient(180deg,#ffffff,#f8fffb);
+    border:1px solid #e0efe8;
+    border-radius:18px;
+    padding:20px;
+    margin-bottom:18px;
+}
+
+.question-header{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:14px;
+    gap:12px;
+}
+
+.badge{
+    display:inline-block;
+    background:#d8f3dc;
+    color:#2d6a4f;
+    padding:8px 14px;
+    border-radius:999px;
+    font-size:14px;
+    font-weight:600;
+}
+
+.label{
+    display:block;
+    font-size:14px;
+    font-weight:600;
+    color:#2d6a4f;
+    margin-bottom:8px;
+}
+
+.input,
+.textarea{
+    width:100%;
+    border:1px solid #d6d6d6;
+    border-radius:14px;
+    padding:14px 16px;
+    outline:none;
+    background:#fff;
+    font-size:15px;
+    transition:0.2s;
+}
+
+.input:focus,
+.textarea:focus{
+    border-color:#52b788;
+    box-shadow:0 0 0 4px rgba(82,183,136,0.12);
+}
+
+.textarea{
+    min-height:88px;
+    resize:vertical;
+}
+
+/* OPTIONS */
+.options{
+    margin-top:18px;
+    display:grid;
+    gap:12px;
+}
+
+.option-box{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    background:#fff;
+    border:1px solid #dfeee7;
+    border-radius:16px;
+    padding:12px;
+    transition:0.2s;
+}
+
+.option-box:focus-within{
+    border-color:#52b788;
+    box-shadow:0 0 0 4px rgba(82,183,136,0.10);
+}
+
+.option-letter{
+    min-width:42px;
+    width:42px;
+    height:42px;
+    border-radius:12px;
+    background:#e9f7ef;
+    color:#2d6a4f;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    font-weight:700;
+}
+
+.option-input{
+    flex:1;
+    min-width:0;
+    border:none;
+    outline:none;
+    font-size:15px;
+    background:transparent;
+    color:#222;
+}
+
+.correct-wrap{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    color:#2d6a4f;
+    white-space:nowrap;
+    font-size:14px;
+    font-weight:500;
+}
+
+.correct-radio{
+    width:18px;
+    height:18px;
+    accent-color:#52b788;
+    cursor:pointer;
+}
+
+/* RIGHT SIDE */
+.summary-card{
+    background:linear-gradient(180deg,#ffffff,#f8fffb);
+    border:1px solid #e0efe8;
+    border-radius:18px;
+    padding:18px;
+    margin-bottom:16px;
+}
+
+.summary-list{
+    display:grid;
+    gap:10px;
+    margin-top:12px;
+}
+
+.summary-item{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:10px 12px;
+    background:#f6fbf8;
+    border-radius:12px;
+    color:#2d6a4f;
+}
+
+.hint{
+    font-size:14px;
+    color:#666;
+    line-height:1.7;
+}
+
+/* MODAL */
+.modal{
+    position:fixed;
+    inset:0;
+    background:rgba(0,0,0,0.35);
+    display:none;
+    justify-content:center;
+    align-items:center;
+    z-index:999;
+    padding:20px;
+}
+
+.modal.show{
+    display:flex;
+}
+
+.modal-card{
+    width:min(460px,100%);
+    background:#fff;
+    border-radius:22px;
+    padding:28px;
+    box-shadow:0 20px 50px rgba(0,0,0,0.15);
+    text-align:center;
+    animation:pop 0.18s ease-out;
+}
+
+@keyframes pop{
+    from{transform:scale(0.96);opacity:0;}
+    to{transform:scale(1);opacity:1;}
+}
+
+.modal-icon{
+    width:72px;
+    height:72px;
+    margin:0 auto 14px;
+    border-radius:50%;
+    background:#d8f3dc;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    font-size:34px;
+}
+
+.modal-card h3{
+    color:#1b4332;
+    margin-bottom:8px;
+    font-size:26px;
+}
+
+.modal-card p{
+    color:#555;
+    margin-bottom:18px;
+}
+
+.code-box{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:10px;
+    background:#f6fbf8;
+    border:1px solid #dcefe5;
+    border-radius:14px;
+    padding:14px 16px;
+    margin-bottom:18px;
+}
+
+.code-text{
+    font-size:20px;
+    font-weight:700;
+    color:#2d6a4f;
+    letter-spacing:1px;
+}
+
+.modal-actions{
+    display:flex;
+    gap:10px;
+    justify-content:center;
+    flex-wrap:wrap;
+}
+
+/* RESPONSIVE */
+@media (max-width: 900px){
+    .content{
+        grid-template-columns: 1fr;
+    }
+
+    .menu{
+        gap:14px;
+        font-size:15px;
+        flex-wrap:wrap;
+        justify-content:flex-end;
+    }
+
+    .logo{
+        font-size:22px;
+    }
+
+    nav{
+        padding:14px 20px;
+        align-items:flex-start;
+        gap:14px;
+    }
+
+    .topbar{
+        flex-direction:column;
+        align-items:flex-start;
+    }
+}
+
+@media (max-width: 640px){
+    .page{
+        padding:0 14px 24px;
+    }
+
+    .left-panel,
+    .right-panel{
+        padding:18px;
+    }
+
+    .question-header{
+        flex-direction:column;
+        align-items:flex-start;
+    }
+
+    .option-box{
+        flex-wrap:wrap;
+    }
+
+    .correct-wrap{
+        width:100%;
+        justify-content:flex-end;
+    }
+}
 </style>
 </head>
 
 <body>
 
 <nav>
-    <div class="logo">quizWeb</div>
-    <div>แก้ไขควิซ</div>
+    <div class="logo" onclick="goHome()">quizWeb</div>
+
+    <div class="menu">
+        <a href="index.html">หน้าแรก</a>
+        <a href="dashboard.html">คลังข้อสอบ</a>
+
+        <div class="user">
+            👤 <span id="username">Guest</span>
+        </div>
+
+        <a href="#" onclick="logout()">Logout</a>
+    </div>
 </nav>
 
-<div class="container">
+<div class="page">
+    <div class="topbar">
+        <div class="quiz-head">
+            <h1 id="title">แก้ไขควิซ</h1>
+            <div class="quiz-meta" id="quizMeta">โหมดแก้ไขข้อสอบ</div>
+        </div>
 
-<h2 id="title"></h2>
+        <div class="top-actions">
+            <button class="btn btn-light" onclick="addQuestion()">+ เพิ่มคำถาม</button>
+            <button class="btn btn-dark" onclick="saveQuiz()">💾 บันทึก</button>
+            <button class="btn btn-primary" onclick="goPlay()">▶ ทดลองเล่น</button>
+        </div>
+    </div>
 
-<div id="questions"></div>
+    <div class="content">
+        <div class="left-panel">
+            <div class="section-title">รายการคำถาม</div>
+            <div class="section-sub">ตอนนี้รองรับคำถามแบบเลือกตอบข้อเดียว โดยแต่ละข้อมี 4 ตัวเลือก</div>
 
-<div class="top-actions">
-    <button onclick="addQuestion()">+ เพิ่มคำถาม</button>
-    <button onclick="saveQuiz()">💾 บันทึก</button>
-    <button onclick="goPlay()">▶ ไปทำควิซ</button>
+            <div id="questions"></div>
+
+            <button class="btn btn-light" style="width:100%;" onclick="addQuestion()">+ เพิ่มคำถามใหม่</button>
+        </div>
+
+        <div class="right-panel">
+            <div class="section-title">สรุปควิซ</div>
+            <div class="section-sub">ข้อมูลเบื้องต้นของแบบทดสอบนี้</div>
+
+            <div class="summary-card">
+                <div class="summary-list">
+                    <div class="summary-item">
+                        <span>รหัสข้อสอบ</span>
+                        <strong id="quizCode">-</strong>
+                    </div>
+                    <div class="summary-item">
+                        <span>จำนวนข้อ</span>
+                        <strong id="questionCount">0</strong>
+                    </div>
+                    <div class="summary-item">
+                        <span>เวลา</span>
+                        <strong id="quizTime">0 นาที</strong>
+                    </div>
+                </div>
+            </div>
+
+            <div class="summary-card">
+                <div class="section-title" style="font-size:18px;margin-bottom:8px;">คำแนะนำ</div>
+                <div class="hint">
+                    1) พิมพ์คำถามให้ชัดเจน<br>
+                    2) ใส่ตัวเลือกให้ครบทั้ง 4 ข้อ<br>
+                    3) เลือกคำตอบที่ถูกเพียง 1 ข้อ<br>
+                    4) กดบันทึกก่อนทดลองเล่น
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 
+<!-- SAVE MODAL -->
+<div class="modal" id="saveModal">
+    <div class="modal-card">
+        <div class="modal-icon">✅</div>
+        <h3>บันทึกสำเร็จ</h3>
+        <p>ข้อสอบของคุณถูกบันทึกเรียบร้อยแล้ว</p>
+
+        <div class="code-box">
+            <div class="code-text" id="modalQuizCode">-</div>
+            <button class="btn btn-primary" style="padding:10px 14px;" onclick="copyQuizCode()">Copy</button>
+        </div>
+
+        <div class="modal-actions">
+            <button class="btn btn-light" onclick="closeModal()">ปิด</button>
+            <button class="btn btn-dark" onclick="goDashboard()">ไปคลังข้อสอบ</button>
+        </div>
+    </div>
 </div>
 
+<script src="auth.js"></script>
 <script>
+if (!requireLogin()) {
+    throw new Error("User not logged in");
+}
+
+loadUserUI();
 
 /* =====================
    LOAD QUIZ
@@ -124,80 +567,84 @@ const code = params.get("code");
 
 let quizzes = JSON.parse(localStorage.getItem("myQuizzes")) || [];
 let quiz = quizzes.find(q => q.code === code);
+const currentUser = getUser();
 
-if(!quiz){
+if (!quiz) {
     alert("ไม่พบควิซ");
-    location.href = "create.html";
+    window.location.href = "create.html";
+    throw new Error("Quiz not found");
 }
 
-if(!quiz.questions) quiz.questions = [];
+if (quiz.owner && quiz.owner !== currentUser.username) {
+    alert("คุณไม่มีสิทธิ์แก้ไขควิซนี้");
+    window.location.href = "dashboard.html";
+    throw new Error("Unauthorized");
+}
 
-document.getElementById("title").innerText = quiz.title;
+if (!quiz.questions) quiz.questions = [];
+
+document.getElementById("title").innerText = `แก้ไขควิซ: ${quiz.title}`;
+document.getElementById("quizCode").innerText = quiz.code;
+document.getElementById("modalQuizCode").innerText = quiz.code;
+
+const minuteText = Math.floor((quiz.time || 0) / 60);
+const secondText = (quiz.time || 0) % 60;
+document.getElementById("quizTime").innerText = `${minuteText} นาที ${secondText} วินาที`;
+document.getElementById("quizMeta").innerText = `รหัสข้อสอบ ${quiz.code} • สำหรับผู้สร้างควิซ`;
 
 /* =====================
-   ADD QUESTION
+   HELPERS
+===================== */
+function goHome(){
+    window.location.href = "index.html";
+}
+
+function goDashboard(){
+    window.location.href = "dashboard.html";
+}
+
+function escapeHtml(text){
+    return String(text ?? "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+}
+
+function updateSummary(){
+    document.getElementById("questionCount").innerText = quiz.questions.length;
+}
+
+/* =====================
+   QUESTION LOGIC
 ===================== */
 function addQuestion(){
-
     quiz.questions.push({
-        text:"",
-        options:["","","",""], // default 4 ตัวเลือก
-        correct:null
+        text: "",
+        options: ["", "", "", ""],
+        correct: null
     });
-
     render();
 }
 
-/* =====================
-   DELETE QUESTION
-===================== */
 function deleteQuestion(i){
-    if(confirm("ลบคำถามนี้?")){
-        quiz.questions.splice(i,1);
-        render();
-    }
-}
+    const ok = confirm("ต้องการลบคำถามข้อนี้ใช่ไหม?");
+    if(!ok) return;
 
-/* =====================
-   ADD OPTION
-===================== */
-function addOption(i){
-
-    if(quiz.questions[i].options.length >= 5){
-        alert("ได้สูงสุด 5 ตัวเลือก");
-        return;
-    }
-
-    quiz.questions[i].options.push("");
+    quiz.questions.splice(i, 1);
     render();
 }
 
-/* =====================
-   DELETE OPTION
-===================== */
-function deleteOption(i,j){
-
-    if(quiz.questions[i].options.length <= 4){
-        alert("ต้องมีอย่างน้อย 4 ตัวเลือก");
-        return;
-    }
-
-    quiz.questions[i].options.splice(j,1);
-    render();
-}
-
-/* =====================
-   UPDATE
-===================== */
-function updateQuestion(i,val){
+function updateQuestion(i, val){
     quiz.questions[i].text = val;
 }
 
-function updateOption(i,j,val){
+function updateOption(i, j, val){
     quiz.questions[i].options[j] = val;
 }
 
-function setCorrect(i,j){
+function setCorrect(i, j){
     quiz.questions[i].correct = j;
 }
 
@@ -205,95 +652,161 @@ function setCorrect(i,j){
    RENDER
 ===================== */
 function render(){
-
     const container = document.getElementById("questions");
     container.innerHTML = "";
 
-    quiz.questions.forEach((q,i)=>{
+    if (quiz.questions.length === 0) {
+        container.innerHTML = `
+            <div class="question-card" style="text-align:center;">
+                <div class="section-title" style="font-size:22px;">ยังไม่มีคำถาม</div>
+                <div class="section-sub" style="margin-bottom:0;">กดปุ่ม “เพิ่มคำถาม” เพื่อเริ่มสร้างควิซ</div>
+            </div>
+        `;
+        updateSummary();
+        return;
+    }
 
+    quiz.questions.forEach((q, i) => {
         let html = `
-        <div class="question-box">
+            <div class="question-card">
+                <div class="question-header">
+                    <div class="badge">คำถามข้อที่ ${i + 1}</div>
+                    <button class="btn btn-danger" onclick="deleteQuestion(${i})">ลบคำถาม</button>
+                </div>
 
-            <b>คำถาม ${i+1}</b>
-            <input placeholder="พิมพ์คำถาม..."
-                value="${q.text}"
-                onchange="updateQuestion(${i},this.value)">
+                <label class="label">คำถาม</label>
+                <textarea
+                    class="textarea"
+                    placeholder="พิมพ์คำถามที่นี่..."
+                    oninput="updateQuestion(${i}, this.value)"
+                >${escapeHtml(q.text)}</textarea>
 
-            <div>
+                <div class="options">
         `;
 
-        q.options.forEach((opt,j)=>{
+        q.options.forEach((opt, j) => {
+            const letter = String.fromCharCode(65 + j);
             html += `
-            <div class="option-row">
-                <input value="${opt}"
-                    onchange="updateOption(${i},${j},this.value)">
+                <div class="option-box">
+                    <div class="option-letter">${letter}</div>
 
-                <input type="radio" name="correct${i}"
-                    ${q.correct==j?"checked":""}
-                    onclick="setCorrect(${i},${j})">
+                    <input
+                        class="option-input"
+                        type="text"
+                        placeholder="พิมพ์ตัวเลือก ${letter}"
+                        value="${escapeHtml(opt)}"
+                        oninput="updateOption(${i}, ${j}, this.value)"
+                    >
 
-                <button class="small delete" onclick="deleteOption(${i},${j})">ลบ</button>
-            </div>
+                    <label class="correct-wrap">
+                        <input
+                            class="correct-radio"
+                            type="radio"
+                            name="correct${i}"
+                            ${q.correct === j ? "checked" : ""}
+                            onclick="setCorrect(${i}, ${j})"
+                        >
+                        คำตอบที่ถูก
+                    </label>
+                </div>
             `;
         });
 
         html += `
+                </div>
             </div>
-
-            <button class="small" onclick="addOption(${i})">+ ตัวเลือก</button>
-            <button class="small delete" onclick="deleteQuestion(${i})">ลบคำถาม</button>
-
-        </div>
         `;
 
         container.innerHTML += html;
     });
+
+    updateSummary();
 }
 
 /* =====================
-   SAVE
+   VALIDATE + SAVE
 ===================== */
-function saveQuiz(){
+function validateQuiz(){
+    if (quiz.questions.length === 0) {
+        alert("กรุณาเพิ่มคำถามอย่างน้อย 1 ข้อ");
+        return false;
+    }
 
-    // validate
-    for(let i=0;i<quiz.questions.length;i++){
+    for (let i = 0; i < quiz.questions.length; i++) {
         const q = quiz.questions[i];
 
-        if(!q.text){
-            alert(`ข้อ ${i+1} ยังไม่มีคำถาม`);
-            return;
+        if (!q.text || !q.text.trim()) {
+            alert(`ข้อ ${i + 1} ยังไม่มีคำถาม`);
+            return false;
         }
 
-        if(q.options.length < 4){
-            alert(`ข้อ ${i+1} ต้องมี 4 ตัวเลือก`);
-            return;
+        for (let j = 0; j < q.options.length; j++) {
+            if (!q.options[j] || !q.options[j].trim()) {
+                alert(`ข้อ ${i + 1} ตัวเลือก ${String.fromCharCode(65 + j)} ยังว่างอยู่`);
+                return false;
+            }
         }
 
-        if(q.correct === null){
-            alert(`ข้อ ${i+1} ยังไม่ได้เลือกคำตอบ`);
-            return;
+        if (q.correct === null) {
+            alert(`ข้อ ${i + 1} ยังไม่ได้เลือกคำตอบที่ถูก`);
+            return false;
         }
     }
 
-    const index = quizzes.findIndex(q=>q.code===code);
-    quizzes[index] = quiz;
+    return true;
+}
 
+function saveQuiz(showPopup = true){
+    if (!validateQuiz()) return false;
+
+    const index = quizzes.findIndex(q => q.code === code);
+    if (index === -1) {
+        alert("ไม่พบข้อมูลข้อสอบสำหรับบันทึก");
+        return false;
+    }
+
+    quizzes[index] = quiz;
     localStorage.setItem("myQuizzes", JSON.stringify(quizzes));
 
-    
+    if (showPopup) {
+        openModal();
+    }
+
+    return true;
 }
 
 /* =====================
-   GO PLAY
+   MODAL
+===================== */
+function openModal(){
+    document.getElementById("saveModal").classList.add("show");
+}
+
+function closeModal(){
+    document.getElementById("saveModal").classList.remove("show");
+}
+
+async function copyQuizCode(){
+    try{
+        await navigator.clipboard.writeText(quiz.code);
+        alert("คัดลอกรหัสข้อสอบแล้ว: " + quiz.code);
+    }catch(err){
+        alert("คัดลอกรหัสไม่สำเร็จ");
+    }
+}
+
+/* =====================
+   PREVIEW PLAY
 ===================== */
 function goPlay(){
-    saveQuiz();
-    window.location.href = `play.html?code=${code}`;
+    const ok = saveQuiz(false);
+    if (!ok) return;
+
+    window.location.href = `play.html?code=${code}&preview=1`;
 }
 
 /* INIT */
 render();
-
 </script>
 
 </body>

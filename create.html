@@ -11,6 +11,7 @@
 
 body{
     background:linear-gradient(135deg,#e8fdf5,#ffffff);
+    min-height:100vh;
 }
 
 /* NAVBAR */
@@ -61,12 +62,29 @@ nav{
     box-shadow:0 5px 20px rgba(0,0,0,0.05);
 }
 
+h2{
+    margin-bottom:20px;
+    color:#2d6a4f;
+    text-align:center;
+}
+
+label{
+    display:block;
+    margin-top:15px;
+    font-weight:500;
+}
+
 input{
     width:100%;
     padding:12px;
     border-radius:10px;
     border:1px solid #ccc;
     margin-top:10px;
+}
+
+.time-row{
+    display:flex;
+    gap:10px;
 }
 
 button{
@@ -105,68 +123,51 @@ button:hover{
 </nav>
 
 <div class="container">
-
     <h2>สร้างควิซใหม่</h2>
 
-    <label>ชื่อควิซ</label>
+    <label for="title">ชื่อควิซ</label>
     <input type="text" id="title" placeholder="เช่น ควิซวิชา Network">
 
     <label>เวลา</label>
+    <div class="time-row">
+        <input type="number" id="minute" placeholder="นาที" min="0">
+        <input type="number" id="second" placeholder="วินาที" min="0" max="59">
+    </div>
 
-<div style="display:flex; gap:10px;">
-    <input type="number" id="minute" placeholder="นาที" min="0">
-    <input type="number" id="second" placeholder="วินาที" min="0" max="59">
     <button onclick="createQuiz()">สร้างควิซ</button>
-
 </div>
 
+<script src="auth.js"></script>
 <script>
-
-/* =====================
-   LOAD USER
-===================== */
-const user = JSON.parse(localStorage.getItem("user"));
-const usernameEl = document.getElementById("username");
-
-if(user && user.username){
-    usernameEl.innerText = user.username;
-}else{
-    usernameEl.innerText = "Guest";
+if (!requireLogin()) {
+    throw new Error("User not logged in");
 }
 
-/* =====================
-   NAV
-===================== */
+loadUserUI();
+
 function goHome(){
     window.location.href = "index.html";
 }
 
-function logout(){
-    localStorage.removeItem("user");
-    alert("ออกจากระบบแล้ว");
-    window.location.href = "index.html";
-}
-
-/* =====================
-   CREATE QUIZ
-===================== */
 function createQuiz(){
-
+    const currentUser = getUser();
     const title = document.getElementById("title").value.trim();
     const minute = parseInt(document.getElementById("minute").value) || 0;
     const second = parseInt(document.getElementById("second").value) || 0;
 
     const time = (minute * 60) + second;
 
-    if(time <= 0){
-        alert("กรุณาใส่เวลา");
-        return;
-    }
-
     if(!title){
         alert("กรุณาใส่ชื่อควิซ");
         return;
     }
+
+    if(time <= 0){
+        alert("กรุณาใส่เวลาให้มากกว่า 0");
+        return;
+    }
+
+    let quizzes = JSON.parse(localStorage.getItem("myQuizzes")) || [];
 
     const code = "Q" + Date.now();
 
@@ -174,18 +175,16 @@ function createQuiz(){
         code: code,
         title: title,
         time: time,
-        questions: []
+        questions: [],
+        createdAt: new Date().toLocaleString("th-TH"),
+        owner: currentUser.username
     };
 
-    let quizzes = JSON.parse(localStorage.getItem("myQuizzes")) || [];
-
     quizzes.push(newQuiz);
-
     localStorage.setItem("myQuizzes", JSON.stringify(quizzes));
 
     window.location.href = `edit.html?code=${code}`;
 }
-
 </script>
 
 </body>

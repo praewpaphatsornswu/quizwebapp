@@ -218,26 +218,12 @@
 <!-- ===== SCRIPT LOGIN SYSTEM ===== -->
 <script src="auth.js"></script>
 <script>
-
-/* =====================
-   LOAD USER (ใช้ระบบเดียว)
-===================== */
-
-const user = JSON.parse(localStorage.getItem("user"));
-const userDisplay = document.getElementById("userDisplay");
-
-if(user && user.username){
-    userDisplay.innerHTML = `
-        👤 ${user.username}
-        <a href="#" onclick="logout()" style="margin-left:10px;">Logout</a>
-    `;
-}else{
-    userDisplay.innerHTML = `
-        <a href="login.html" class="btn btn-outline">เข้าสู่ระบบ</a>
-        <a href="register.html" class="btn btn-primary">ลงทะเบียน</a>
-    `;
+if (!requireLogin()) {
+    // กันไม่ให้รันต่อ
+} else {
+    loadAuthArea();
+    loadUserUI();
 }
-
 </script>
 </body>
 </html>

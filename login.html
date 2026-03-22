@@ -107,6 +107,12 @@ button:hover{
     background:#1b4332;
 }
 
+.error{
+    color:red;
+    font-size:13px;
+    margin-top:5px;
+}
+
 .footer{
     text-align:center;
     margin-top:15px;
@@ -122,7 +128,6 @@ button:hover{
 
 <body>
 
-<!-- ===== Navbar ===== -->
 <nav>
     <div class="logo">quizWeb</div>
     <div class="nav-links">
@@ -135,17 +140,20 @@ button:hover{
     <div class="container">
         <h2>Login</h2>
 
-        <div class="input-group">
-            <label>Username</label>
-            <input type="text" id="username" required>
-        </div>
+        <form id="loginForm">
+            <div class="input-group">
+                <label>Username</label>
+                <input type="text" id="username" required>
+            </div>
 
-        <div class="input-group">
-            <label>Password</label>
-            <input type="password" required>
-        </div>
+            <div class="input-group">
+                <label>Password</label>
+                <input type="password" id="password" required>
+                <div class="error" id="loginError"></div>
+            </div>
 
-        <button onclick="login()">Login</button>
+            <button type="submit">Login</button>
+        </form>
 
         <div class="footer">
             Don't have an account? <a href="register.html">Register</a>
@@ -153,46 +161,47 @@ button:hover{
     </div>
 </div>
 
+<script src="auth.js"></script>
 <script>
+redirectIfLoggedIn();
+loadAuthArea();
 
-/* โหลด user */
-const authArea = document.getElementById("authArea");
-const user = JSON.parse(localStorage.getItem("user"));
+const form = document.getElementById("loginForm");
 
-if(user && user.username){
-    authArea.innerHTML = `
-        <span style="margin-left:20px;">👤 ${user.username}</span>
-        <a href="#" onclick="logout()">ออกจากระบบ</a>
-    `;
-}else{
-    authArea.innerHTML = `
-        <a href="login.html">เข้าสู่ระบบ</a>
-        <a href="register.html">ลงทะเบียน</a>
-    `;
-}
+form.addEventListener("submit", function(e){
+    e.preventDefault();
 
-/* LOGIN */
-function login(){
-    const username = document.getElementById("username").value;
+    const username = document.getElementById("username").value.trim();
+    const password = document.getElementById("password").value;
+    const loginError = document.getElementById("loginError");
 
-    if(username.trim() === ""){
-        alert("กรุณากรอก Username");
+    loginError.textContent = "";
+
+    if(username === "" || password === ""){
+        loginError.textContent = "กรุณากรอก Username และ Password";
         return;
     }
 
+    const users = getUsers();
+
+    const foundUser = users.find(user =>
+        user.username === username && user.password === password
+    );
+
+    if(!foundUser){
+        loginError.textContent = "Username หรือ Password ไม่ถูกต้อง";
+        return;
+    }
+
+    // เก็บเฉพาะข้อมูลที่จำเป็น
     localStorage.setItem("user", JSON.stringify({
-        username: username
+        username: foundUser.username,
+        email: foundUser.email
     }));
 
+    alert("เข้าสู่ระบบสำเร็จ!");
     window.location.href = "index.html";
-}
-
-/* LOGOUT */
-function logout(){
-    localStorage.removeItem("user");
-    window.location.href = "index.html";
-}
-
+});
 </script>
 
 </body>
