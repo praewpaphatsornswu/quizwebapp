@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>คลังข้อสอบ | quizWeb</title>
-<link href="https://fonts.googleapis.com/css2?family=Prompt:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
 <style>
 *{
@@ -14,48 +14,313 @@
     font-family:'Prompt',sans-serif;
 }
 
+:root{
+    --bg:#f5fffb;
+    --bg2:#ecfff6;
+    --primary:#1f7a5a;
+    --primary-dark:#14513d;
+    --primary-soft:#dff7ec;
+    --text:#123126;
+    --text-soft:#4f6b61;
+    --white:#ffffff;
+    --border:rgba(31,122,90,0.15);
+    --shadow:0 10px 30px rgba(25,80,61,0.10);
+    --shadow-lg:0 20px 45px rgba(25,80,61,0.15);
+    --danger:#d64545;
+}
+
 body{
     min-height:100vh;
-    background:linear-gradient(135deg,#e8fdf5,#ffffff);
+    color:var(--text);
+    background:
+        radial-gradient(circle at top left, #dff9ee 0%, transparent 28%),
+        radial-gradient(circle at bottom right, #d8f5ff 0%, transparent 24%),
+        linear-gradient(135deg, var(--bg), #ffffff 52%, var(--bg2) 100%);
+}
+
+a{
+    text-decoration:none;
+    color:inherit;
+}
+
+.container{
+    width:min(1200px, calc(100% - 32px));
+    margin:0 auto;
 }
 
 nav{
-    background:#fff;
-    padding:15px 40px;
+    position:sticky;
+    top:0;
+    z-index:50;
+    backdrop-filter:blur(12px);
+    background:rgba(255,255,255,0.82);
+    border-bottom:1px solid rgba(31,122,90,0.08);
+}
+
+.nav-inner{
+    min-height:78px;
     display:flex;
     justify-content:space-between;
     align-items:center;
-    box-shadow:0 2px 10px rgba(0,0,0,0.05);
+    gap:20px;
 }
 
 .logo{
-    font-size:26px;
-    font-weight:600;
-    color:#2d6a4f;
+    display:flex;
+    align-items:center;
+    gap:12px;
     cursor:pointer;
 }
 
-.menu{
+.logo-badge{
+    width:42px;
+    height:42px;
+    border-radius:14px;
+    background:linear-gradient(135deg, var(--primary), #3bb789);
+    color:white;
+    display:grid;
+    place-items:center;
+    font-size:20px;
+    box-shadow:var(--shadow);
+}
+
+.logo-text{
+    display:flex;
+    flex-direction:column;
+    line-height:1.1;
+}
+
+.logo-text strong{
+    font-size:22px;
+    color:var(--primary-dark);
+}
+
+.logo-text span{
+    font-size:12px;
+    color:var(--text-soft);
+}
+
+.nav-right{
     display:flex;
     align-items:center;
-    gap:25px;
-    font-size:18px;
-    color:#2d6a4f;
+    gap:14px;
+    flex-wrap:wrap;
 }
 
-.menu a{
-    text-decoration:none;
-    color:#2d6a4f;
-    font-weight:500;
-}
-
-.user{
+.nav-links{
     display:flex;
     align-items:center;
     gap:8px;
-    font-weight:500;
+    flex-wrap:wrap;
 }
 
+.nav-links a{
+    padding:10px 14px;
+    border-radius:12px;
+    font-weight:500;
+    color:var(--text);
+    transition:0.2s ease;
+}
+
+.nav-links a:hover{
+    background:rgba(31,122,90,0.08);
+    color:var(--primary-dark);
+}
+
+.auth-area{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    position:relative;
+}
+
+.profile-menu-wrap{
+    position:relative;
+    display:none;
+}
+
+.profile-menu-wrap.show{
+    display:block;
+}
+
+.profile-pill{
+    min-width:290px;
+    display:flex;
+    align-items:center;
+    gap:14px;
+    padding:14px 18px;
+    border-radius:999px;
+    border:1px solid var(--border);
+    background:rgba(255,255,255,0.95);
+    box-shadow:var(--shadow);
+    cursor:pointer;
+    transition:0.2s ease;
+}
+
+.profile-pill:hover{
+    transform:translateY(-1px);
+    box-shadow:var(--shadow-lg);
+}
+
+.profile-avatar{
+    width:74px;
+    height:74px;
+    border-radius:50%;
+    overflow:hidden;
+    flex-shrink:0;
+    border:4px solid white;
+    background:linear-gradient(135deg, #d9f7eb, #ecfff6);
+    display:grid;
+    place-items:center;
+    box-shadow:0 8px 18px rgba(18,49,38,0.10);
+}
+
+.profile-avatar img{
+    width:100%;
+    height:100%;
+    object-fit:cover;
+}
+
+.profile-avatar-fallback{
+    font-size:26px;
+    font-weight:700;
+    color:var(--primary-dark);
+}
+
+.profile-pill-text{
+    display:flex;
+    flex-direction:column;
+    min-width:0;
+    flex:1;
+    line-height:1.2;
+}
+
+.profile-pill-text strong{
+    font-size:23px;
+    color:var(--primary-dark);
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+}
+
+.profile-pill-text span{
+    font-size:14px;
+    color:var(--text-soft);
+}
+
+.profile-pill-arrow{
+    font-size:18px;
+    color:var(--primary-dark);
+    transition:transform 0.2s ease;
+    flex-shrink:0;
+}
+
+.profile-menu-wrap.open .profile-pill-arrow{
+    transform:rotate(180deg);
+}
+
+.profile-dropdown{
+    position:absolute;
+    top:calc(100% + 12px);
+    right:0;
+    width:260px;
+    background:white;
+    border:1px solid rgba(31,122,90,0.12);
+    border-radius:20px;
+    box-shadow:0 20px 45px rgba(20,81,61,0.15);
+    padding:10px;
+    display:none;
+    z-index:120;
+}
+
+.profile-menu-wrap.open .profile-dropdown{
+    display:block;
+}
+
+.dropdown-item{
+    width:100%;
+    border:none;
+    background:white;
+    padding:14px 14px;
+    border-radius:14px;
+    cursor:pointer;
+    display:flex;
+    align-items:center;
+    gap:12px;
+    text-align:left;
+    color:var(--text);
+    font-size:15px;
+    font-weight:500;
+    transition:0.2s ease;
+}
+
+.dropdown-item:hover{
+    background:#f4fbf7;
+}
+
+.dropdown-item.danger{
+    color:var(--danger);
+}
+
+.dropdown-divider{
+    height:1px;
+    background:rgba(31,122,90,0.08);
+    margin:8px 4px;
+}
+
+.solid-btn,
+.outline-btn,
+.ghost-btn{
+    border:none;
+    cursor:pointer;
+    border-radius:14px;
+    font-size:15px;
+    font-weight:600;
+    transition:0.2s ease;
+}
+
+.solid-btn{
+    background:linear-gradient(135deg, var(--primary), #2ea777);
+    color:white;
+    padding:13px 20px;
+    box-shadow:0 10px 25px rgba(31,122,90,0.22);
+}
+
+.solid-btn:hover{
+    transform:translateY(-1px);
+    filter:brightness(0.98);
+}
+
+.outline-btn{
+    background:white;
+    color:var(--primary-dark);
+    border:1.5px solid rgba(31,122,90,0.22);
+    padding:12px 18px;
+}
+
+.outline-btn:hover{
+    background:var(--primary-soft);
+}
+
+.ghost-btn{
+    background:transparent;
+    color:var(--primary-dark);
+    padding:10px 14px;
+}
+
+.ghost-btn:hover{
+    background:rgba(31,122,90,0.08);
+}
+
+.login-inline-btn{
+    display:none;
+}
+
+.login-inline-btn.show{
+    display:inline-flex;
+}
+
+/* page */
 .page{
     max-width:1200px;
     margin:30px auto 40px;
@@ -190,22 +455,51 @@ nav{
     margin-bottom:10px;
 }
 
-@media (max-width: 720px){
-    nav{
-        padding:14px 20px;
+@media (max-width:1100px){
+    .profile-pill{
+        min-width:240px;
+        padding:12px 14px;
+    }
+
+    .profile-avatar{
+        width:62px;
+        height:62px;
+    }
+
+    .profile-pill-text strong{
+        font-size:19px;
+    }
+}
+
+@media (max-width:768px){
+    .nav-inner{
+        padding:14px 0;
         align-items:flex-start;
-        gap:14px;
+        flex-direction:column;
     }
 
-    .menu{
-        gap:14px;
-        font-size:15px;
-        flex-wrap:wrap;
-        justify-content:flex-end;
+    .nav-right{
+        width:100%;
+        justify-content:space-between;
+        align-items:flex-start;
     }
 
-    .logo{
-        font-size:22px;
+    .nav-links{
+        gap:6px;
+    }
+
+    .nav-links a{
+        padding:9px 12px;
+        font-size:14px;
+    }
+
+    .profile-pill{
+        min-width:100%;
+        width:100%;
+    }
+
+    .profile-dropdown{
+        width:100%;
     }
 
     .page{
@@ -222,17 +516,55 @@ nav{
 <body>
 
 <nav>
-    <div class="logo" onclick="goHome()">quizWeb</div>
-
-    <div class="menu">
-        <a href="index.html">หน้าแรก</a>
-        <a href="create.html">สร้างควิซ</a>
-
-        <div class="user">
-            👤 <span id="username">Guest</span>
+    <div class="container nav-inner">
+        <div class="logo" onclick="goHome()">
+            <div class="logo-badge">🧠</div>
+            <div class="logo-text">
+                <strong>quizWeb</strong>
+                <span>สร้าง • แชร์ • เล่นควิซออนไลน์</span>
+            </div>
         </div>
 
-        <a href="#" onclick="logout()">Logout</a>
+        <div class="nav-right">
+            <div class="auth-area">
+                <div id="profileMenuWrap" class="profile-menu-wrap">
+                    <button id="profilePill" class="profile-pill" type="button">
+                        <div class="profile-avatar">
+                            <span class="profile-avatar-fallback" id="navAvatarFallback">U</span>
+                            <img id="navAvatarImg" alt="user avatar" style="display:none;">
+                        </div>
+
+                        <div class="profile-pill-text">
+                            <strong id="navUserName">ผู้ใช้</strong>
+                            <span>กดเพื่อเปิดเมนู</span>
+                        </div>
+
+                        <div class="profile-pill-arrow">▾</div>
+                    </button>
+
+                    <div class="profile-dropdown">
+                        <button class="dropdown-item" type="button" onclick="goDashboard()">
+                            <span>📚</span>
+                            <span>ไปคลังข้อสอบ</span>
+                        </button>
+
+                        <button class="dropdown-item" type="button" onclick="goCreate()">
+                            <span>📝</span>
+                            <span>สร้างควิซ</span>
+                        </button>
+
+                        <div class="dropdown-divider"></div>
+
+                        <button class="dropdown-item danger" type="button" onclick="handleLogout()">
+                            <span>🚪</span>
+                            <span>ออกจากระบบ</span>
+                        </button>
+                    </div>
+                </div>
+
+                <button id="loginBtn" class="solid-btn login-inline-btn" type="button" onclick="goLogin()">เข้าสู่ระบบ</button>
+            </div>
+        </div>
     </div>
 </nav>
 
@@ -262,6 +594,112 @@ const params = new URLSearchParams(window.location.search);
 const newCode = params.get("new");
 
 function goHome(){
+    window.location.href = "index.html";
+}
+
+function goDashboard(){
+    window.location.href = "dashboard.html";
+}
+
+function goCreate(){
+    window.location.href = "create.html";
+}
+
+function goLogin(){
+    window.location.href = "login.html";
+}
+
+function getCurrentUserSafe() {
+    try {
+        if (typeof getUser === "function") {
+            return getUser();
+        }
+    } catch (e) {}
+    return null;
+}
+
+function getDisplayName(user) {
+    if (!user) return "ผู้ใช้";
+    return user.name || user.username || user.email || "ผู้ใช้";
+}
+
+function getUserId(user) {
+    if (!user) return "guest";
+    return user.id || user.email || user.username || user.name || "guest";
+}
+
+function getInitial(name) {
+    if (!name || typeof name !== "string") return "U";
+    return name.trim().charAt(0).toUpperCase();
+}
+
+function avatarStorageKey(user) {
+    return "quizweb_avatar_" + getUserId(user);
+}
+
+function getSavedAvatar(user) {
+    return localStorage.getItem(avatarStorageKey(user)) || "";
+}
+
+function setImageOrFallback(imgEl, fallbackEl, src, fallbackText) {
+    if (src) {
+        imgEl.src = src;
+        imgEl.style.display = "block";
+        fallbackEl.style.display = "none";
+    } else {
+        imgEl.removeAttribute("src");
+        imgEl.style.display = "none";
+        fallbackEl.textContent = fallbackText;
+        fallbackEl.style.display = "block";
+    }
+}
+
+function renderNavbarProfile() {
+    const user = getCurrentUserSafe();
+    const isLoggedIn = !!user;
+    const name = getDisplayName(user);
+    const avatar = getSavedAvatar(user);
+    const initial = getInitial(name);
+
+    const profileMenuWrap = document.getElementById("profileMenuWrap");
+    const loginBtn = document.getElementById("loginBtn");
+    const navUserName = document.getElementById("navUserName");
+    const navAvatarImg = document.getElementById("navAvatarImg");
+    const navAvatarFallback = document.getElementById("navAvatarFallback");
+
+    if (isLoggedIn) {
+        profileMenuWrap.classList.add("show");
+        loginBtn.classList.remove("show");
+        navUserName.textContent = name;
+    } else {
+        profileMenuWrap.classList.remove("show");
+        profileMenuWrap.classList.remove("open");
+        loginBtn.classList.add("show");
+    }
+
+    setImageOrFallback(navAvatarImg, navAvatarFallback, avatar, initial);
+}
+
+function toggleProfileMenu() {
+    const wrap = document.getElementById("profileMenuWrap");
+    wrap.classList.toggle("open");
+}
+
+function closeProfileMenu() {
+    document.getElementById("profileMenuWrap").classList.remove("open");
+}
+
+function handleLogout() {
+    closeProfileMenu();
+
+    if (typeof logout === "function") {
+        logout();
+        return;
+    }
+
+    localStorage.removeItem("loggedInUser");
+    localStorage.removeItem("currentUser");
+    localStorage.removeItem("user");
     window.location.href = "index.html";
 }
 
@@ -312,8 +750,6 @@ function loadQuizzes(){
     let html = `<div class="grid">`;
 
     quizzes.forEach(q => {
-
-        // 🔥 FIX: รองรับควิซเก่า
         if (q.allowReview == null) q.allowReview = true;
 
         const minutes = Math.floor((q.time || 0) / 60);
@@ -352,7 +788,6 @@ function loadQuizzes(){
                         <strong>${Number(q.attemptsLimit) === 0 ? "ไม่จำกัด" : `${q.attemptsLimit} ครั้ง`}</strong>
                     </div>
 
-                    <!-- 🔥 เพิ่มตรงนี้ -->
                     <div class="info-row">
                         <span>Review</span>
                         <strong>${q.allowReview ? "อนุญาต" : "ไม่อนุญาต"}</strong>
@@ -415,6 +850,22 @@ function deleteQuiz(code){
     loadQuizzes();
 }
 
+const profilePill = document.getElementById("profilePill");
+if (profilePill) {
+    profilePill.addEventListener("click", function (e) {
+        e.stopPropagation();
+        toggleProfileMenu();
+    });
+}
+
+document.addEventListener("click", function (e) {
+    const wrap = document.getElementById("profileMenuWrap");
+    if (wrap && !wrap.contains(e.target)) {
+        closeProfileMenu();
+    }
+});
+
+renderNavbarProfile();
 loadQuizzes();
 </script>
 
