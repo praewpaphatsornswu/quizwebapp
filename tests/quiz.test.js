@@ -2,77 +2,66 @@ const {
   checkAnswer,
   calculateScore,
   getQuestion
-} = require("../quiz");
+} = require('../quiz');
 
-// ------------------ TEST ------------------
+describe('Quiz Web App Test (11 Cases)', () => {
 
-describe("Quiz App Test Cases", () => {
-
-  // 1
-  test("correct answer returns true", () => {
-    expect(checkAnswer("A", "A")).toBe(true);
+  //  1
+  test('Correct answer returns true', () => {
+    expect(checkAnswer('A', 'A')).toBe(true);
   });
 
-  // ✅ 2
-  test("wrong answer returns false", () => {
-    expect(checkAnswer("B", "A")).toBe(false);
+  //  2
+  test('Wrong answer returns false', () => {
+    expect(checkAnswer('A', 'B')).toBe(false);
   });
 
-  // 3
-  test("empty answer returns false", () => {
-    expect(checkAnswer("", "A")).toBe(false);
+  //  3
+  test('Case sensitive', () => {
+    expect(checkAnswer('a', 'A')).toBe(false);
   });
 
-  // 4
-  test("calculate full score", () => {
-    const user = ["A","B","C"];
-    const correct = ["A","B","C"];
-    expect(calculateScore(user, correct)).toBe(3);
+  //  4
+  test('Calculate full score', () => {
+    expect(calculateScore(['A','B','C'], ['A','B','C'])).toBe(3);
   });
 
-  // 5
-  test("calculate partial score", () => {
-    const user = ["A","B","D"];
-    const correct = ["A","B","C"];
-    expect(calculateScore(user, correct)).toBe(2);
+  //  5
+  test('Calculate zero score', () => {
+    expect(calculateScore(['A','A','A'], ['B','B','B'])).toBe(0);
   });
 
-  // 6
-  test("calculate zero score", () => {
-    const user = ["D","D","D"];
-    const correct = ["A","B","C"];
-    expect(calculateScore(user, correct)).toBe(0);
+  //  6
+  test('Calculate partial score', () => {
+    expect(calculateScore(['A','B','C'], ['A','C','C'])).toBe(2);
   });
 
-  // 7
-  test("get valid question", () => {
-    const questions = ["Q1","Q2","Q3"];
-    expect(getQuestion(questions, 1)).toBe("Q2");
+  //  7
+  test('Empty arrays', () => {
+    expect(calculateScore([], [])).toBe(0);
   });
 
-  // 8
-  test("get question out of range", () => {
-    const questions = ["Q1","Q2"];
-    expect(getQuestion(questions, 5)).toBe(null);
+  //  8
+  test('Get valid question', () => {
+    const questions = ['Q1','Q2','Q3'];
+    expect(getQuestion(questions, 1)).toBe('Q2');
   });
 
-  // 9
-  test("get question negative index", () => {
-    const questions = ["Q1","Q2"];
+  //  9
+  test('Get question out of bounds (negative)', () => {
+    const questions = ['Q1','Q2'];
     expect(getQuestion(questions, -1)).toBe(null);
   });
 
-  // 10
-  test("empty question list", () => {
-    const questions = [];
-    expect(getQuestion(questions, 0)).toBe(null);
+  //  10
+  test('Get question out of bounds (too large)', () => {
+    const questions = ['Q1','Q2'];
+    expect(getQuestion(questions, 5)).toBe(null);
   });
 
-  //11 
-  test("different length arrays (score)", () => {
-    const user = ["A","B"];
-    const correct = ["A","B","C"];
-    expect(calculateScore(user, correct)).toBe(2);
+  //  11
+  test('Handles different array lengths', () => {
+    expect(calculateScore(['A','B'], ['A','B','C'])).toBe(2);
   });
 
 });

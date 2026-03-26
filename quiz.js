@@ -1,5 +1,3 @@
-// quiz.js
-
 function checkAnswer(user, correct) {
   return user === correct;
 }
