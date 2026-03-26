@@ -145,6 +145,8 @@
 
 ลิงก์วิดีโอ Retrospective: https://youtu.be/8sUTdzBlkeQ?si=CepGhHKbjgSgSOSg
 
+---
+
 ## 12. Design Document
 
 ### 12.1 Architectural Design
@@ -204,6 +206,7 @@ Admin --> ManageUsers[Manage Users]
 Admin --> ManageQuiz[Manage Quiz]
 Admin --> ViewReports[View Reports]
 ```
+---
 
 ## 13. Figma screenshot
 [![Figma Design](https://img.shields.io/badge/Figma-Design_Prototype-blue?style=for-the-badge&logo=figma)](https://www.figma.com/proto/OfZFo1CtLnYNR9EwDZ5AuN/QuizWeb_PJ?node-id=0-1&t=RpKzd3nvIpSk9lfs-1)
@@ -235,6 +238,7 @@ Admin --> ViewReports[View Reports]
 หน้า quiz test:
 ![quiz test](https://github.com/user-attachments/assets/c09de67f-9145-4f61-81ed-2aea147e9972)
 
+---
 
 ## 14. กระบวนการทำงาน (Process, Methods, and Tools)
 
@@ -279,6 +283,8 @@ GitHub
 Line
 Visual Studio Code
 
+---
+
 ## 15. สรุปการประชุม Retrospective Phase 2
 ทีมงานได้มีการจัดประชุม Retrospective หลังการดำเนินงานในช่วงการออกแบบและวางโครงสร้าง โดยมีข้อสรุปดังนี้
 
@@ -305,6 +311,7 @@ Visual Studio Code
   - ใช้โครงสร้างข้อมูลแบบ Array ในการเก็บชุดคำถามและคำตอบ
   - ใช้ระบบ Module Exports เพื่อรองรับการเรียกใช้ฟังก์ชันข้ามไฟล์และการทำ Testing
 
+---
 
 ## 17. Test cases
 ### 17.1 ตาราง Unit Test Cases (Data Structure)
@@ -404,6 +411,8 @@ describe('Quiz Web App Test (11 Cases)', () => {
 ลดความเสี่ยงของ bug ใน logic หลักของระบบ
 รองรับการพัฒนาใน Phase ถัดไปได้ง่าย
 
+---
+
 ## 18. รายงาน Static profiling และ Dynamic profiling (Structural method)
 ### 18.1 Static profiling
 | Metric                  | Value |
@@ -420,9 +429,28 @@ describe('Quiz Web App Test (11 Cases)', () => {
 | calculateScore | ~1 ms         | Low         |
 | getQuestion    | ~1 ms         | Low         |
 
+---
+
 ## 19. สิ่งที่ยังไม่เสร็จสมบูรณ์
+* **Frontend:** โครงสร้างเว็บและ UI/UX เสร็จสมบูรณ์ พร้อมแสดงฟังก์ชันและฟีเจอร์หลักทั้งหมด
+
+* **Backend:** อยู่ระหว่างการพัฒนาส่วนระบบหลังบ้าน การจัดการฐานข้อมูล และการเชื่อมต่อ API (Data Integration) เพื่อให้ระบบทำงานได้อย่างเต็มรูปแบบ
+
+---
 
 ## 20. Website screenshot
+- หน้า index
+![Index_1](readme_images/Index.png)
+
+- หน้า index(ต่อ)
+![Index_2](readme_images/Index_2.png)
+
+- หน้า login
+![Login](readme_images/Login.png)
+- หน้า register
+![Register](readme_images/Register.png)
+
+---
 
 ## 21. สิ่งเปลี่ยนแปลงจาก รายงาน phase 1 and 2 และ เหดุผลที่เปลี่ยน
 **มีการพัฒนาจากแผนงานสู่การปฏิบัติจริง :**
@@ -431,6 +459,8 @@ describe('Quiz Web App Test (11 Cases)', () => {
 * **ฟังก์ชัน & คุณภาพ:** นำฟังก์ชันที่เคยร่างไว้มาทำให้ใช้งานได้จริง (Functional) แม้จะยังไม่สมบูรณ์ 100% แต่มีการเพิ่ม Test Case เข้ามาช่วยตรวจสอบความถูกต้องควบคู่ไปด้วย
 * **การบริหารจัดการ:** ปรับปรุงกระบวนการทำงานในทีมให้มีระเบียบมากขึ้น แบ่งหน้าที่ชัดเจนว่าใครรับผิดชอบส่วนไหน และวางแผนการพัฒนาในลำดับถัดไปอย่างเป็นระบบ
 * **เหตุผลที่เปลี่ยน:** เพื่อเปลี่ยนจาก "แนวคิด" ให้กลายเป็น "ซอฟต์แวร์ที่ใช้งานได้" โดยเน้นความสำคัญที่โครงสร้างระบบ การทดสอบ และการทำงานร่วมกันอย่างมืออาชีพ
+
+---
 
 ## 22. อธิบายกระบวนการทำงาน โดยใช้ process, methods, and tools ที่เพิ่มเติมจาก phase 1 and 2 เช่น การบริหาร project, การ monitor build, การจัดการ bugs  
 * **การจัดการคุณภาพโค้ดและ Bugs**
@@ -442,6 +472,8 @@ describe('Quiz Web App Test (11 Cases)', () => {
 * **เครื่องมือที่ใช้**
   - Jest / Istanbul: ใช้สำหรับรันชุดทดสอบและสร้างรายงานผลการทดสอบ
   - VS Code Search & Monitor: ใช้ฟีเจอร์การค้นหาและตรวจสอบสถานะไฟล์ เพื่อติดตามการเปลี่ยนแปลงของไฟล์ README.md และโค้ดในโปรเจกต์
+
+---
 
 ## 23. สรุปการประชุม Retrospective Phase 3
 
