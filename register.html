@@ -128,13 +128,10 @@ button:hover{
 
 <body>
 
-<!-- ===== Navbar ===== -->
 <nav>
     <div class="logo">quizWeb</div>
     <div class="nav-links">
         <a href="index.html">หน้าแรก</a>
-        <a href="dashboard.html">คลังข้อสอบ</a>
-        <a href="create.html">สร้างควิซ</a>
         <span id="authArea"></span>
     </div>
 </nav>
@@ -153,12 +150,19 @@ button:hover{
         <div class="input-group">
             <label>Email</label>
             <input type="email" id="email" required>
+            <div class="error" id="emailError"></div>
         </div>
 
         <div class="input-group">
             <label>Password</label>
             <input type="password" id="password" required>
             <div class="error" id="passError"></div>
+        </div>
+
+        <div class="input-group">
+            <label>Confirm Password</label>
+            <input type="password" id="confirmPassword" required>
+            <div class="error" id="confirmError"></div>
         </div>
 
         <button type="submit">Register</button>
@@ -170,40 +174,30 @@ button:hover{
 </div>
 </div>
 
+<script src="auth.js"></script>
 <script>
-const authArea = document.getElementById("authArea");
-const currentUser = localStorage.getItem("currentUser");
+redirectIfLoggedIn();
+loadAuthArea();
 
-if(currentUser){
-    authArea.innerHTML = `
-        <span style="margin-left:20px;">👤 ${currentUser}</span>
-        <a href="#" onclick="logout()">ออกจากระบบ</a>
-    `;
-}else{
-    authArea.innerHTML = `
-        <a href="login.html">เข้าสู่ระบบ</a>
-        <a href="register.html">ลงทะเบียน</a>
-    `;
-}
-
-function logout(){
-    localStorage.removeItem("currentUser");
-    window.location.href = "index.html";
-}
-
-/* ===== Register Logic ===== */
 const form = document.getElementById("registerForm");
 
 form.addEventListener("submit", function(e){
     e.preventDefault();
 
     const username = document.getElementById("username").value.trim();
+    const email = document.getElementById("email").value.trim().toLowerCase();
     const password = document.getElementById("password").value;
+    const confirmPassword = document.getElementById("confirmPassword").value;
+
     const userError = document.getElementById("userError");
+    const emailError = document.getElementById("emailError");
     const passError = document.getElementById("passError");
+    const confirmError = document.getElementById("confirmError");
 
     userError.textContent = "";
+    emailError.textContent = "";
     passError.textContent = "";
+    confirmError.textContent = "";
 
     if(username.length < 4){
         userError.textContent = "Username ต้องอย่างน้อย 4 ตัวอักษร";
@@ -211,15 +205,44 @@ form.addEventListener("submit", function(e){
     }
 
     const passwordPattern = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/;
-
     if(!passwordPattern.test(password)){
-        passError.textContent = "Password ต้องมี A-Z, a-z และตัวเลข (อย่างน้อย 8 ตัว)";
+        passError.textContent = "Password ต้องมี A-Z, a-z และตัวเลข อย่างน้อย 8 ตัว";
         return;
     }
 
-    // บันทึก user ลง localStorage
-    localStorage.setItem("registeredUser", username);
-    localStorage.setItem("currentUser", username);
+    if(password !== confirmPassword){
+        confirmError.textContent = "Confirm Password ไม่ตรงกัน";
+        return;
+    }
+
+    let users = getUsers();
+
+    const duplicateUsername = users.find(user => user.username === username);
+    if(duplicateUsername){
+        userError.textContent = "Username นี้ถูกใช้แล้ว";
+        return;
+    }
+
+    const duplicateEmail = users.find(user => user.email === email);
+    if(duplicateEmail){
+        emailError.textContent = "Email นี้ถูกใช้แล้ว";
+        return;
+    }
+
+    const newUser = {
+        username,
+        email,
+        password
+    };
+
+    users.push(newUser);
+    saveUsers(users);
+
+    // login ทันทีหลังสมัคร
+    localStorage.setItem("user", JSON.stringify({
+        username: newUser.username,
+        email: newUser.email
+    }));
 
     alert("สมัครสมาชิกสำเร็จ!");
     window.location.href = "index.html";

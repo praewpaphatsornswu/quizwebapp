@@ -308,64 +308,97 @@ Visual Studio Code
 
 ## 17. Test cases
 ### 17.1 ตาราง Unit Test Cases (Data Structure)
-| TC | Function       | Input                        | Expected Output |
-| -- | -------------- | ---------------------------- | --------------- |
-| 1  | checkAnswer    | ("A","A")                    | true            |
-| 2  | checkAnswer    | ("B","A")                    | false           |
-| 3  | checkAnswer    | ("","A")                     | false           |
-| 4  | calculateScore | ["A","B","C"], ["A","B","C"] | 3               |
-| 5  | calculateScore | ["A","B","D"], ["A","B","C"] | 2               |
-| 6  | calculateScore | ["D","D","D"], ["A","B","C"] | 0               |
-| 7  | calculateScore | ["A","B"], ["A","B","C"]     | 2               |
-| 8  | getQuestion    | ["Q1","Q2","Q3"], 1          | "Q2"            |
-| 9  | getQuestion    | ["Q1","Q2"], 5               | null            |
-| 10 | getQuestion    | ["Q1","Q2"], -1              | null            |
-| 11 | getQuestion    | [], 0                        | null            |
-
+| TC | Function       | Input                          | Expected Result | Actual Result | Status |
+|----|----------------|--------------------------------|-----------------|---------------|--------|
+| 1  | calculateScore | ['A','B','C'],['A','B','C']    | 3               | 3             | Pass   |
+| 2  | calculateScore | ['A','A','A'],['B','B','B']    | 0               | 0             | Pass   |
+| 3  | calculateScore | ['A','B','C'],['A','C','C']    | 2               | 2             | Pass   |
+| 4  | calculateScore | [],[]                          | 0               | 0             | Pass   |
+| 5  | calculateScore | ['A'],['A','B']                | 1               | 1             | Pass   |
+| 6  | getQuestion    | ['Q1','Q2','Q3'],1             | 'Q2'            | 'Q2'          | Pass   |
+| 7  | getQuestion    | ['Q1','Q2'],-1                 | null            | null          | Pass   |
+| 8  | getQuestion    | ['Q1','Q2'],5                  | null            | null          | Pass   |
+| 9  | getQuestion    | [],0                           | null            | null          | Pass   |
+| 10 | calculateScore | [null,'B'],['A','B']           | 1               | 1             | Pass   |
 
 ### 17.2 ตาราง Unit Test Cases (Function / Class อื่น)
-| TC | Function       | Input         | Expected Result |
-| -- | -------------- | ------------- | --------------- |
-| 1  | checkAnswer    | correct input | true            |
-| 2  | checkAnswer    | wrong input   | false           |
-| 3  | calculateScore | valid array   | correct score   |
-| 4  | calculateScore | empty array   | 0               |
-| 5  | getQuestion    | valid index   | question        |
-| 6  | getQuestion    | invalid index | null            |
+| TC | Function    | Input       | Expected Result | Actual Result | Status |
+|----|-------------|-------------|-----------------|---------------|--------|
+| 11 | checkAnswer | 'A','A'     | true            | true          | Pass   |
+| 12 | checkAnswer | 'A','B'     | false           | false         | Pass   |
+| 13 | checkAnswer | 'a','A'     | false           | false         | Pass   |
+
  ### 17.3 ตัวอย่าง Test Case Code
- const {
+const {
   checkAnswer,
   calculateScore,
   getQuestion
-} = require("../quiz");
+} = require('../quiz');
 
-describe("Quiz App Test", () => {
+describe('Quiz Web App Test (11 Cases)', () => {
 
-  test("correct answer", () => {
-    expect(checkAnswer("A","A")).toBe(true);
+  //  1
+  test('Correct answer returns true', () => {
+    expect(checkAnswer('A', 'A')).toBe(true);
   });
 
-  test("wrong answer", () => {
-    expect(checkAnswer("B","A")).toBe(false);
+  //  2
+  test('Wrong answer returns false', () => {
+    expect(checkAnswer('A', 'B')).toBe(false);
   });
 
-  test("calculate score", () => {
-    expect(calculateScore(["A","B"],["A","B"])).toBe(2);
+  //  3
+  test('Case sensitive', () => {
+    expect(checkAnswer('a', 'A')).toBe(false);
   });
 
-  test("get question", () => {
-    expect(getQuestion(["Q1","Q2"],1)).toBe("Q2");
+  //  4
+  test('Calculate full score', () => {
+    expect(calculateScore(['A','B','C'], ['A','B','C'])).toBe(3);
+  });
+
+  //  5
+  test('Calculate zero score', () => {
+    expect(calculateScore(['A','A','A'], ['B','B','B'])).toBe(0);
+  });
+
+  //  6
+  test('Calculate partial score', () => {
+    expect(calculateScore(['A','B','C'], ['A','C','C'])).toBe(2);
+  });
+
+  //  7
+  test('Empty arrays', () => {
+    expect(calculateScore([], [])).toBe(0);
+  });
+
+  //  8
+  test('Get valid question', () => {
+    const questions = ['Q1','Q2','Q3'];
+    expect(getQuestion(questions, 1)).toBe('Q2');
+  });
+
+  //  9
+  test('Get question out of bounds (negative)', () => {
+    const questions = ['Q1','Q2'];
+    expect(getQuestion(questions, -1)).toBe(null);
+  });
+
+  //  10
+  test('Get question out of bounds (too large)', () => {
+    const questions = ['Q1','Q2'];
+    expect(getQuestion(questions, 5)).toBe(null);
+  });
+
+  //  11
+  test('Handles different array lengths', () => {
+    expect(calculateScore(['A','B'], ['A','B','C'])).toBe(2);
   });
 
 });
 
 ### 17.4 Test Coverage Report
-| Metric     | Coverage |
-| ---------- | -------- |
-| Statements | 100%     |
-| Branches   | 100%     |
-| Functions  | 100%     |
-| Lines      | 100%     |
+![alt text](image.png)
 แสดงให้เห็นว่า:
 ไม่มีส่วนของโค้ดที่ไม่ได้รับการทดสอบ (No dead code)
 ลดความเสี่ยงของ bug ใน logic หลักของระบบ
@@ -373,19 +406,19 @@ describe("Quiz App Test", () => {
 
 ## 18. รายงาน Static profiling และ Dynamic profiling (Structural method)
 ### 18.1 Static profiling
-| Metric                | Value         |
-| --------------------- | ------------- |
-| Lines of Code (LOC)   | 30            |
-| Number of Functions   | 3             |
-| Cyclomatic Complexity | Low           |
-| Data Structures Used  | Array, Object |
+| Metric                  | Value |
+|------------------------|-------|
+| Lines of Code (LOC)    | 20-30 |
+| Number of Functions    | 3     |
+| Cyclomatic Complexity  | Low   |
+| Data Structures Used   | Array |
 
 ### 18.2 Dynamic profiling
-| Function       | Execution Time | Memory Usage |
-| -------------- | -------------- | ------------ |
-| checkAnswer    | ~1 ms          | low          |
-| calculateScore | ~2 ms          | low          |
-| getQuestion    | ~1 ms          | low          |
+| Function        | Execution Time | Memory Usage |
+|----------------|---------------|-------------|
+| checkAnswer    | ~2 ms         | Low         |
+| calculateScore | ~1 ms         | Low         |
+| getQuestion    | ~1 ms         | Low         |
 
 ## 19. สิ่งที่ยังไม่เสร็จสมบูรณ์
 
