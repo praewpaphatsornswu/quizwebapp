@@ -142,7 +142,6 @@ describe('Quiz Web App Test (11 Cases)', () => {
 ## 5. Website screenshot
 - หน้า index
 ![Index_1](readme_images/Index.png)
-
 - หน้า index(ต่อ)
 ![Index_2](readme_images/Index_2.png)
 
@@ -152,17 +151,27 @@ describe('Quiz Web App Test (11 Cases)', () => {
 - หน้า register
 ![Register](readme_images/Register.png)
 
-- หน้า join
+- หน้า dashboard
+![Register](readme_images/dashboard.png)
+
+- หน้า join quiz
 ![Register](readme_images/join.png)
 
-<!-- - หน้า dashboard
-![Register](readme_images/join.png) -->
+- หน้า create quiz
+![Register](readme_images/create.png)
 
-<!-- - หน้า admin
-![Register](readme_images/join.png) -->
+- หน้า edit quiz
+![edit](readme_images/edit1.png)
+- หน้า edit(ต่อ 1)
+![edit](readme_images/edit2.png)
+- หน้า edit(ต่อ 2)
+![edit](readme_images/edit3.png)
 
-<!-- - หน้า edit
-![Register](readme_images/join.png) -->
+- หน้า play quiz
+![edit](readme_images/play.png)
+
+- หน้า admin
+![Register](readme_images/admin.png)
 
 ---
 
