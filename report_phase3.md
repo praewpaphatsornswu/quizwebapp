@@ -152,26 +152,27 @@ describe('Quiz Web App Test (11 Cases)', () => {
 ![Register](readme_images/Register.png)
 
 - หน้า dashboard
-![Register](readme_images/dashboard.png)
+![dashboard](readme_images/dashboard.png)
 
 - หน้า join quiz
-![Register](readme_images/join.png)
+![join quiz](readme_images/join.png)
 
 - หน้า create quiz
-![Register](readme_images/create.png)
+![create quiz](readme_images/create.png)
 
 - หน้า edit quiz
-![edit](readme_images/edit1.png)
+![edit quiz](readme_images/edit1.png)
 - หน้า edit(ต่อ 1)
-![edit](readme_images/edit2.png)
+![edit quiz](readme_images/edit2.png)
 - หน้า edit(ต่อ 2)
-![edit](readme_images/edit3.png)
+![edit quiz](readme_images/edit3.png)
 
 - หน้า play quiz
-![edit](readme_images/play.png)
+![play quiz](readme_images/play.png)
 
 - หน้า admin
-![Register](readme_images/admin.png)
+![admin](readme_images/admin.png)
+
 
 ---
 
