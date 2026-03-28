@@ -1,12 +1,4 @@
-<!DOCTYPE html>
-<html lang="th">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>กรอกรหัสข้อสอบ | quizWeb</title>
-    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600&display=swap" rel="stylesheet">
-    <style>
-        *{
+*{
             margin:0;
             padding:0;
             box-sizing:border-box;
@@ -116,37 +108,3 @@
             text-decoration:none;
             font-weight:500;
         }
-    </style>
-</head>
-<body>
-
-<nav>
-    <div class="logo" onclick="location.href='index.html'">quizWeb</div>
-
-    <div class="nav-links">
-        <a href="index.html">หน้าแรก</a>
-        <a href="dashboard.html">คลังข้อสอบ</a>
-        <a href="create.html">สร้างควิซ</a>
-        <span id="authArea"></span>
-    </div>
-</nav>
-
-<div class="page">
-    <div class="card">
-        <h1>กรอกรหัสข้อสอบ</h1>
-        <p>ใส่รหัสที่ได้รับจากผู้สร้าง เพื่อเริ่มทำควิซ</p>
-
-        <input type="text" id="quizCode" placeholder="เช่น Q1774170485749">
-        <button onclick="joinQuiz()">เริ่มเล่น</button>
-
-        <div class="error" id="errorText"></div>
-
-        <a class="back-link" href="index.html">← กลับหน้าแรก</a>
-    </div>
-</div>
-
-<script src="js/auth.js"></script>
-<script src="js/join_func.js"></script>
-
-</body>
-</html>
