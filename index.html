@@ -159,7 +159,6 @@
                         เข้าสู่ระบบเพื่อสร้างควิซ จัดการคลังข้อสอบ
                         และตั้งรูปโปรไฟล์ของตัวเองได้ทันที
                     </p>
-
                     <div class="profile-actions">
                         <button class="solid-btn" type="button" onclick="openAvatarModal()">เปลี่ยนรูปโปรไฟล์</button>
                         <button class="outline-btn" type="button" onclick="goDashboard()">ไปคลังข้อสอบ</button>
@@ -276,22 +275,33 @@
                 <small>ใช้ได้กับลิงก์รูปทั่วไป หรือรูปจาก Google Drive ที่เปิดแชร์สาธารณะแล้ว</small>
             </div>
 
-
             <div class="upload-actions">
                 <button class="outline-btn" type="button" onclick="applyUrlAvatar()">ใช้ลิงก์รูปนี้</button>
                 <button class="ghost-btn" type="button" onclick="resetAvatarToDefault()">ลบรูปโปรไฟล์</button>
             </div>
 
-            <div class="modal-footer">
+            <div class="modal-footer-row">
                 <button class="ghost-btn" type="button" onclick="closeAvatarModal()">ปิด</button>
             </div>
         </div>
     </div>
 </div>
 
-<!-- js  -->
 <script src="js/auth.js"></script>
 <script src="js/index_func.js"></script>
 
+<script>
+    /* ---------- Scroll reveal ---------- */
+    const revealEls = document.querySelectorAll('.reveal');
+    const revealObserver = new IntersectionObserver((entries) => {
+        entries.forEach(e => {
+            if (e.isIntersecting) {
+                e.target.classList.add('revealed');
+                revealObserver.unobserve(e.target);
+            }
+        });
+    }, { threshold: 0.12 });
+    revealEls.forEach(el => revealObserver.observe(el));
+</script>
 </body>
 </html>
