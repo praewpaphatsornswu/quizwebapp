@@ -194,26 +194,20 @@
             </div>
 
             <div class="field">
-                <label>1. เลือกรูปจากเครื่อง / แกลเลอรี่</label>
+                <label>1. เลือกรูปจากแกลเลอรี่</label>
                 <input type="file" id="avatarFileInput" accept="image/*">
-                <small>ในมือถือ ปุ่มนี้สามารถเลือกรูปจากแกลเลอรี่ได้ด้วย</small>
             </div>
 
             <div class="field">
-                <label>2. หรือวางลิงก์รูปภาพ</label>
+                <label>2. วางลิงก์รูปภาพ</label>
                 <input type="url" id="avatarUrlInput" placeholder="วางลิงก์รูป เช่น https://...">
                 <small>ใช้ได้กับลิงก์รูปทั่วไป หรือรูปจาก Google Drive ที่เปิดแชร์สาธารณะแล้ว</small>
             </div>
 
-            <div class="help-box">
-                <strong>หมายเหตุ:</strong> ถ้าจะให้กดเลือกจาก Google Drive ได้โดยตรงแบบปุ่ม Choose from Drive
-                ต้องเชื่อม Google Picker API และระบบล็อกอิน Google เพิ่มก่อน
-                โค้ดนี้เลยรองรับแบบอัปโหลดจากเครื่อง หรือวางลิงก์รูปก่อน
-            </div>
 
             <div class="upload-actions">
                 <button class="outline-btn" type="button" onclick="applyUrlAvatar()">ใช้ลิงก์รูปนี้</button>
-                <button class="ghost-btn" type="button" onclick="resetAvatarToDefault()">ลบรูป ใช้ค่าเริ่มต้น</button>
+                <button class="ghost-btn" type="button" onclick="resetAvatarToDefault()">ลบรูปโปรไฟล์</button>
             </div>
 
             <div class="modal-footer">

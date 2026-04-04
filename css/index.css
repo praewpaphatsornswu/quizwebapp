@@ -737,17 +737,6 @@
             margin-top: 10px;
         }
 
-        .help-box {
-            background: #f6fff9;
-            border: 1px dashed rgba(31, 122, 90, 0.24);
-            padding: 14px 16px;
-            border-radius: 16px;
-            color: var(--text-soft);
-            line-height: 1.7;
-            font-size: 14px;
-            margin-top: 8px;
-        }
-
         .modal-footer {
             display: flex;
             justify-content: flex-end;
