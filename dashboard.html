@@ -1,23 +1,45 @@
 <!DOCTYPE html>
 <html lang="th">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>คลังข้อสอบ | quizWeb</title>
-<link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/dashboard.css">
-
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Dashboard — quizWeb</title>
+    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/index.css">
+    <link rel="stylesheet" href="css/dashboard.css">
 </head>
-
 <body>
+
+<div class="ambient-wrap" aria-hidden="true">
+    <div class="blob blob-1"></div>
+    <div class="blob blob-2"></div>
+    <div class="blob blob-3"></div>
+</div>
+
+<div class="particles" aria-hidden="true">
+    <span class="particle"></span>
+    <span class="particle"></span>
+    <span class="particle"></span>
+    <span class="particle"></span>
+    <span class="particle"></span>
+    <span class="particle"></span>
+    <span class="particle"></span>
+    <span class="particle"></span>
+</div>
 
 <nav>
     <div class="container nav-inner">
         <div class="logo" onclick="goHome()">
-            <div class="logo-badge">🧠</div>
+            <div class="logo-badge">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/>
+                    <circle cx="12" cy="12" r="10"/>
+                    <line x1="12" y1="17" x2="12.01" y2="17"/>
+                </svg>
+            </div>
             <div class="logo-text">
                 <strong>quizWeb</strong>
-                <span>สร้าง • แชร์ • เล่นควิซออนไลน์</span>
+                <span>สร้าง &bull; แชร์ &bull; เล่นควิซออนไลน์</span>
             </div>
         </div>
 
@@ -29,30 +51,39 @@
                             <span class="profile-avatar-fallback" id="navAvatarFallback">U</span>
                             <img id="navAvatarImg" alt="user avatar" style="display:none;">
                         </div>
-
                         <div class="profile-pill-text">
                             <strong id="navUserName">ผู้ใช้</strong>
                             <span>กดเพื่อเปิดเมนู</span>
                         </div>
-
-                        <div class="profile-pill-arrow">▾</div>
+                        <div class="profile-pill-arrow">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+                                <polyline points="6 9 12 15 18 9"/>
+                            </svg>
+                        </div>
                     </button>
 
                     <div class="profile-dropdown">
-                        <button class="dropdown-item" type="button" onclick="goDashboard()">
-                            <span>📚</span>
-                            <span>ไปคลังข้อสอบ</span>
+                        <button class="dropdown-item" type="button" onclick="goHome()">
+                            <svg class="di-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+                                <polyline points="9 22 9 12 15 12 15 22"/>
+                            </svg>
+                            <span>หน้าหลัก</span>
                         </button>
-
-                        <button class="dropdown-item" type="button" onclick="goCreate()">
-                            <span>📝</span>
-                            <span>สร้างควิซ</span>
+                        <button class="dropdown-item" type="button" onclick="openAvatarModal()">
+                            <svg class="di-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="12" cy="8" r="4"/>
+                                <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/>
+                            </svg>
+                            <span>เปลี่ยนรูปโปรไฟล์</span>
                         </button>
-
                         <div class="dropdown-divider"></div>
-
                         <button class="dropdown-item danger" type="button" onclick="handleLogout()">
-                            <span>🚪</span>
+                            <svg class="di-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+                                <polyline points="16 17 21 12 16 7"/>
+                                <line x1="21" y1="12" x2="9" y2="12"/>
+                            </svg>
                             <span>ออกจากระบบ</span>
                         </button>
                     </div>
