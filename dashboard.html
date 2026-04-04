@@ -64,21 +64,75 @@
     </div>
 </nav>
 
-<div class="page">
-    <div class="header">
-        <div>
-            <h1>คลังข้อสอบของฉัน</h1>
-            <p>รวมข้อสอบที่คุณสร้างไว้ทั้งหมด พร้อมสถิติผู้เล่น</p>
+<main class="page">
+    <div class="page-header reveal">
+        <div class="page-header-left">
+            <div class="page-badge">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
+                </svg>
+                คลังข้อสอบของฉัน
+            </div>
+            <h1>Dashboard</h1>
+            <p>จัดการและดูสถิติข้อสอบทั้งหมดของคุณ</p>
         </div>
-
-        <button class="btn btn-primary" onclick="window.location.href='create.html'">+ สร้างควิซใหม่</button>
+        <button class="solid-btn btn-glow" onclick="goCreate()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" style="width:17px;height:17px;">
+                <line x1="12" y1="5" x2="12" y2="19"/>
+                <line x1="5" y1="12" x2="19" y2="12"/>
+            </svg>
+            สร้างควิซใหม่
+        </button>
     </div>
 
     <div id="quizContainer"></div>
+</main>
+
+<!-- Modal เปลี่ยนรูปโปรไฟล์ — เหมือน index.html ทุกอย่าง -->
+<div class="modal" id="avatarModal">
+    <div class="modal-card">
+        <div class="modal-header">
+            <h3>ตั้งค่ารูปโปรไฟล์</h3>
+            <button class="close-btn" type="button" onclick="closeAvatarModal()">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+                    <line x1="18" y1="6" x2="6" y2="18"/>
+                    <line x1="6" y1="6" x2="18" y2="18"/>
+                </svg>
+            </button>
+        </div>
+
+        <div class="modal-body">
+            <div class="preview-wrap">
+                <div class="preview-avatar">
+                    <span class="preview-fallback" id="previewFallback">U</span>
+                    <img id="previewImg" alt="preview avatar" style="display:none;">
+                </div>
+            </div>
+
+            <div class="field">
+                <label>1. เลือกรูปจากแกลเลอรี่</label>
+                <input type="file" id="avatarFileInput" accept="image/*">
+            </div>
+
+            <div class="field">
+                <label>2. วางลิงก์รูปภาพ</label>
+                <input type="url" id="avatarUrlInput" placeholder="วางลิงก์รูป เช่น https://...">
+                <small>ใช้ได้กับลิงก์รูปทั่วไป หรือรูปจาก Google Drive ที่เปิดแชร์สาธารณะแล้ว</small>
+            </div>
+
+            <div class="upload-actions">
+                <button class="outline-btn" type="button" onclick="applyUrlAvatar()">ใช้ลิงก์รูปนี้</button>
+                <button class="ghost-btn" type="button" onclick="resetAvatarToDefault()">ลบรูปโปรไฟล์</button>
+            </div>
+
+            <div class="modal-footer-row">
+                <button class="ghost-btn" type="button" onclick="closeAvatarModal()">ปิด</button>
+            </div>
+        </div>
+    </div>
 </div>
 
 <script src="js/auth.js"></script>
 <script src="js/dashboard_func.js"></script>
-
 </body>
 </html>
