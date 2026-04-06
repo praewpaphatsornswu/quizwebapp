@@ -12,6 +12,9 @@ build/
 .env
 *.local
 
+# Local SQLite database
+quiz_scores.sqlite
+
 # Editor folders
 .vscode/
 .idea/

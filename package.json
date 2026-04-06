@@ -2,11 +2,12 @@
   "name": "quizwebapp",
   "version": "1.0.0",
   "description": "---",
-  "main": "index.js",
+  "main": "server.js",
   "directories": {
     "test": "tests"
   },
   "scripts": {
+    "start": "node server.js",
     "test": "jest"
   },
   "repository": {
@@ -21,6 +22,14 @@
     "url": "https://github.com/praewpaphatsornswu/quizwebapp/issues"
   },
   "homepage": "https://github.com/praewpaphatsornswu/quizwebapp#readme",
+  "dependencies": {
+    "better-sqlite3": "^11.8.1",
+    "body-parser": "^1.20.3",
+    "cors": "^2.8.5",
+    "express": "^4.21.2",
+    "express-session": "^1.18.2",
+    "bcryptjs": "^3.0.2"
+  },
   "devDependencies": {
     "jest": "^30.3.0"
   }

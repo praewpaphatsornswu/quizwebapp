@@ -3,7 +3,7 @@ loadAuthArea();
 
 const form = document.getElementById("registerForm");
 
-form.addEventListener("submit", function(e){
+form.addEventListener("submit", async function(e){
     e.preventDefault();
 
     const username = document.getElementById("username").value.trim();
@@ -37,35 +37,17 @@ form.addEventListener("submit", function(e){
         return;
     }
 
-    let users = getUsers();
-
-    const duplicateUsername = users.find(user => user.username === username);
-    if(duplicateUsername){
-        userError.textContent = "Username นี้ถูกใช้แล้ว";
-        return;
+    try {
+        await register(username, email, password);
+        alert("สมัครสมาชิกสำเร็จ!");
+        window.location.href = "index.html";
+    } catch (err) {
+        const msg = String(err && err.message ? err.message : err);
+        if (msg === "user_exists") {
+            userError.textContent = "Username หรือ Email นี้ถูกใช้แล้ว";
+            emailError.textContent = "Username หรือ Email นี้ถูกใช้แล้ว";
+            return;
+        }
+        alert("สมัครสมาชิกไม่สำเร็จ");
     }
-
-    const duplicateEmail = users.find(user => user.email === email);
-    if(duplicateEmail){
-        emailError.textContent = "Email นี้ถูกใช้แล้ว";
-        return;
-    }
-
-    const newUser = {
-        username,
-        email,
-        password
-    };
-
-    users.push(newUser);
-    saveUsers(users);
-
-    // login ทันทีหลังสมัคร
-    localStorage.setItem("user", JSON.stringify({
-        username: newUser.username,
-        email: newUser.email
-    }));
-
-    alert("สมัครสมาชิกสำเร็จ!");
-    window.location.href = "index.html";
 });

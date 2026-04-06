@@ -375,6 +375,21 @@ function startTimer(){
     }, 1000);
 }
 
+function saveScoreToServer(username, score) {
+    return fetch("/api/save-score", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username, score })
+    }).then(function (res) {
+        if (!res.ok) {
+            return res.json().then(function (body) {
+                throw new Error(body.error || res.statusText);
+            });
+        }
+        return res.json();
+    });
+}
+
 function saveOfficialResult(score, total){
     let quizResults = JSON.parse(localStorage.getItem("quizResults")) || [];
     let recordIndex = quizResults.findIndex(r =>
@@ -512,6 +527,10 @@ function submitQuiz(){
 
     const reviewHTML = buildReviewHTML();
 
+    const serverSaveLine = !isCreator
+        ? `<p id="scoreSaveStatus" class="score-sub" style="margin-top:10px;">กำลังบันทึกคะแนนไปยังเซิร์ฟเวอร์...</p>`
+        : "";
+
     document.body.innerHTML = `
         <div class="result-wrap">
             <div class="result-card">
@@ -521,6 +540,7 @@ function submitQuiz(){
 
                 <div class="score">${score} / ${quiz.questions.length}</div>
                 <div class="score-sub">คิดเป็น ${percent}%</div>
+                ${serverSaveLine}
 
                 ${quiz.allowReview ? reviewHTML : ""}
 
@@ -535,6 +555,22 @@ function submitQuiz(){
             </div>
         </div>
     `;
+
+    if (!isCreator) {
+        saveScoreToServer(currentUser.username, score).then(
+            function () {
+                const el = document.getElementById("scoreSaveStatus");
+                if (el) el.textContent = "Score Saved";
+            },
+            function () {
+                const el = document.getElementById("scoreSaveStatus");
+                if (el) {
+                    el.textContent =
+                        "ไม่สามารถบันทึกคะแนนไปยังเซิร์ฟเวอร์ได้ (ออฟไลน์หรือเซิร์ฟเวอร์ไม่พร้อม)";
+                }
+            }
+        );
+    }
 }
 
 const profilePill = document.getElementById("profilePill");

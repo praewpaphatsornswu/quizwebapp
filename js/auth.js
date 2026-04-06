@@ -2,9 +2,12 @@
    AUTH SYSTEM
 ===================== */
 
-// ดึง user ที่ login อยู่
 function getUser() {
-    return JSON.parse(localStorage.getItem("user"));
+    try {
+        return JSON.parse(localStorage.getItem("user"));
+    } catch (e) {
+        return null;
+    }
 }
 
 // ดึง users ทั้งหมด
@@ -72,8 +75,45 @@ function loadAuthArea() {
     }
 }
 
+function setUser(user) {
+    localStorage.setItem("user", JSON.stringify(user));
+}
+
+async function register(username, email, password) {
+    const res = await fetch("/api/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username, email, password })
+    });
+    const body = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(body.error || "register_failed");
+    if (body.user) setUser(body.user);
+    return body.user;
+}
+
+async function login(username, password) {
+    const res = await fetch("/api/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username, password })
+    });
+    const body = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(body.error || "login_failed");
+    if (body.user) setUser(body.user);
+    return body.user;
+}
+
+async function fetchMe() {
+    const res = await fetch("/api/me");
+    if (!res.ok) return null;
+    const body = await res.json().catch(() => ({}));
+    if (body.user) setUser(body.user);
+    return body.user || null;
+}
+
 // logout
 function logout() {
+    fetch("/api/logout", { method: "POST" }).catch(() => {});
     localStorage.removeItem("user");
     window.location.href = "login.html";
 }
