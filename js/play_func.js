@@ -178,12 +178,8 @@ if (quiz.attemptsLimit == null) quiz.attemptsLimit = 0;
 const isCreator = currentUser.username === quiz.owner;
 const isPreview = isCreator;
 
-document.getElementById("quizTitle").innerText = quiz.title || "Quiz";
-document.getElementById("quizSubtitle").innerText =
-    `รหัสข้อสอบ ${quiz.code} • จำนวน ${quiz.questions.length} ข้อ`;
-
 if (isPreview) {
-    document.getElementById("previewBanner").style.display = "block";
+    document.getElementById("previewBanner").style.display = "flex";
     document.title = "โหมดทดลองเล่น | quizWeb";
 }
 
@@ -229,13 +225,10 @@ function isQuestionAnswered(index){
 function isSameAnswer(a, b){
     const arrA = Array.isArray(a) ? [...a].sort((x, y) => x - y) : [];
     const arrB = Array.isArray(b) ? [...b].sort((x, y) => x - y) : [];
-
     if (arrA.length !== arrB.length) return false;
-
     for (let i = 0; i < arrA.length; i++) {
         if (arrA[i] !== arrB[i]) return false;
     }
-
     return true;
 }
 
@@ -260,29 +253,46 @@ function render(){
                 ? "คำถามแบบหลายคำตอบ: เลือกได้มากกว่า 1 ข้อ"
                 : "คำถามแบบคำตอบเดียว: เลือกได้ 1 ข้อ"}
         </div>
+        <div class="options-list">
     `;
 
     q.options.forEach((opt, i) => {
         const active = selected.includes(i);
-
         html += `
             <div class="option ${active ? "active" : ""}" onclick="selectAnswer(${i})">
                 <div class="letter">${String.fromCharCode(65 + i)}</div>
                 <div class="option-text">${escapeHtml(opt)}</div>
-                <div class="option-mark">${active ? "เลือกแล้ว" : ""}</div>
+                ${active ? `<div class="option-mark">เลือกแล้ว</div>` : ""}
             </div>
         `;
     });
 
+    html += `</div>`;
+
     html += `
         <div class="actions">
-            <button class="btn-light" onclick="prevQuestion()">← Previous</button>
-            <button class="btn-primary" onclick="nextQuestion()">Next →</button>
+            <button class="btn-prev" onclick="prevQuestion()">
+                <span class="btn-arrow">
+                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                        <path d="M10 3L5 8L10 13" stroke="currentColor" stroke-width="2.2"
+                              stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </span>
+                Previous
+            </button>
+            <button class="btn-next" onclick="nextQuestion()">
+                Next
+                <span class="btn-arrow">
+                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                        <path d="M6 3L11 8L6 13" stroke="currentColor" stroke-width="2.2"
+                              stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </span>
+            </button>
         </div>
     `;
 
     document.getElementById("questionBox").innerHTML = html;
-
     renderNav();
     updateProgress();
 }
@@ -293,7 +303,6 @@ function selectAnswer(i){
     if (q.type === "multiple") {
         const currentAnswers = getSelectedAnswers(current);
         const idx = currentAnswers.indexOf(i);
-
         if (idx === -1) {
             answers[current] = [...currentAnswers, i].sort((a, b) => a - b);
         } else {
@@ -357,9 +366,14 @@ function updateProgress(){
 function updateTimerUI(){
     const m = Math.floor(timeLeft / 60);
     const s = timeLeft % 60;
+    const timerEl = document.getElementById("timer");
+    timerEl.innerText = `${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
 
-    document.getElementById("timer").innerText =
-        `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+    if (timeLeft <= 30) {
+        timerEl.classList.add("warning");
+    } else {
+        timerEl.classList.remove("warning");
+    }
 }
 
 function startTimer(){
@@ -368,7 +382,6 @@ function startTimer(){
     timerId = setInterval(() => {
         timeLeft--;
         updateTimerUI();
-
         if (timeLeft <= 0) {
             submitQuiz();
         }
@@ -432,9 +445,7 @@ function buildReviewHTML(){
 
         html += `
             <div class="review-card">
-                <div class="review-question">
-                    ข้อ ${i + 1}: ${escapeHtml(q.text)}
-                </div>
+                <div class="review-question">ข้อ ${i + 1}: ${escapeHtml(q.text)}</div>
                 <div class="review-meta">
                     ${q.type === "multiple" ? "Multiple Choice" : "Single Choice"}
                 </div>
@@ -442,18 +453,12 @@ function buildReviewHTML(){
 
         q.options.forEach((opt, j) => {
             let className = "review-option";
-
-            if (correctAnswers.includes(j)) {
-                className += " correct";
-            }
-
-            if (userAnswers.includes(j) && !correctAnswers.includes(j)) {
-                className += " wrong";
-            }
+            if (correctAnswers.includes(j)) className += " correct";
+            if (userAnswers.includes(j) && !correctAnswers.includes(j)) className += " wrong";
 
             let suffix = "";
-            if (correctAnswers.includes(j)) suffix += " ✅ คำตอบที่ถูก";
-            if (userAnswers.includes(j) && !correctAnswers.includes(j)) suffix += " ❌ คำตอบของคุณ";
+            if (correctAnswers.includes(j)) suffix += " — คำตอบที่ถูก";
+            if (userAnswers.includes(j) && !correctAnswers.includes(j)) suffix += " — คำตอบของคุณ";
 
             html += `
                 <div class="${className}">
@@ -466,9 +471,9 @@ function buildReviewHTML(){
                 <div class="review-note">
                     ${
                         userAnswers.length === 0
-                        ? `คุณไม่ได้ตอบข้อนี้ • คำตอบที่ถูกคือ ${formatAnswerLetters(correctAnswers)}`
+                        ? `คุณไม่ได้ตอบข้อนี้ &bull; คำตอบที่ถูกคือ ${formatAnswerLetters(correctAnswers)}`
                         : isCorrect
-                            ? `คุณตอบถูก • คำตอบคือ ${formatAnswerLetters(correctAnswers)}`
+                            ? `คุณตอบถูก &bull; คำตอบคือ ${formatAnswerLetters(correctAnswers)}`
                             : `คุณตอบ ${formatAnswerLetters(userAnswers)} แต่คำตอบที่ถูกคือ ${formatAnswerLetters(correctAnswers)}`
                     }
                 </div>
@@ -491,7 +496,6 @@ function submitQuiz(){
     quiz.questions.forEach((q, i) => {
         const userAnswers = getSelectedAnswers(i);
         const correctAnswers = Array.isArray(q.correctAnswers) ? q.correctAnswers : [];
-
         if (isSameAnswer(userAnswers, correctAnswers)) {
             score++;
         }
@@ -515,22 +519,30 @@ function submitQuiz(){
     document.body.innerHTML = `
         <div class="result-wrap">
             <div class="result-card">
-                <div class="result-icon">🎉</div>
+                <div class="result-icon">&#127881;</div>
                 <h1>${heading}</h1>
                 <p>${subText}</p>
 
-                <div class="score">${score} / ${quiz.questions.length}</div>
-                <div class="score-sub">คิดเป็น ${percent}%</div>
+                <div class="score-display">
+                    <div class="score">${score} / ${quiz.questions.length}</div>
+                    <div class="score-sub">คิดเป็น ${percent}%</div>
+                </div>
 
-                ${quiz.allowReview ? reviewHTML : ""}
+                ${reviewHTML}
 
                 <div class="result-actions">
                     ${
                         isCreator
-                        ? `<button class="btn-light" onclick="window.location.href='edit.html?code=${quiz.code}'">กลับไปแก้ไข</button>`
-                        : `<button class="btn-light" onclick="window.location.href='index.html'">กลับหน้าแรก</button>`
+                        ? `<button class="btn-light" onclick="window.location.href='edit.html?code=${quiz.code}'">
+                               กลับไปแก้ไข
+                           </button>`
+                        : `<button class="btn-light" onclick="window.location.href='index.html'">
+                               กลับหน้าแรก
+                           </button>`
                     }
-                    <button class="btn-primary" onclick="window.location.href='dashboard.html'">ไปคลังข้อสอบ</button>
+                    <button class="btn-primary" onclick="window.location.href='dashboard.html'">
+                        ไปคลังข้อสอบ
+                    </button>
                 </div>
             </div>
         </div>
@@ -539,13 +551,13 @@ function submitQuiz(){
 
 const profilePill = document.getElementById("profilePill");
 if (profilePill) {
-    profilePill.addEventListener("click", function (e) {
+    profilePill.addEventListener("click", function(e) {
         e.stopPropagation();
         toggleProfileMenu();
     });
 }
 
-document.addEventListener("click", function (e) {
+document.addEventListener("click", function(e) {
     const wrap = document.getElementById("profileMenuWrap");
     if (wrap && !wrap.contains(e.target)) {
         closeProfileMenu();
@@ -553,5 +565,11 @@ document.addEventListener("click", function (e) {
 });
 
 renderNavbarProfile();
+
+/* ===== ตั้งค่า top card ===== */
+document.getElementById("quizTitle").innerText = quiz.title || "Quiz";
+document.getElementById("quizSubtitle").innerText =
+    `รหัสข้อสอบ ${quiz.code} \u2022 จำนวน ${quiz.questions.length} ข้อ`;
+
 render();
 startTimer();
