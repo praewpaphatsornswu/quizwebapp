@@ -282,3 +282,15 @@ document.addEventListener("click", function (e) {
 
 renderNavbarProfile();
 loadQuizzes();
+
+if (typeof fetchMe === "function") {
+    fetchMe().then(function (u) {
+        if (typeof updateAdminMenuVisibility === "function") {
+            updateAdminMenuVisibility(u);
+        }
+    }).catch(function () {});
+}
+
+if (typeof updateAdminMenuVisibility === "function") {
+    updateAdminMenuVisibility();
+}

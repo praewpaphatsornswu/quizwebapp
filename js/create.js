@@ -131,7 +131,7 @@ function normalizeTitle(text){
     return String(text || "").trim().toLowerCase();
 }
 
-function createQuiz(){
+async function createQuiz(){
     showError("");
     setCreateButtonLoading(true);
 
@@ -167,19 +167,6 @@ function createQuiz(){
         return;
     }
 
-    let quizzes = JSON.parse(localStorage.getItem("myQuizzes")) || [];
-
-    const existingQuiz = quizzes.find(q =>
-        q.owner === currentUser.username &&
-        normalizeTitle(q.title) === normalizeTitle(title)
-    );
-
-    if (existingQuiz){
-        showError("คุณมีควิซชื่อนี้อยู่แล้ว กรุณาใช้ชื่ออื่น");
-        setCreateButtonLoading(false);
-        return;
-    }
-
     const code = "Q" + Date.now();
 
     const newQuiz = {
@@ -193,10 +180,32 @@ function createQuiz(){
         allowReview: allowReview
     };
 
-    quizzes.push(newQuiz);
-    localStorage.setItem("myQuizzes", JSON.stringify(quizzes));
+    try {
+        const res = await fetch("/api/save-quiz", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ quiz: newQuiz })
+        });
+        const body = await res.json().catch(() => ({}));
 
-    window.location.href = `edit.html?code=${code}`;
+        if (!res.ok) {
+            if (body && body.error === "duplicate_title") {
+                showError("คุณมีควิซชื่อนี้อยู่แล้ว กรุณาใช้ชื่ออื่น");
+            } else if (body && body.error === "not_logged_in") {
+                showError("กรุณาเข้าสู่ระบบก่อน");
+                window.location.href = "login.html";
+            } else {
+                showError("บันทึกควิซไม่สำเร็จ");
+            }
+            setCreateButtonLoading(false);
+            return;
+        }
+
+        window.location.href = `edit.html?code=${encodeURIComponent(code)}`;
+    } catch (e) {
+        showError("ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้");
+        setCreateButtonLoading(false);
+    }
 }
 
 const profilePill = document.getElementById("profilePill");

@@ -2,14 +2,18 @@ let currentTab = "usersPanel";
     let allUsers = [];
     let allQuizzes = [];
 
-    async function checkAdminAccess() {
-      const localUser = (typeof getUser === "function") ? getUser() : null;
-      let user = localUser;
-
-      if (typeof fetchMe === "function") {
-        const fromSession = await fetchMe().catch(() => null);
-        if (fromSession) user = fromSession;
+    function getCurrentUser() {
+      try {
+        return JSON.parse(localStorage.getItem("loggedInUser"))
+          || JSON.parse(localStorage.getItem("currentUser"))
+          || JSON.parse(localStorage.getItem("user"));
+      } catch (e) {
+        return null;
       }
+    }
+
+    function checkAdminAccess() {
+      const user = getCurrentUser();
 
       if (!user) {
         alert("กรุณาเข้าสู่ระบบก่อน");
@@ -28,9 +32,9 @@ let currentTab = "usersPanel";
     }
 
     function logoutAdmin() {
-      if (typeof logout === "function") logout();
       localStorage.removeItem("loggedInUser");
       localStorage.removeItem("currentUser");
+      localStorage.removeItem("user");
       window.location.href = "index.html";
     }
 
@@ -420,8 +424,6 @@ let currentTab = "usersPanel";
       alert("เพิ่มข้อมูลตัวอย่างแล้ว");
     }
 
-    (async function () {
-      if (await checkAdminAccess()) {
-        refreshAll();
-      }
-    })();
+    if (checkAdminAccess()) {
+      refreshAll();
+    }

@@ -321,3 +321,16 @@ function getCurrentUserSafe() {
     }
 
     renderUserProfile();
+
+    // Ensure role is up-to-date for admin menu visibility
+    if (typeof fetchMe === "function") {
+        fetchMe().then(function (u) {
+            if (typeof updateAdminMenuVisibility === "function") {
+                updateAdminMenuVisibility(u);
+            }
+        }).catch(function () {});
+    }
+
+    if (typeof updateAdminMenuVisibility === "function") {
+        updateAdminMenuVisibility();
+    }

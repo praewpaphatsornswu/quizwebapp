@@ -15,6 +15,19 @@ const db = new Database(dbPath);
 db.pragma("foreign_keys = ON");
 
 db.exec(`
+  CREATE TABLE IF NOT EXISTS users (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    username TEXT NOT NULL UNIQUE,
+    email TEXT NOT NULL UNIQUE,
+    password_hash TEXT NOT NULL,
+    role TEXT NOT NULL DEFAULT 'user',
+    created_at TEXT NOT NULL DEFAULT (datetime('now'))
+  );
+`);
+
+// db.prepare("UPDATE users SET role = 'admin' WHERE username = 'adminTester'").run();
+
+db.exec(`
   CREATE TABLE IF NOT EXISTS scores (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     user_id INTEGER,
@@ -25,12 +38,12 @@ db.exec(`
 `);
 
 db.exec(`
-  CREATE TABLE IF NOT EXISTS users (
+  CREATE TABLE IF NOT EXISTS quizzes (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    username TEXT NOT NULL UNIQUE,
-    email TEXT NOT NULL UNIQUE,
-    password_hash TEXT NOT NULL,
-    role TEXT NOT NULL DEFAULT 'user',
+    code TEXT NOT NULL UNIQUE,
+    title TEXT NOT NULL,
+    data_json TEXT NOT NULL,
+    created_by INTEGER NOT NULL,
     created_at TEXT NOT NULL DEFAULT (datetime('now'))
   );
 `);
@@ -74,19 +87,29 @@ function sanitizeUser(row) {
   return { id: row.id, username: row.username, email: row.email, role: row.role };
 }
 
-app.get("/api/me", (req, res) => {
-  const userId = req.session?.userId;
-  if (!userId) return res.status(401).json({ error: "not_logged_in" });
-  const row = db
-    .prepare("SELECT id, username, email, role FROM users WHERE id = ?")
-    .get(Number(userId));
-  if (!row) return res.status(401).json({ error: "not_logged_in" });
-  res.json({ user: sanitizeUser(row) });
-});
+function isAdmin(options = {}) {
+  const { redirectTo = "/index.html" } = options;
 
-app.post("/api/logout", (req, res) => {
-  req.session.destroy(() => res.json({ ok: true }));
-});
+  return (req, res, next) => {
+    const userId = req.session?.userId;
+    if (!userId) {
+      if (req.accepts("html")) return res.redirect("/login.html");
+      return res.status(401).json({ error: "not_logged_in" });
+    }
+
+    const row = db
+      .prepare("SELECT role FROM users WHERE id = ?")
+      .get(Number(userId));
+
+    const role = String(row?.role || "").toLowerCase();
+    if (role !== "admin") {
+      if (req.accepts("html")) return res.redirect(redirectTo);
+      return res.status(403).json({ error: "forbidden" });
+    }
+
+    return next();
+  };
+}
 
 app.post("/api/register", (req, res) => {
   const username = String(req.body?.username || "").trim();
@@ -131,13 +154,29 @@ app.post("/api/login", (req, res) => {
   res.json({ ok: true, user: sanitizeUser(row) });
 });
 
+app.get("/api/me", (req, res) => {
+  const userId = req.session?.userId;
+  if (!userId) return res.status(401).json({ error: "not_logged_in" });
+  const row = db
+    .prepare("SELECT id, username, email, role FROM users WHERE id = ?")
+    .get(Number(userId));
+  if (!row) return res.status(401).json({ error: "not_logged_in" });
+  res.json({ user: sanitizeUser(row) });
+});
+
+app.post("/api/logout", (req, res) => {
+  req.session.destroy(() => res.json({ ok: true }));
+});
+
 app.post("/api/save-score", (req, res) => {
   const { username, score } = req.body || {};
+
   const scoreNum = Number(score);
   if (!Number.isFinite(scoreNum)) {
     return res.status(400).json({ error: "score must be a number" });
   }
 
+  // Link to logged-in user if present; otherwise allow legacy username payloads
   const sessionUserId = req.session?.userId ? Number(req.session.userId) : null;
   const bodyUsername = typeof username === "string" ? username.trim() : "";
 
@@ -164,6 +203,50 @@ app.post("/api/save-score", (req, res) => {
   const result = stmt.run(finalUserId, finalUsername, Math.round(scoreNum));
 
   res.json({ ok: true, id: Number(result.lastInsertRowid) });
+});
+
+app.post("/api/save-quiz", (req, res) => {
+  const userId = req.session?.userId ? Number(req.session.userId) : null;
+  if (!userId) return res.status(401).json({ error: "not_logged_in" });
+
+  const quiz = req.body?.quiz;
+  if (!quiz || typeof quiz !== "object") return res.status(400).json({ error: "quiz_required" });
+
+  const code = String(quiz.code || "").trim();
+  const title = String(quiz.title || "").trim();
+
+  if (!code) return res.status(400).json({ error: "code_required" });
+  if (!title) return res.status(400).json({ error: "title_required" });
+
+  // Keep your old rule: same owner cannot have the same title (case-insensitive)
+  const dupTitle = db.prepare(
+    "SELECT id FROM quizzes WHERE created_by = ? AND lower(title) = lower(?) AND code <> ?"
+  ).get(userId, title, code);
+  if (dupTitle) return res.status(409).json({ error: "duplicate_title" });
+
+  const dataJson = JSON.stringify(quiz);
+
+  const stmt = db.prepare(`
+    INSERT INTO quizzes (code, title, data_json, created_by)
+    VALUES (?, ?, ?, ?)
+    ON CONFLICT(code) DO UPDATE SET
+      title = excluded.title,
+      data_json = excluded.data_json
+    WHERE quizzes.created_by = excluded.created_by
+  `);
+
+  const result = stmt.run(code, title, dataJson, userId);
+  res.json({ ok: true, id: Number(result.lastInsertRowid || 0), code });
+});
+
+// Protect direct access to admin page (served before express.static)
+app.get("/admin.html", isAdmin({ redirectTo: "/index.html" }), (req, res) => {
+  res.sendFile(path.join(__dirname, "admin.html"));
+});
+
+// Protect any admin APIs under /api/admin/*
+app.use("/api/admin", isAdmin(), (req, res) => {
+  res.json({ ok: true });
 });
 
 app.use(express.static(__dirname));

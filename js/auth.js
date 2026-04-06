@@ -10,19 +10,54 @@ function getUser() {
     }
 }
 
-// ดึง users ทั้งหมด
-function getUsers() {
-    return JSON.parse(localStorage.getItem("users")) || [];
-}
-
-// บันทึก users ทั้งหมด
-function saveUsers(users) {
-    localStorage.setItem("users", JSON.stringify(users));
+function setUser(user) {
+    localStorage.setItem("user", JSON.stringify(user));
 }
 
 // เช็คว่า login อยู่ไหม
 function isLoggedIn() {
     return !!getUser();
+}
+
+async function register(username, email, password) {
+    const res = await fetch("/api/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username, email, password })
+    });
+    const body = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(body.error || "register_failed");
+    if (body.user) setUser(body.user);
+    return body.user;
+}
+
+async function login(username, password) {
+    const res = await fetch("/api/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username, password })
+    });
+    const body = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(body.error || "login_failed");
+    if (body.user) setUser(body.user);
+    return body.user;
+}
+
+async function fetchMe() {
+    const res = await fetch("/api/me");
+    if (!res.ok) return null;
+    const body = await res.json().catch(() => ({}));
+    if (body.user) setUser(body.user);
+    return body.user || null;
+}
+
+function updateAdminMenuVisibility(user) {
+    const el = document.getElementById("adminMenuItem");
+    if (!el) return;
+
+    const u = user || getUser();
+    const role = String(u?.role || "").toLowerCase();
+    el.style.display = role === "admin" ? "" : "none";
 }
 
 // บังคับให้ login ก่อน
@@ -73,42 +108,6 @@ function loadAuthArea() {
             <a href="register.html">ลงทะเบียน</a>
         `;
     }
-}
-
-function setUser(user) {
-    localStorage.setItem("user", JSON.stringify(user));
-}
-
-async function register(username, email, password) {
-    const res = await fetch("/api/register", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username, email, password })
-    });
-    const body = await res.json().catch(() => ({}));
-    if (!res.ok) throw new Error(body.error || "register_failed");
-    if (body.user) setUser(body.user);
-    return body.user;
-}
-
-async function login(username, password) {
-    const res = await fetch("/api/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username, password })
-    });
-    const body = await res.json().catch(() => ({}));
-    if (!res.ok) throw new Error(body.error || "login_failed");
-    if (body.user) setUser(body.user);
-    return body.user;
-}
-
-async function fetchMe() {
-    const res = await fetch("/api/me");
-    if (!res.ok) return null;
-    const body = await res.json().catch(() => ({}));
-    if (body.user) setUser(body.user);
-    return body.user || null;
 }
 
 // logout
