@@ -37,17 +37,6 @@ db.exec(`
   );
 `);
 
-db.exec(`
-  CREATE TABLE IF NOT EXISTS quizzes (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    code TEXT NOT NULL UNIQUE,
-    title TEXT NOT NULL,
-    data_json TEXT NOT NULL,
-    created_by INTEGER NOT NULL,
-    created_at TEXT NOT NULL DEFAULT (datetime('now'))
-  );
-`);
-
 const cols = db.prepare("PRAGMA table_info(scores)").all();
 if (
   cols.length > 0 &&
@@ -203,40 +192,6 @@ app.post("/api/save-score", (req, res) => {
   const result = stmt.run(finalUserId, finalUsername, Math.round(scoreNum));
 
   res.json({ ok: true, id: Number(result.lastInsertRowid) });
-});
-
-app.post("/api/save-quiz", (req, res) => {
-  const userId = req.session?.userId ? Number(req.session.userId) : null;
-  if (!userId) return res.status(401).json({ error: "not_logged_in" });
-
-  const quiz = req.body?.quiz;
-  if (!quiz || typeof quiz !== "object") return res.status(400).json({ error: "quiz_required" });
-
-  const code = String(quiz.code || "").trim();
-  const title = String(quiz.title || "").trim();
-
-  if (!code) return res.status(400).json({ error: "code_required" });
-  if (!title) return res.status(400).json({ error: "title_required" });
-
-  // Keep your old rule: same owner cannot have the same title (case-insensitive)
-  const dupTitle = db.prepare(
-    "SELECT id FROM quizzes WHERE created_by = ? AND lower(title) = lower(?) AND code <> ?"
-  ).get(userId, title, code);
-  if (dupTitle) return res.status(409).json({ error: "duplicate_title" });
-
-  const dataJson = JSON.stringify(quiz);
-
-  const stmt = db.prepare(`
-    INSERT INTO quizzes (code, title, data_json, created_by)
-    VALUES (?, ?, ?, ?)
-    ON CONFLICT(code) DO UPDATE SET
-      title = excluded.title,
-      data_json = excluded.data_json
-    WHERE quizzes.created_by = excluded.created_by
-  `);
-
-  const result = stmt.run(code, title, dataJson, userId);
-  res.json({ ok: true, id: Number(result.lastInsertRowid || 0), code });
 });
 
 // Protect direct access to admin page (served before express.static)
