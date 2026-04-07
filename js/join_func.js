@@ -10,18 +10,28 @@ function joinQuiz(){
         return;
     }
 
-    const quizzes = JSON.parse(localStorage.getItem("myQuizzes")) || [];
-    const found = quizzes.find(q => q.code === code);
+    fetch(`/api/quiz/${encodeURIComponent(code)}`)
+        .then(res => res.json().catch(() => ({})).then(body => ({ ok: res.ok, body })))
+        .then(({ ok, body }) => {
+            if (!ok) {
+                errorText.innerText = "ไม่พบรหัสข้อสอบนี้";
+                return;
+            }
 
-    if(!found){
-        errorText.innerText = "ไม่พบรหัสข้อสอบนี้";
-        return;
-    }
+            const quiz = body?.quiz?.data;
+            if (!quiz) {
+                errorText.innerText = "ไม่พบรหัสข้อสอบนี้";
+                return;
+            }
 
-    if(!found.questions || found.questions.length === 0){
-        errorText.innerText = "ข้อสอบนี้ยังไม่มีคำถาม";
-        return;
-    }
+            if(!quiz.questions || quiz.questions.length === 0){
+                errorText.innerText = "ข้อสอบนี้ยังไม่มีคำถาม";
+                return;
+            }
 
-    window.location.href = `play.html?code=${code}`;
+            window.location.href = `play.html?code=${encodeURIComponent(code)}`;
+        })
+        .catch(() => {
+            errorText.innerText = "ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้";
+        });
 }

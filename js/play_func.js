@@ -6,15 +6,13 @@ loadUserUI();
 
 const params = new URLSearchParams(window.location.search);
 const code = params.get("code");
-
-let quizzes = JSON.parse(localStorage.getItem("myQuizzes")) || [];
-let quiz = quizzes.find(q => q.code === code);
 const currentUser = getUser();
 
-if (!quiz) {
-    alert("ไม่พบข้อสอบ");
-    window.location.href = "index.html";
-    throw new Error("Quiz not found");
+let quiz = null;
+
+function fetchQuizFromServer(quizCode) {
+    return fetch(`/api/quiz/${encodeURIComponent(quizCode)}`)
+        .then(res => res.json().catch(() => ({})).then(body => ({ ok: res.ok, body })));
 }
 
 function goHome(){
@@ -160,50 +158,72 @@ function normalizeQuestion(q){
     return normalized;
 }
 
-if (!quiz.questions || quiz.questions.length === 0) {
-    alert("ข้อสอบนี้ยังไม่มีคำถาม");
-    if (currentUser.username === quiz.owner) {
-        window.location.href = `edit.html?code=${code}`;
-    } else {
-        window.location.href = "index.html";
-    }
-    throw new Error("Quiz has no questions");
-}
-
-quiz.questions = quiz.questions.map(normalizeQuestion);
-
-if (quiz.allowReview == null) quiz.allowReview = true;
-if (quiz.attemptsLimit == null) quiz.attemptsLimit = 0;
-
-const isCreator = currentUser.username === quiz.owner;
-const isPreview = isCreator;
-
-if (isPreview) {
-    document.getElementById("previewBanner").style.display = "flex";
-    document.title = "โหมดทดลองเล่น | quizWeb";
-}
-
-let quizResults = JSON.parse(localStorage.getItem("quizResults")) || [];
-let playerRecord = quizResults.find(r =>
-    r.quizCode === quiz.code && r.player === currentUser.username
-);
-
-if (!isCreator) {
-    const attemptsLimit = Number(quiz.attemptsLimit ?? 0);
-    const attemptsUsed = playerRecord ? playerRecord.attemptsUsed : 0;
-
-    if (attemptsLimit > 0 && attemptsUsed >= attemptsLimit) {
-        alert(`คุณใช้สิทธิ์ทำควิซนี้ครบ ${attemptsLimit} ครั้งแล้ว`);
-        window.location.href = "index.html";
-        throw new Error("Attempt limit reached");
-    }
-}
-
+let isCreator = false;
+let isPreview = false;
 let current = 0;
-let answers = quiz.questions.map(() => []);
-let timeLeft = Number(quiz.time) || 60;
+let answers = [];
+let timeLeft = 60;
 let submitted = false;
 let timerId = null;
+
+function initAfterQuizLoaded() {
+    if (!quiz) return;
+
+    if (!quiz.questions || quiz.questions.length === 0) {
+        alert("ข้อสอบนี้ยังไม่มีคำถาม");
+        if (currentUser.username === quiz.owner) {
+            window.location.href = `edit.html?code=${code}`;
+        } else {
+            window.location.href = "index.html";
+        }
+        return;
+    }
+
+    quiz.questions = quiz.questions.map(normalizeQuestion);
+
+    if (quiz.allowReview == null) quiz.allowReview = true;
+    if (quiz.attemptsLimit == null) quiz.attemptsLimit = 0;
+
+    isCreator = currentUser.username === quiz.owner;
+    isPreview = isCreator;
+
+    if (isPreview) {
+        document.getElementById("previewBanner").style.display = "flex";
+        document.title = "โหมดทดลองเล่น | quizWeb";
+    }
+
+    let quizResults = JSON.parse(localStorage.getItem("quizResults")) || [];
+    let playerRecord = quizResults.find(r =>
+        r.quizCode === quiz.code && r.player === currentUser.username
+    );
+
+    if (!isCreator) {
+        const attemptsLimit = Number(quiz.attemptsLimit ?? 0);
+        const attemptsUsed = playerRecord ? playerRecord.attemptsUsed : 0;
+
+        if (attemptsLimit > 0 && attemptsUsed >= attemptsLimit) {
+            alert(`คุณใช้สิทธิ์ทำควิซนี้ครบ ${attemptsLimit} ครั้งแล้ว`);
+            window.location.href = "index.html";
+            return;
+        }
+    }
+
+    current = 0;
+    answers = quiz.questions.map(() => []);
+    timeLeft = Number(quiz.time) || 60;
+    submitted = false;
+    timerId = null;
+
+    renderNavbarProfile();
+
+    /* ===== ตั้งค่า top card ===== */
+    document.getElementById("quizTitle").innerText = quiz.title || "Quiz";
+    document.getElementById("quizSubtitle").innerText =
+        `รหัสข้อสอบ ${quiz.code} \u2022 จำนวน ${quiz.questions.length} ข้อ`;
+
+    render();
+    startTimer();
+}
 
 function escapeHtml(text){
     return String(text ?? "")
@@ -599,12 +619,20 @@ document.addEventListener("click", function(e) {
     }
 });
 
-renderNavbarProfile();
-
-/* ===== ตั้งค่า top card ===== */
-document.getElementById("quizTitle").innerText = quiz.title || "Quiz";
-document.getElementById("quizSubtitle").innerText =
-    `รหัสข้อสอบ ${quiz.code} \u2022 จำนวน ${quiz.questions.length} ข้อ`;
-
-render();
-startTimer();
+fetchQuizFromServer(code).then(({ ok, body }) => {
+    if (!ok) {
+        alert("ไม่พบข้อสอบ");
+        window.location.href = "index.html";
+        return;
+    }
+    quiz = body?.quiz?.data;
+    if (!quiz) {
+        alert("ไม่พบข้อสอบ");
+        window.location.href = "index.html";
+        return;
+    }
+    initAfterQuizLoaded();
+}).catch(() => {
+    alert("โหลดข้อสอบไม่สำเร็จ (เซิร์ฟเวอร์ไม่พร้อม)");
+    window.location.href = "index.html";
+});

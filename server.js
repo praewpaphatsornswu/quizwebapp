@@ -37,6 +37,25 @@ db.exec(`
   );
 `);
 
+db.exec(`
+  CREATE TABLE IF NOT EXISTS quizzes (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    code TEXT NOT NULL UNIQUE,
+    title TEXT NOT NULL,
+    data_json TEXT NOT NULL,
+    created_by INTEGER,
+    created_at TEXT NOT NULL DEFAULT (datetime('now'))
+  );
+`);
+
+function safeJsonParse(text, fallback) {
+  try {
+    return JSON.parse(text);
+  } catch (e) {
+    return fallback;
+  }
+}
+
 const cols = db.prepare("PRAGMA table_info(scores)").all();
 if (
   cols.length > 0 &&
@@ -59,7 +78,7 @@ try {
 } catch (e) {}
 
 app.use(cors());
-app.use(bodyParser.json({ limit: "32kb" }));
+app.use(bodyParser.json({ limit: "512kb" }));
 app.use(bodyParser.urlencoded({ extended: true }));
 
 app.use(
@@ -192,6 +211,145 @@ app.post("/api/save-score", (req, res) => {
   const result = stmt.run(finalUserId, finalUsername, Math.round(scoreNum));
 
   res.json({ ok: true, id: Number(result.lastInsertRowid) });
+});
+
+app.post("/api/save-quiz", (req, res) => {
+  const sessionUserId = req.session?.userId ? Number(req.session.userId) : null;
+  if (!sessionUserId) return res.status(401).json({ error: "not_logged_in" });
+
+  const quiz = req.body?.quiz;
+  const code = String(quiz?.code || "").trim();
+  const title = String(quiz?.title || "").trim();
+
+  if (!code) return res.status(400).json({ error: "missing_code" });
+  if (!title) return res.status(400).json({ error: "missing_title" });
+
+  const existing = db
+    .prepare("SELECT id, created_by FROM quizzes WHERE code = ?")
+    .get(code);
+
+  if (existing && Number(existing.created_by) !== sessionUserId) {
+    return res.status(403).json({ error: "forbidden" });
+  }
+
+  // Ensure we always persist the full quiz object (questions/options/timing/settings)
+  const payload = {
+    ...quiz,
+    code,
+    title,
+    owner: quiz?.owner || undefined
+  };
+  const dataJson = JSON.stringify(payload);
+
+  if (existing) {
+    db.prepare(
+      "UPDATE quizzes SET title = ?, data_json = ? WHERE code = ?"
+    ).run(title, dataJson, code);
+  } else {
+    db.prepare(
+      "INSERT INTO quizzes (code, title, data_json, created_by) VALUES (?, ?, ?, ?)"
+    ).run(code, title, dataJson, sessionUserId);
+  }
+
+  const row = db
+    .prepare(
+      `SELECT q.code, q.title, q.created_by, q.created_at, u.username AS created_by_username
+       FROM quizzes q
+       LEFT JOIN users u ON u.id = q.created_by
+       WHERE q.code = ?`
+    )
+    .get(code);
+
+  res.json({ ok: true, quiz: row });
+});
+
+app.get("/api/quizzes", (req, res) => {
+  const mine = String(req.query?.mine || "").trim() === "1";
+  const sessionUserId = req.session?.userId ? Number(req.session.userId) : null;
+
+  let rows = [];
+  if (mine) {
+    if (!sessionUserId) return res.status(401).json({ error: "not_logged_in" });
+    rows = db
+      .prepare(
+        `SELECT q.code, q.title, q.data_json, q.created_by, q.created_at,
+                u.username AS created_by_username
+         FROM quizzes q
+         LEFT JOIN users u ON u.id = q.created_by
+         WHERE q.created_by = ?
+         ORDER BY q.created_at DESC`
+      )
+      .all(sessionUserId);
+  } else {
+    rows = db
+      .prepare(
+        `SELECT q.code, q.title, q.data_json, q.created_by, q.created_at,
+                u.username AS created_by_username
+         FROM quizzes q
+         LEFT JOIN users u ON u.id = q.created_by
+         ORDER BY q.created_at DESC`
+      )
+      .all();
+  }
+
+  const quizzes = rows.map((r) => {
+    const data = safeJsonParse(r.data_json, {});
+    return {
+      code: r.code,
+      title: r.title,
+      created_by: r.created_by,
+      created_by_username: r.created_by_username,
+      created_at: r.created_at,
+      data
+    };
+  });
+
+  res.json({ quizzes });
+});
+
+app.get("/api/quiz/:code", (req, res) => {
+  const code = String(req.params?.code || "").trim();
+  if (!code) return res.status(400).json({ error: "missing_code" });
+
+  const row = db
+    .prepare(
+      `SELECT q.code, q.title, q.data_json, q.created_by, q.created_at,
+              u.username AS created_by_username
+       FROM quizzes q
+       LEFT JOIN users u ON u.id = q.created_by
+       WHERE q.code = ?`
+    )
+    .get(code);
+
+  if (!row) return res.status(404).json({ error: "not_found" });
+  const data = safeJsonParse(row.data_json, null);
+  if (!data) return res.status(500).json({ error: "invalid_quiz_data" });
+
+  res.json({
+    quiz: {
+      code: row.code,
+      title: row.title,
+      created_by: row.created_by,
+      created_by_username: row.created_by_username,
+      created_at: row.created_at,
+      data
+    }
+  });
+});
+
+app.delete("/api/quiz/:code", (req, res) => {
+  const sessionUserId = req.session?.userId ? Number(req.session.userId) : null;
+  if (!sessionUserId) return res.status(401).json({ error: "not_logged_in" });
+
+  const code = String(req.params?.code || "").trim();
+  if (!code) return res.status(400).json({ error: "missing_code" });
+
+  const row = db.prepare("SELECT created_by FROM quizzes WHERE code = ?").get(code);
+  if (!row) return res.status(404).json({ error: "not_found" });
+  if (Number(row.created_by) !== sessionUserId) return res.status(403).json({ error: "forbidden" });
+
+  db.prepare("DELETE FROM quizzes WHERE code = ?").run(code);
+  res.json({ ok: true });
 });
 
 // Protect direct access to admin page (served before express.static)

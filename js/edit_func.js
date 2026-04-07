@@ -7,20 +7,13 @@ loadUserUI();
 const params = new URLSearchParams(window.location.search);
 const code = params.get("code");
 
-let quizzes = JSON.parse(localStorage.getItem("myQuizzes")) || [];
-let quiz = quizzes.find(q => q.code === code);
+let quizzes = [];
+let quiz = null;
 const currentUser = getUser();
 
-if (!quiz) {
-    alert("ไม่พบควิซ");
-    window.location.href = "create.html";
-    throw new Error("Quiz not found");
-}
-
-if (quiz.owner && quiz.owner !== currentUser.username) {
-    alert("คุณไม่มีสิทธิ์แก้ไขควิซนี้");
-    window.location.href = "dashboard.html";
-    throw new Error("Unauthorized");
+function fetchQuizFromServer(quizCode) {
+    return fetch(`/api/quiz/${encodeURIComponent(quizCode)}`)
+        .then(res => res.json().catch(() => ({})).then(body => ({ ok: res.ok, body })));
 }
 
 function goHome(){
@@ -169,28 +162,6 @@ function normalizeQuestion(q){
 
     return normalized;
 }
-
-if (!quiz.questions) quiz.questions = [];
-quiz.questions = quiz.questions.map(normalizeQuestion);
-
-if (quiz.time == null) quiz.time = 0;
-if (quiz.attemptsLimit == null) quiz.attemptsLimit = 0;
-if (quiz.allowReview == null) quiz.allowReview = true;
-if (!quiz.title) quiz.title = "ไม่มีชื่อควิซ";
-
-document.getElementById("pageTitle").innerText = `แก้ไขควิซ: ${quiz.title}`;
-document.getElementById("quizCode").innerText = quiz.code;
-document.getElementById("modalQuizCode").innerText = quiz.code;
-document.getElementById("quizMeta").innerText = `รหัสข้อสอบ ${quiz.code} • สำหรับผู้สร้างควิซ`;
-
-document.getElementById("quizTitleInput").value = quiz.title;
-
-const totalTime = quiz.time || 0;
-document.getElementById("quizMinuteInput").value = Math.floor(totalTime / 60);
-document.getElementById("quizSecondInput").value = totalTime % 60;
-
-document.getElementById("attemptsLimit").value = String(quiz.attemptsLimit ?? 0);
-document.getElementById("allowReview").value = String(quiz.allowReview);
 
 function escapeHtml(text){
     return String(text ?? "")
@@ -512,14 +483,16 @@ function saveQuiz(showPopup = true){
         };
     });
 
-    const index = quizzes.findIndex(q => q.code === code);
-    if (index === -1) {
-        alert("ไม่พบข้อมูลข้อสอบสำหรับบันทึก");
-        return false;
-    }
-
-    quizzes[index] = { ...quiz };
-    localStorage.setItem("myQuizzes", JSON.stringify(quizzes));
+    fetch("/api/save-quiz", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ quiz })
+    }).then(async (res) => {
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) throw new Error(data.error || "save_failed");
+    }).catch(() => {
+        alert("บันทึกไม่สำเร็จ (เซิร์ฟเวอร์ไม่พร้อม)");
+    });
 
     document.getElementById("pageTitle").innerText = `แก้ไขควิซ: ${quiz.title}`;
     document.getElementById("quizMeta").innerText = `รหัสข้อสอบ ${quiz.code} • สำหรับผู้สร้างควิซ`;
@@ -570,5 +543,53 @@ document.addEventListener("click", function (e) {
     }
 });
 
-renderNavbarProfile();
-render();
+fetchQuizFromServer(code).then(({ ok, body }) => {
+    if (!ok) {
+        alert("ไม่พบควิซ");
+        window.location.href = "create.html";
+        return;
+    }
+
+    quiz = body?.quiz?.data;
+    if (!quiz) {
+        alert("ไม่พบควิซ");
+        window.location.href = "create.html";
+        return;
+    }
+
+    if (quiz.owner && quiz.owner !== currentUser.username) {
+        alert("คุณไม่มีสิทธิ์แก้ไขควิซนี้");
+        window.location.href = "dashboard.html";
+        return;
+    }
+
+    quizzes = [quiz];
+
+    if (!quiz.questions) quiz.questions = [];
+    quiz.questions = quiz.questions.map(normalizeQuestion);
+
+    if (quiz.time == null) quiz.time = 0;
+    if (quiz.attemptsLimit == null) quiz.attemptsLimit = 0;
+    if (quiz.allowReview == null) quiz.allowReview = true;
+    if (!quiz.title) quiz.title = "ไม่มีชื่อควิซ";
+
+    document.getElementById("pageTitle").innerText = `แก้ไขควิซ: ${quiz.title}`;
+    document.getElementById("quizCode").innerText = quiz.code;
+    document.getElementById("modalQuizCode").innerText = quiz.code;
+    document.getElementById("quizMeta").innerText = `รหัสข้อสอบ ${quiz.code} • สำหรับผู้สร้างควิซ`;
+
+    document.getElementById("quizTitleInput").value = quiz.title;
+
+    const totalTime = quiz.time || 0;
+    document.getElementById("quizMinuteInput").value = Math.floor(totalTime / 60);
+    document.getElementById("quizSecondInput").value = totalTime % 60;
+
+    document.getElementById("attemptsLimit").value = String(quiz.attemptsLimit ?? 0);
+    document.getElementById("allowReview").value = String(quiz.allowReview);
+
+    renderNavbarProfile();
+    render();
+}).catch(() => {
+    alert("โหลดควิซไม่สำเร็จ (เซิร์ฟเวอร์ไม่พร้อม)");
+    window.location.href = "dashboard.html";
+});

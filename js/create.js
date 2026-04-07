@@ -299,19 +299,6 @@ function createQuiz() {
         return;
     }
 
-    let quizzes = JSON.parse(localStorage.getItem("myQuizzes")) || [];
-
-    const existingQuiz = quizzes.find(q =>
-        q.owner === currentUser.username &&
-        normalizeTitle(q.title) === normalizeTitle(title)
-    );
-
-    if (existingQuiz) {
-        showError("คุณมีควิซชื่อนี้อยู่แล้ว กรุณาใช้ชื่ออื่น");
-        setCreateButtonLoading(false);
-        return;
-    }
-
     const code    = "Q" + Date.now();
     const newQuiz = {
         code:          code,
@@ -324,9 +311,35 @@ function createQuiz() {
         allowReview:   allowReview
     };
 
-    quizzes.push(newQuiz);
-    localStorage.setItem("myQuizzes", JSON.stringify(quizzes));
-    window.location.href = `edit.html?code=${code}`;
+    fetch("/api/quizzes?mine=1")
+        .then(res => res.json())
+        .then(body => {
+            const quizzes = Array.isArray(body?.quizzes) ? body.quizzes.map(q => q.data || {}) : [];
+            const existingQuiz = quizzes.find(q =>
+                q.owner === currentUser.username &&
+                normalizeTitle(q.title) === normalizeTitle(title)
+            );
+
+            if (existingQuiz) {
+                showError("คุณมีควิซชื่อนี้อยู่แล้ว กรุณาใช้ชื่ออื่น");
+                setCreateButtonLoading(false);
+                return;
+            }
+
+            return fetch("/api/save-quiz", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ quiz: newQuiz })
+            }).then(async (res) => {
+                const data = await res.json().catch(() => ({}));
+                if (!res.ok) throw new Error(data.error || "save_failed");
+                window.location.href = `edit.html?code=${code}`;
+            });
+        })
+        .catch(() => {
+            showError("ไม่สามารถสร้างควิซได้ (เซิร์ฟเวอร์ไม่พร้อม)");
+            setCreateButtonLoading(false);
+        });
 }
 
 /* ── spinning keyframe ── */

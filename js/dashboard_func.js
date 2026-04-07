@@ -266,62 +266,67 @@ function getQuizStats(quizCode) {
 ────────────────────────────────────────────── */
 function loadQuizzes() {
     const container = document.getElementById("quizContainer");
-    let quizzes = JSON.parse(localStorage.getItem("myQuizzes")) || [];
-    quizzes = quizzes.filter(q => q.owner === currentUser.username);
+    container.innerHTML = "";
 
-    if (quizzes.length === 0) {
-        container.innerHTML = `
-        <div class="empty">
-            <div class="empty-icon">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
-                     stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-                    <polyline points="14 2 14 8 20 8"/>
-                    <line x1="12" y1="18" x2="12" y2="12"/>
-                    <line x1="9" y1="15" x2="15" y2="15"/>
-                </svg>
-            </div>
-            <h2>ยังไม่มีข้อสอบ</h2>
-            <p>เริ่มสร้างข้อสอบแรกของคุณได้เลย<br>กดปุ่มด้านล่างเพื่อเริ่มต้น</p>
-            <button class="solid-btn btn-glow" onclick="goCreate()">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
-                     stroke-linecap="round" width="17" height="17">
-                    <line x1="12" y1="5" x2="12" y2="19"/>
-                    <line x1="5" y1="12" x2="19" y2="12"/>
-                </svg>
-                สร้างควิซใหม่
-            </button>
-        </div>`;
-        return;
-    }
+    fetch("/api/quizzes?mine=1")
+        .then(res => res.json())
+        .then(body => {
+            let quizzes = Array.isArray(body?.quizzes) ? body.quizzes.map(q => q.data || {}) : [];
+            quizzes = quizzes.filter(q => q.owner === currentUser.username);
 
-    let html = `<div class="grid">`;
-
-    quizzes.forEach((q, i) => {
-        if (q.allowReview == null) q.allowReview = true;
-        const minutes = Math.floor((q.time || 0) / 60);
-        const seconds = (q.time || 0) % 60;
-        const stats   = getQuizStats(q.code);
-        const delay   = (i * 0.07).toFixed(2);
-
-        html += `
-        <div class="card reveal" style="transition-delay:${delay}s">
-            ${q.code === newCode ? `<div class="badge-new">ใหม่</div>` : ""}
-            <div class="card-accent"></div>
-            <div class="card-title">${escapeHtml(q.title || "ไม่มีชื่อควิซ")}</div>
-
-            <div class="info">
-                <div class="info-row">
-                    <span class="info-row-label">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                             stroke-linecap="round">
-                            <rect x="9" y="9" width="13" height="13" rx="2"/>
-                            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+            if (quizzes.length === 0) {
+                container.innerHTML = `
+                <div class="empty">
+                    <div class="empty-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+                             stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                            <polyline points="14 2 14 8 20 8"/>
+                            <line x1="12" y1="18" x2="12" y2="12"/>
+                            <line x1="9" y1="15" x2="15" y2="15"/>
                         </svg>
-                        รหัสข้อสอบ
-                    </span>
-                    <span class="info-row-value">${escapeHtml(q.code)}</span>
-                </div>
+                    </div>
+                    <h2>ยังไม่มีข้อสอบ</h2>
+                    <p>เริ่มสร้างข้อสอบแรกของคุณได้เลย<br>กดปุ่มด้านล่างเพื่อเริ่มต้น</p>
+                    <button class="solid-btn btn-glow" onclick="goCreate()">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                             stroke-linecap="round" width="17" height="17">
+                            <line x1="12" y1="5" x2="12" y2="19"/>
+                            <line x1="5" y1="12" x2="19" y2="12"/>
+                        </svg>
+                        สร้างควิซใหม่
+                    </button>
+                </div>`;
+                return;
+            }
+
+            let html = `<div class="grid">`;
+
+            quizzes.forEach((q, i) => {
+                if (q.allowReview == null) q.allowReview = true;
+                const minutes = Math.floor((q.time || 0) / 60);
+                const seconds = (q.time || 0) % 60;
+                const stats   = getQuizStats(q.code);
+                const delay   = (i * 0.07).toFixed(2);
+
+                html += `
+                <div class="card reveal" style="transition-delay:${delay}s">
+                    ${q.code === newCode ? `<div class="badge-new">ใหม่</div>` : ""}
+                    <div class="card-accent"></div>
+                    <div class="card-title">${escapeHtml(q.title || "ไม่มีชื่อควิซ")}</div>
+
+                    <div class="info">
+                        <div class="info-row">
+                            <span class="info-row-label">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                     stroke-linecap="round">
+                                    <rect x="9" y="9" width="13" height="13" rx="2"/>
+                                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+                                </svg>
+                                รหัสข้อสอบ
+                            </span>
+                            <span class="info-row-value">${escapeHtml(q.code)}</span>
+                        </div>
 
                 <div class="info-row">
                     <span class="info-row-label">
@@ -347,19 +352,19 @@ function loadQuizzes() {
                     <span class="info-row-value">${minutes} นาที ${seconds} วินาที</span>
                 </div>
 
-                <div class="info-row">
-                    <span class="info-row-label">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                             stroke-linecap="round">
-                            <rect x="3" y="4" width="18" height="18" rx="2"/>
-                            <line x1="16" y1="2" x2="16" y2="6"/>
-                            <line x1="8" y1="2" x2="8" y2="6"/>
-                            <line x1="3" y1="10" x2="21" y2="10"/>
-                        </svg>
-                        วันที่สร้าง
-                    </span>
-                    <span class="info-row-value">${escapeHtml(q.createdAt || "-")}</span>
-                </div>
+                        <div class="info-row">
+                            <span class="info-row-label">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                     stroke-linecap="round">
+                                    <rect x="3" y="4" width="18" height="18" rx="2"/>
+                                    <line x1="16" y1="2" x2="16" y2="6"/>
+                                    <line x1="8" y1="2" x2="8" y2="6"/>
+                                    <line x1="3" y1="10" x2="21" y2="10"/>
+                                </svg>
+                                วันที่สร้าง
+                            </span>
+                            <span class="info-row-value">${escapeHtml(q.createdAt || "-")}</span>
+                        </div>
 
                 <div class="info-row">
                     <span class="info-row-label">
@@ -421,45 +426,54 @@ function loadQuizzes() {
                 </div>
             </div>
 
-            <div class="actions">
-                <button class="btn btn-light" onclick="editQuiz('${q.code}')">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                         stroke-linecap="round">
-                        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
-                        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
-                    </svg>
-                    แก้ไข
-                </button>
-                <button class="btn btn-primary" onclick="playQuiz('${q.code}')">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                         stroke-linecap="round">
-                        <polygon points="5 3 19 12 5 21 5 3"/>
-                    </svg>
-                    เล่น
-                </button>
-                <button class="btn btn-danger" onclick="deleteQuiz('${q.code}')">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                         stroke-linecap="round">
-                        <polyline points="3 6 5 6 21 6"/>
-                        <path d="M19 6l-1 14H6L5 6"/>
-                        <path d="M10 11v6"/><path d="M14 11v6"/>
-                        <path d="M9 6V4h6v2"/>
-                    </svg>
-                    ลบ
-                </button>
-            </div>
-        </div>`;
-    });
+                    <div class="actions">
+                        <button class="btn btn-light" onclick="editQuiz('${q.code}')">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                 stroke-linecap="round">
+                                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                            </svg>
+                            แก้ไข
+                        </button>
+                        <button class="btn btn-primary" onclick="playQuiz('${q.code}')">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                 stroke-linecap="round">
+                                <polygon points="5 3 19 12 5 21 5 3"/>
+                            </svg>
+                            เล่น
+                        </button>
+                        <button class="btn btn-danger" onclick="deleteQuiz('${q.code}')">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                 stroke-linecap="round">
+                                <polyline points="3 6 5 6 21 6"/>
+                                <path d="M19 6l-1 14H6L5 6"/>
+                                <path d="M10 11v6"/><path d="M14 11v6"/>
+                                <path d="M9 6V4h6v2"/>
+                            </svg>
+                            ลบ
+                        </button>
+                    </div>
+                </div>`;
+            });
 
-    html += `</div>`;
-    container.innerHTML = html;
+            html += `</div>`;
+            container.innerHTML = html;
 
-    // Scroll reveal
-    requestAnimationFrame(() => {
-        document.querySelectorAll(".card.reveal").forEach((el, i) => {
-            setTimeout(() => el.classList.add("revealed"), 60 + i * 70);
+            // Scroll reveal
+            requestAnimationFrame(() => {
+                document.querySelectorAll(".card.reveal").forEach((el, i) => {
+                    setTimeout(() => el.classList.add("revealed"), 60 + i * 70);
+                });
+            });
+        })
+        .catch(() => {
+            container.innerHTML = `
+            <div class="empty">
+                <h2>โหลดข้อสอบไม่สำเร็จ</h2>
+                <p>เซิร์ฟเวอร์ไม่พร้อม หรือคุณออฟไลน์อยู่</p>
+                <button class="solid-btn btn-glow" onclick="loadQuizzes()">ลองใหม่</button>
+            </div>`;
         });
-    });
 }
 
 /* ──────────────────────────────────────────────
@@ -472,15 +486,20 @@ function deleteQuiz(code) {
     const ok = confirm("ต้องการลบข้อสอบนี้ใช่ไหม?");
     if (!ok) return;
 
-    let quizzes = JSON.parse(localStorage.getItem("myQuizzes")) || [];
-    quizzes = quizzes.filter(q => !(q.code === code && q.owner === currentUser.username));
-    localStorage.setItem("myQuizzes", JSON.stringify(quizzes));
-
     let quizResults = JSON.parse(localStorage.getItem("quizResults")) || [];
     quizResults = quizResults.filter(r => r.quizCode !== code);
     localStorage.setItem("quizResults", JSON.stringify(quizResults));
 
-    loadQuizzes();
+    fetch(`/api/quiz/${encodeURIComponent(code)}`, { method: "DELETE" })
+        .then(res => res.json().catch(() => ({})).then(body => ({ ok: res.ok, body })))
+        .then(({ ok, body }) => {
+            if (!ok) throw new Error(body.error || "delete_failed");
+            loadQuizzes();
+        })
+        .catch(() => {
+            alert("ลบข้อสอบไม่สำเร็จ (เซิร์ฟเวอร์ไม่พร้อม)");
+            loadQuizzes();
+        });
 }
 
 /* ──────────────────────────────────────────────
