@@ -96,12 +96,20 @@ function sanitizeUser(row) {
 }
 
 function isAdmin(options = {}) {
-  const { redirectTo = "/index.html" } = options;
+  const {
+    redirectTo = "/index.html",
+    loginRedirectTo = "/login.html",
+    log = true,
+    forceHtmlRedirect = false
+  } = options;
 
   return (req, res, next) => {
     const userId = req.session?.userId;
     if (!userId) {
-      if (req.accepts("html")) return res.redirect("/login.html");
+      if (log) {
+        console.log(`[isAdmin] not_logged_in path=${req.path} method=${req.method}`);
+      }
+      if (forceHtmlRedirect || req.accepts("html")) return res.redirect(loginRedirectTo);
       return res.status(401).json({ error: "not_logged_in" });
     }
 
@@ -110,8 +118,13 @@ function isAdmin(options = {}) {
       .get(Number(userId));
 
     const role = String(row?.role || "").toLowerCase();
+    if (log) {
+      console.log(
+        `[isAdmin] path=${req.path} method=${req.method} userId=${Number(userId)} role=${role || "(none)"}`
+      );
+    }
     if (role !== "admin") {
-      if (req.accepts("html")) return res.redirect(redirectTo);
+      if (forceHtmlRedirect || req.accepts("html")) return res.redirect(redirectTo);
       return res.status(403).json({ error: "forbidden" });
     }
 
@@ -353,9 +366,13 @@ app.delete("/api/quiz/:code", (req, res) => {
 });
 
 // Protect direct access to admin page (served before express.static)
-app.get("/admin.html", isAdmin({ redirectTo: "/index.html" }), (req, res) => {
+app.get(
+  "/admin.html",
+  isAdmin({ redirectTo: "/index.html", loginRedirectTo: "/index.html", forceHtmlRedirect: true, log: true }),
+  (req, res) => {
   res.sendFile(path.join(__dirname, "admin.html"));
-});
+  }
+);
 
 // Protect any admin APIs under /api/admin/*
 app.use("/api/admin", isAdmin(), (req, res) => {

@@ -57,7 +57,33 @@ function updateAdminMenuVisibility(user) {
 
     const u = user || getUser();
     const role = String(u?.role || "").toLowerCase();
-    el.style.display = role === "admin" ? "" : "none";
+    if (role === "admin") {
+        // Some pages use <button>, some use <a>
+        const tag = String(el.tagName || "").toLowerCase();
+        el.style.display = tag === "a" ? "block" : "flex";
+    } else {
+        el.style.display = "none";
+    }
+}
+
+function initAdminMenu() {
+    if (typeof fetchMe === "function") {
+        fetchMe()
+            .then(function (u) {
+                updateAdminMenuVisibility(u);
+            })
+            .catch(function () {
+                updateAdminMenuVisibility();
+            });
+    } else {
+        updateAdminMenuVisibility();
+    }
+}
+
+if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", initAdminMenu);
+} else {
+    initAdminMenu();
 }
 
 // บังคับให้ login ก่อน
