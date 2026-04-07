@@ -1,119 +1,290 @@
 <!DOCTYPE html>
 <html lang="th">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>สร้างควิซ | quizWeb</title>
-
-<link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/create.css">
-
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>สร้างควิซ | quizWeb</title>
+    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/index.css">
+    <link rel="stylesheet" href="css/create.css">
 </head>
-
 <body>
 
+<!-- Ambient background blobs -->
+<div class="ambient-wrap" aria-hidden="true">
+    <div class="blob blob-1"></div>
+    <div class="blob blob-2"></div>
+    <div class="blob blob-3"></div>
+</div>
+
+<!-- Floating particles -->
+<div class="particles" aria-hidden="true">
+    <span class="particle"></span>
+    <span class="particle"></span>
+    <span class="particle"></span>
+    <span class="particle"></span>
+    <span class="particle"></span>
+    <span class="particle"></span>
+    <span class="particle"></span>
+    <span class="particle"></span>
+</div>
+
+<!-- ── NAV (เหมือน index.html ทุกอย่าง) ── -->
 <nav>
-    <div class="container-wide nav-inner">
-        <div class="logo" onclick="goHome()">
-            <div class="logo-badge">🧠</div>
+    <div class="container nav-inner">
+        <div class="logo" onclick="location.href='index.html'">
+            <div class="logo-badge">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/>
+                    <circle cx="12" cy="12" r="10"/>
+                    <line x1="12" y1="17" x2="12.01" y2="17"/>
+                </svg>
+            </div>
             <div class="logo-text">
                 <strong>quizWeb</strong>
-                <span>สร้าง • แชร์ • เล่นควิซออนไลน์</span>
+                <span>สร้าง &bull; แชร์ &bull; เล่นควิซออนไลน์</span>
             </div>
         </div>
 
-        <div class="auth-area">
-            <div id="profileMenuWrap" class="profile-menu-wrap">
-                <button id="profilePill" class="profile-pill" type="button">
-                    <div class="profile-avatar">
-                        <span class="profile-avatar-fallback" id="navAvatarFallback">U</span>
-                        <img id="navAvatarImg" alt="user avatar" style="display:none;">
+        <div class="nav-right">
+            <div class="auth-area">
+                <div id="profileMenuWrap" class="profile-menu-wrap">
+                    <button id="profilePill" class="profile-pill" type="button">
+                        <div class="profile-avatar">
+                            <span class="profile-avatar-fallback" id="navAvatarFallback">U</span>
+                            <img id="navAvatarImg" alt="user avatar" style="display:none;">
+                        </div>
+                        <div class="profile-pill-text">
+                            <strong id="navUserName">ผู้ใช้</strong>
+                            <span>กดเพื่อเปิดเมนู</span>
+                        </div>
+                        <div class="profile-pill-arrow">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+                                <polyline points="6 9 12 15 18 9"/>
+                            </svg>
+                        </div>
+                    </button>
+
+                    <div class="profile-dropdown">
+                        <button class="dropdown-item" type="button" onclick="goDashboard()">
+                            <svg class="di-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
+                            </svg>
+                            <span>ไปคลังข้อสอบ</span>
+                        </button>
+                        <button class="dropdown-item" type="button" onclick="openAvatarModal()">
+                            <svg class="di-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="12" cy="8" r="4"/>
+                                <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/>
+                            </svg>
+                            <span>เปลี่ยนรูปโปรไฟล์</span>
+                        </button>
+                        <div class="dropdown-divider"></div>
+                        <button class="dropdown-item danger" type="button" onclick="handleLogout()">
+                            <svg class="di-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+                                <polyline points="16 17 21 12 16 7"/>
+                                <line x1="21" y1="12" x2="9" y2="12"/>
+                            </svg>
+                            <span>ออกจากระบบ</span>
+                        </button>
                     </div>
-
-                    <div class="profile-pill-text">
-                        <strong id="navUserName">ผู้ใช้</strong>
-                        <span>กดเพื่อเปิดเมนู</span>
-                    </div>
-
-                    <div class="profile-pill-arrow">▾</div>
-                </button>
-
-                <div class="profile-dropdown">
-                    <button class="dropdown-item" type="button" onclick="goDashboard()">
-                        <span>📚</span>
-                        <span>ไปคลังข้อสอบ</span>
-                    </button>
-
-                    <button class="dropdown-item" type="button" onclick="goCreate()">
-                        <span>📝</span>
-                        <span>สร้างควิซ</span>
-                    </button>
-
-                    <div class="dropdown-divider"></div>
-
-                    <button class="dropdown-item danger" type="button" onclick="handleLogout()">
-                        <span>🚪</span>
-                        <span>ออกจากระบบ</span>
-                    </button>
                 </div>
-            </div>
 
-            <button id="loginBtn" class="solid-btn login-inline-btn" type="button" onclick="goLogin()">เข้าสู่ระบบ</button>
+                <button id="loginBtn" class="solid-btn login-inline-btn" type="button" onclick="goLogin()">เข้าสู่ระบบ</button>
+            </div>
         </div>
     </div>
 </nav>
 
+<!-- ── PAGE ── -->
 <div class="page">
-    <div class="form-card">
-        <div class="head">
-            <h1>สร้างควิซใหม่</h1>
-            <p>
-                ตั้งชื่อควิซ กำหนดเวลา จำนวนครั้งที่ผู้เล่นทำได้
-                และกำหนดว่าผู้เล่นสามารถ review ข้อสอบหลังทำเสร็จได้หรือไม่
-                จากนั้นระบบจะพาไปหน้าแก้ไขข้อสอบทันที
-            </p>
+    <div class="page-header reveal">
+        <div class="page-header-left">
+            <div class="page-badge">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                    <line x1="12" y1="5" x2="12" y2="19"/>
+                    <line x1="5" y1="12" x2="19" y2="12"/>
+                </svg>
+                สร้างควิซใหม่
+            </div>
+            <h1>ตั้งค่าควิซของคุณ</h1>
+            <p>กรอกรายละเอียด ระบบจะพาไปหน้าเพิ่มข้อสอบทันที</p>
+        </div>
+    </div>
+
+    <div class="form-card reveal">
+        <!-- ชื่อควิซ -->
+        <div class="field-group">
+            <label class="field-label" for="title">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                    <path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>
+                </svg>
+                ชื่อควิซ
+            </label>
+            <input class="field-input" type="text" id="title" placeholder="เช่น ควิซวิชา Network">
         </div>
 
-        <label class="label" for="title">ชื่อควิซ</label>
-        <input class="input" type="text" id="title" placeholder="เช่น ควิซวิชา Network">
-
-        <label class="label">เวลา</label>
-        <div class="time-row">
-            <input class="input" type="number" id="minute" placeholder="นาที" min="0">
-            <input class="input" type="number" id="second" placeholder="วินาที" min="0" max="59">
+        <!-- เวลา -->
+        <div class="field-group">
+            <label class="field-label">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                    <circle cx="12" cy="12" r="10"/>
+                    <polyline points="12 6 12 12 16 14"/>
+                </svg>
+                เวลา
+            </label>
+            <div class="time-row">
+                <div class="time-input-wrap">
+                    <input class="field-input" type="number" id="minute" placeholder="0" min="0">
+                    <span class="time-unit">นาที</span>
+                </div>
+                <div class="time-input-wrap">
+                    <input class="field-input" type="number" id="second" placeholder="0" min="0" max="59">
+                    <span class="time-unit">วินาที</span>
+                </div>
+            </div>
         </div>
 
-        <label class="label" for="attemptsLimit">จำนวนครั้งที่ผู้เล่นทำได้</label>
-        <select class="input" id="attemptsLimit">
-            <option value="1">1 ครั้ง</option>
-            <option value="2">2 ครั้ง</option>
-            <option value="3">3 ครั้ง</option>
-            <option value="0">ไม่จำกัด</option>
-        </select>
+        <!-- จำนวนครั้ง -->
+        <div class="field-group">
+            <label class="field-label" for="attemptsLimit">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                    <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/>
+                    <polyline points="17 6 23 6 23 12"/>
+                </svg>
+                จำนวนครั้งที่ผู้เล่นทำได้
+            </label>
+            <div class="select-wrap">
+                <select class="field-input field-select" id="attemptsLimit">
+                    <option value="1">1 ครั้ง</option>
+                    <option value="2">2 ครั้ง</option>
+                    <option value="3">3 ครั้ง</option>
+                    <option value="0">ไม่จำกัด</option>
+                </select>
+                <svg class="select-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+                    <polyline points="6 9 12 15 18 9"/>
+                </svg>
+            </div>
+        </div>
 
-        <label class="label" for="allowReview">อนุญาตให้ review ข้อสอบนี้ไหม</label>
-        <select class="input" id="allowReview">
-            <option value="true">อนุญาต</option>
-            <option value="false">ไม่อนุญาต</option>
-        </select>
+        <!-- Review -->
+        <div class="field-group">
+            <label class="field-label" for="allowReview">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                    <circle cx="12" cy="12" r="3"/>
+                </svg>
+                อนุญาตให้ Review ข้อสอบหลังทำเสร็จ
+            </label>
+            <div class="select-wrap">
+                <select class="field-input field-select" id="allowReview">
+                    <option value="true">อนุญาต</option>
+                    <option value="false">ไม่อนุญาต</option>
+                </select>
+                <svg class="select-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+                    <polyline points="6 9 12 15 18 9"/>
+                </svg>
+            </div>
+        </div>
 
+        <!-- Info box -->
         <div class="info-box">
-            • ชื่อควิซของเจ้าของคนเดิมห้ามซ้ำกัน<br>
-            • ถ้าเจ้าของควิซเล่นเอง ระบบจะถือเป็นโหมดทดลองเล่นและไม่เก็บสถิติ<br>
-            • เวลาเก็บเป็น นาที + วินาที จริงแล้ว จะไม่โดนรีเซ็ตเป็น 0 วินาที
+            <div class="info-box-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                    <circle cx="12" cy="12" r="10"/>
+                    <line x1="12" y1="8" x2="12" y2="12"/>
+                    <line x1="12" y1="16" x2="12.01" y2="16"/>
+                </svg>
+            </div>
+            <div class="info-box-text">
+                <div class="info-item">ชื่อควิซของเจ้าของคนเดิมห้ามซ้ำกัน</div>
+                <div class="info-item">ถ้าเจ้าของควิซเล่นเอง ระบบจะถือเป็นโหมดทดลองเล่นและไม่เก็บสถิติ</div>
+                <div class="info-item">เวลาเก็บเป็น นาที + วินาที จริง จะไม่โดนรีเซ็ตเป็น 0 วินาที</div>
+            </div>
         </div>
 
-        <div class="error" id="errorText"></div>
+        <!-- Error -->
+        <div class="error-text" id="errorText"></div>
 
-        <div class="actions">
-            <button class="btn-light" onclick="goDashboard()">ไปคลังข้อสอบ</button>
-            <button class="btn-primary" id="createBtn" onclick="createQuiz()">สร้างควิซใหม่</button>
+        <!-- Actions -->
+        <div class="form-actions">
+            <button class="btn-back" type="button" onclick="goDashboard()">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" width="16" height="16">
+                    <polyline points="15 18 9 12 15 6"/>
+                </svg>
+                คลังข้อสอบ
+            </button>
+            <button class="btn-create" type="button" id="createBtn" onclick="createQuiz()">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" width="17" height="17">
+                    <line x1="12" y1="5" x2="12" y2="19"/>
+                    <line x1="5" y1="12" x2="19" y2="12"/>
+                </svg>
+                สร้างควิซใหม่
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- ── AVATAR MODAL (เหมือน index.html ทุกอย่าง) ── -->
+<div class="modal" id="avatarModal">
+    <div class="modal-card">
+        <div class="modal-header">
+            <h3>ตั้งค่ารูปโปรไฟล์</h3>
+            <button class="close-btn" type="button" onclick="closeAvatarModal()">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+                    <line x1="18" y1="6" x2="6" y2="18"/>
+                    <line x1="6" y1="6" x2="18" y2="18"/>
+                </svg>
+            </button>
+        </div>
+        <div class="modal-body">
+            <div class="preview-wrap">
+                <div class="preview-avatar">
+                    <span class="preview-fallback" id="previewFallback">U</span>
+                    <img id="previewImg" alt="preview avatar" style="display:none;">
+                </div>
+            </div>
+
+            <div class="field">
+                <label>1. เลือกรูปจากแกลเลอรี่</label>
+                <input type="file" id="avatarFileInput" accept="image/*">
+            </div>
+
+            <div class="field">
+                <label>2. วางลิงก์รูปภาพ</label>
+                <input type="url" id="avatarUrlInput" placeholder="วางลิงก์รูป เช่น https://...">
+                <small>ใช้ได้กับลิงก์รูปทั่วไป หรือรูปจาก Google Drive ที่เปิดแชร์สาธารณะแล้ว</small>
+            </div>
+
+            <div class="upload-actions">
+                <button class="outline-btn" type="button" onclick="applyUrlAvatar()">ใช้ลิงก์รูปนี้</button>
+                <button class="ghost-btn" type="button" onclick="resetAvatarToDefault()">ลบรูปโปรไฟล์</button>
+            </div>
+
+            <div class="modal-footer-row">
+                <button class="ghost-btn" type="button" onclick="closeAvatarModal()">ปิด</button>
+            </div>
         </div>
     </div>
 </div>
 
 <script src="js/auth.js"></script>
 <script src="js/create.js"></script>
+
+<script>
+    /* scroll reveal */
+    const revealEls = document.querySelectorAll('.reveal');
+    const ro = new IntersectionObserver((entries) => {
+        entries.forEach(e => {
+            if (e.isIntersecting) {
+                e.target.classList.add('revealed');
+                ro.unobserve(e.target);
+            }
+        });
+    }, { threshold: 0.10 });
+    revealEls.forEach(el => ro.observe(el));
+</script>
 
 </body>
 </html>

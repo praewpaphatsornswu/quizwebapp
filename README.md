@@ -295,4 +295,45 @@ Visual Studio Code
 ลิงก์วิดีโอ Retrospective : https://youtu.be/j3Xpjw5YBVo?si=r-ShhXsesSQTKDc1
 
 ---
+## 16. Website screenshot
+
+## 17. สร้าง 5 UI testcases.
+
+## 18. เช็คให้แน่ใจว่า testcases โดยที่ทุก testcase ต้องมี การเช็คค่าสำหรับ expected results
+
+## 19. ผล profiling (Static profiling และ Dynamic profiling) เทีบยกับ phase 3
+
+## 20. อธิบายการทำ CI/CD ที่ใช้ในการทำ product โดยที่ CI (Pipeline) ให้ใช้ script ที่มีให้ (จำเป็นต้องมี free tier parallel job) 
+
+## 21. อธิบายกระบวนการทำงาน โดยใช้ process, methods, and tools ที่เพิ่มเติมจาก phase 1,2 and 3 เช่น การบริหาร project, การ monitor build, การจัดการ bugs  
+
+## 22. Final Retrospective 
+Link to Retrospective Youtube video: 
+
+
+
+Phase 4 :  Final product (5 pt)
+
+Website ที่สมบูรณ์ และไม่ควรมี bug ถ้าไม่เสร็จให้อธิบายเหตุผล คะแนนจะพิจารณาจากเหตุผล
+Report ประกอบด้วย (อย่าลืมระบุรายชื่อสมาชิกกลุ่ม)
+ข้อมูลเดิมจาก phase 1,2 and 3
+Website screenshot
+สร้าง 5 UI testcases.
+เช็คให้แน่ใจว่า testcases โดยที่ทุก testcase ต้องมี การเช็คค่าสำหรับ expected results
+ผล profiling (Static profiling และ Dynamic profiling) เทีบยกับ phase 3
+อธิบายการทำ CI/CD ที่ใช้ในการทำ product โดยที่ CI (Pipeline) ให้ใช้ script ที่มีให้ (จำเป็นต้องมี free tier parallel job)   
+อธิบายกระบวนการทำงาน โดยใช้ process, methods, and tools ที่เพิ่มเติมจาก phase 1,2 and 3 เช่น การบริหาร project, การ monitor build, การจัดการ bugs  
+เขียนสรุปการประชุม Final Retrospective และ Link to Retrospective Youtube video
+Onsite presentation (อยากให้ทำ video presentation เป็นการซ้อม และเผื่อให้รุ่นน้องดู แล้วแต่สมัครใจ)
+อธิบายกระบวนการทำ project และค่า profiling ด้วย PPT ที่เหลือเปิดเว็บส์อธิบายได้เลย
+ไม่ต้องอธิบายรายบรรทัดของ code ต้องการทราบกระบวนการเท่านั้น ไม่ต้องการดู code 
+แสดง website code ใน git
+แสดง test code ใน git และ run test ให้ดู พร้อมอธิบายผล
+แสดง การทำ profiling (both dynamic and static) พร้อมผลที่ได้ อธิบายเปรียบเทียบ ผลเทียบกับ phase 3
+แสดงการทำงานของ CI process and CD 
+Demo การทำงานของ website
+
+Link to submit report + Source code ใน zip file (ไม่เอา node_module หรือ report folder ที่สามารถสร้างใหม่ตอน run program ได้)  อย่าลืมใส่ presentation video link in the report
+
+
 

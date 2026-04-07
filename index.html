@@ -6,23 +6,45 @@
     <title>quizWeb</title>
     <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/index.css">
-    
 </head>
 <body>
+
+<!-- Ambient background blobs -->
+<div class="ambient-wrap" aria-hidden="true">
+    <div class="blob blob-1"></div>
+    <div class="blob blob-2"></div>
+    <div class="blob blob-3"></div>
+</div>
+
+<!-- Floating particles -->
+<div class="particles" aria-hidden="true">
+    <span class="particle"></span>
+    <span class="particle"></span>
+    <span class="particle"></span>
+    <span class="particle"></span>
+    <span class="particle"></span>
+    <span class="particle"></span>
+    <span class="particle"></span>
+    <span class="particle"></span>
+</div>
 
 <nav>
     <div class="container nav-inner">
         <div class="logo" onclick="location.href='index.html'">
-            <div class="logo-badge">🧠</div>
+            <div class="logo-badge">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/>
+                    <circle cx="12" cy="12" r="10"/>
+                    <line x1="12" y1="17" x2="12.01" y2="17"/>
+                </svg>
+            </div>
             <div class="logo-text">
                 <strong>quizWeb</strong>
-                <span>สร้าง • แชร์ • เล่นควิซออนไลน์</span>
+                <span>สร้าง &bull; แชร์ &bull; เล่นควิซออนไลน์</span>
             </div>
         </div>
 
         <div class="nav-right">
-           
-
             <div class="auth-area">
                 <div id="profileMenuWrap" class="profile-menu-wrap">
                     <button id="profilePill" class="profile-pill" type="button">
@@ -30,35 +52,36 @@
                             <span class="profile-avatar-fallback" id="navAvatarFallback">U</span>
                             <img id="navAvatarImg" alt="user avatar" style="display:none;">
                         </div>
-
                         <div class="profile-pill-text">
                             <strong id="navUserName">ผู้ใช้</strong>
                             <span>กดเพื่อเปิดเมนู</span>
                         </div>
-
-                        <div class="profile-pill-arrow">▾</div>
+                        <div class="profile-pill-arrow">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+                                <polyline points="6 9 12 15 18 9"/>
+                            </svg>
+                        </div>
                     </button>
 
                     <div class="profile-dropdown">
                         <button class="dropdown-item" type="button" onclick="goDashboard()">
-                            <span>📚</span>
+                            <svg class="di-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
                             <span>ไปคลังข้อสอบ</span>
                         </button>
-
                         <button class="dropdown-item" type="button" onclick="openAvatarModal()">
-                            <span>🖼️</span>
+                            <svg class="di-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
                             <span>เปลี่ยนรูปโปรไฟล์</span>
                         </button>
-
                         <button class="dropdown-item" id="adminMenuItem" type="button" style="display:none;" onclick="window.location.href='admin.html'">
-                            <span>🛡️</span>
+                            <svg class="di-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M12 2l8 4v6c0 5-3.5 9.5-8 10-4.5-.5-8-5-8-10V6l8-4z"/>
+                                <path d="M9 12l2 2 4-4"/>
+                            </svg>
                             <span>Admin Panel</span>
                         </button>
-
                         <div class="dropdown-divider"></div>
-
                         <button class="dropdown-item danger" type="button" onclick="handleLogout()">
-                            <span>🚪</span>
+                            <svg class="di-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
                             <span>ออกจากระบบ</span>
                         </button>
                     </div>
@@ -73,43 +96,64 @@
 <section class="hero">
     <div class="container hero-grid">
         <div class="hero-left">
-            <div class="eyebrow">✨ หน้าแรกโฉมใหม่ของ quizWeb</div>
-            <h1>สร้างควิซสวย ๆ แชร์รหัสง่าย ๆ และมีโปรไฟล์ผู้ใช้ของตัวเอง</h1>
-            <p>
-                ออกแบบมาให้ใช้งานง่ายขึ้นทั้งผู้สร้างและผู้เล่น
-                สามารถตั้งรูปโปรไฟล์ของผู้ใช้แต่ละคนได้ เปลี่ยนได้ตลอด
-                และเริ่มเล่นควิซด้วยรหัสได้ทันทีจากหน้าแรก
+            <div class="eyebrow reveal">
+                <span class="eyebrow-dot"></span>
+                ยินดีต้อนรับสู่ quizWeb เว็บเล่นควิซออนไลน์
+            </div>
+            <h1 class="reveal reveal-delay-1">สร้างควิซได้ง่าย ๆ<br><span class="highlight-text"> แชร์ให้เพื่อนเล่น </span> ได้ทันที </h1>
+            <p class="reveal reveal-delay-2">
+                ใช้งานง่ายทั้งคนสร้างและคนเล่น สามารถตั้งค่าและเริ่มเล่นควิซได้ทันที
             </p>
 
-            <div class="hero-actions">
-                <button class="solid-btn" onclick="goCreate()">สร้างควิซ</button>
-                <button class="outline-btn" onclick="goJoin()">กรอกรหัสเพื่อเล่น</button>
+            <div class="hero-actions reveal reveal-delay-3">
+                <button class="solid-btn btn-glow" onclick="goCreate()">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="width:18px;height:18px;"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                    สร้างควิซ
+                </button>
+                <button class="outline-btn" onclick="goJoin()">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="width:18px;height:18px;"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
+                    เข้าร่วมด้วยรหัส
+                </button>
             </div>
 
             <div class="hero-stats">
-                <div class="stat-card">
+                <div class="stat-card reveal reveal-delay-4">
+                    <div class="stat-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+                    </div>
                     <strong>โปรไฟล์ส่วนตัว</strong>
-                    <span>เปลี่ยนรูปผู้ใช้ได้ตลอดเวลา</span>
+                    <span>ตั้งค่าโปรไฟล์และเปลี่ยนรูปได้ตามต้องการ</span>
                 </div>
-                <div class="stat-card">
+                <div class="stat-card reveal reveal-delay-5">
+                    <div class="stat-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                    </div>
                     <strong>เล่นด้วยรหัส</strong>
-                    <span>เข้าเกมได้เร็วจากหน้าแรก</span>
+                    <span>เข้าร่วมควิซได้ง่าย เพียงกรอกรหัส</span>
                 </div>
-                <div class="stat-card">
-                    <strong>ดูแลง่าย</strong>
-                    <span>โครงสร้างหน้าเว็บดูสบายตาขึ้น</span>
+                <div class="stat-card reveal reveal-delay-6">
+                    <div class="stat-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+                    </div>
+                    <strong>ใช้งานง่าย</strong>
+                    <span>จัดการควิซและข้อมูลได้ง่าย ไม่ซับซ้อน</span>
                 </div>
             </div>
         </div>
 
-        <div class="hero-right">
+        <div class="hero-right reveal reveal-delay-2">
             <div class="profile-showcase">
+                <div class="showcase-ring"></div>
                 <div class="showcase-top">
-                    <div class="showcase-label">โปรไฟล์ผู้ใช้ของคุณ</div>
-                    <div class="status-pill" id="loginStatus">Guest Mode</div>
+                    <div class="showcase-label">โปรไฟล์ผู้ใช้</div>
+                    <div class="status-pill" id="loginStatus">
+                        <span class="status-dot"></span>
+                        Guest Mode
+                    </div>
                 </div>
 
                 <div class="big-avatar-wrap">
+                    <div class="big-avatar-ring"></div>
                     <div class="big-avatar" id="heroAvatarBox">
                         <span class="big-avatar-fallback" id="heroAvatarFallback">U</span>
                         <img id="heroAvatarImg" alt="hero avatar" style="display:none;">
@@ -122,7 +166,6 @@
                         เข้าสู่ระบบเพื่อสร้างควิซ จัดการคลังข้อสอบ
                         และตั้งรูปโปรไฟล์ของตัวเองได้ทันที
                     </p>
-
                     <div class="profile-actions">
                         <button class="solid-btn" type="button" onclick="openAvatarModal()">เปลี่ยนรูปโปรไฟล์</button>
                         <button class="outline-btn" type="button" onclick="goDashboard()">ไปคลังข้อสอบ</button>
@@ -135,40 +178,60 @@
 
 <section class="section">
     <div class="container">
-        <div class="section-title">
+        <div class="section-title reveal">
+            <div class="section-badge">ฟีเจอร์</div>
             <h2>ฟีเจอร์หลักของ quizWeb</h2>
             <p>ออกแบบใหม่ให้ดูสะอาด ใช้งานง่าย และพร้อมต่อยอดระบบจริง</p>
         </div>
 
         <div class="feature-grid">
-            <div class="feature-card">
-                <div class="feature-icon">📝</div>
-                <h3>สร้างควิซได้เร็ว</h3>
-                <p>เริ่มสร้างข้อสอบ เพิ่มคำถาม ตัวเลือก และกำหนดรูปแบบการเล่นได้ในไม่กี่ขั้นตอน</p>
+            <div class="feature-card reveal">
+                <div class="feature-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+                </div>
+                <div class="feature-card-line"></div>
+                <h3>สร้างควิซ</h3>
+                <p>เริ่มสร้างควิซ เพิ่มคำถาม และตั้งค่าต่าง ๆ ได้ในขั้นตอนเดียว</p>
             </div>
 
-            <div class="feature-card">
-                <div class="feature-icon">🖼️</div>
+            <div class="feature-card reveal reveal-delay-1">
+                <div class="feature-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+                </div>
+                <div class="feature-card-line"></div>
                 <h3>รูปโปรไฟล์ผู้ใช้</h3>
-                <p>ผู้ใช้แต่ละคนมีรูปของตัวเองได้ เปลี่ยนเมื่อไรก็ได้ และเก็บแยกตามบัญชีที่ล็อกอินอยู่</p>
+                <p>ตั้งค่ารูปโปรไฟล์ของคุณ และแสดงผลในระบบได้ทันที</p>
             </div>
 
-            <div class="feature-card">
-                <div class="feature-icon">📊</div>
-                <h3>พร้อมต่อยอดสถิติ</h3>
-                <p>หน้าแรกจัดโครงสร้างให้รองรับการเชื่อมคะแนน สถิติผู้เล่น และข้อมูลควิซในอนาคตได้ง่ายขึ้น</p>
+            <div class="feature-card reveal reveal-delay-2">
+                <div class="feature-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+                </div>
+                <div class="feature-card-line"></div>
+                <h3>ยอดสถิติ</h3>
+                <p>รองรับการแสดงคะแนนและสถิติของผู้เล่นในอนาคต</p>
             </div>
         </div>
 
-        <div class="join-box" id="joinSection">
-            <div>
-                <h3>มีรหัสควิซอยู่แล้ว?</h3>
-                <p>กรอกรหัสเพื่อเริ่มเล่นได้ทันที</p>
+        <div class="join-box reveal">
+            <div class="join-box-left">
+                <div class="join-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                </div>
+                <div>
+                    <h3>มีรหัสควิซอยู่แล้ว?</h3>
+                    <p>กรอกรหัสเพื่อเริ่มเล่นได้ทันที</p>
+                </div>
             </div>
 
-            <div class="join-form">
-                <input type="text" id="quizCodeInput" placeholder="กรอกรหัสควิซ เช่น ABC123">
-                <button class="solid-btn" type="button" onclick="submitQuizCode()">เริ่มเล่น</button>
+            <div class="join-form" id="joinSection">
+                <div class="join-input-wrap">
+                    <input type="text" id="quizCodeInput" placeholder="กรอกรหัสควิซ เช่น ABC123" autocomplete="off">
+                </div>
+                <button class="solid-btn btn-glow" type="button" onclick="submitQuizCode()">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="width:18px;height:18px;"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                    เริ่มเล่น
+                </button>
             </div>
         </div>
     </div>
@@ -176,18 +239,28 @@
 
 <footer>
     <div class="container footer-inner">
-        <div>© 2026 quizWeb | ระบบสร้างและเล่นควิซออนไลน์</div>
-        <div>ออกแบบใหม่ให้รองรับโปรไฟล์ผู้ใช้และขยายระบบต่อได้ง่าย</div>
+        <div class="footer-logo">
+            <div class="footer-logo-badge">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/>
+                    <circle cx="12" cy="12" r="10"/>
+                    <line x1="12" y1="17" x2="12.01" y2="17"/>
+                </svg>
+            </div>
+            <span>quizWeb</span>
+        </div>
+        <div class="footer-copy">&copy; 2026 quizWeb &mdash; ระบบสร้างและเล่นควิซออนไลน์</div>
     </div>
 </footer>
 
-
-<!-- จัดการโปรไฟล์ผู้ใช้  -->
+<!-- Modal จัดการโปรไฟล์ -->
 <div class="modal" id="avatarModal">
     <div class="modal-card">
         <div class="modal-header">
             <h3>ตั้งค่ารูปโปรไฟล์</h3>
-            <button class="close-btn" type="button" onclick="closeAvatarModal()">✕</button>
+            <button class="close-btn" type="button" onclick="closeAvatarModal()">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
         </div>
 
         <div class="modal-body">
@@ -199,38 +272,43 @@
             </div>
 
             <div class="field">
-                <label>1. เลือกรูปจากเครื่อง / แกลเลอรี่</label>
+                <label>1. เลือกรูปจากแกลเลอรี่</label>
                 <input type="file" id="avatarFileInput" accept="image/*">
-                <small>ในมือถือ ปุ่มนี้สามารถเลือกรูปจากแกลเลอรี่ได้ด้วย</small>
             </div>
 
             <div class="field">
-                <label>2. หรือวางลิงก์รูปภาพ</label>
+                <label>2. วางลิงก์รูปภาพ</label>
                 <input type="url" id="avatarUrlInput" placeholder="วางลิงก์รูป เช่น https://...">
                 <small>ใช้ได้กับลิงก์รูปทั่วไป หรือรูปจาก Google Drive ที่เปิดแชร์สาธารณะแล้ว</small>
             </div>
 
-            <div class="help-box">
-                <strong>หมายเหตุ:</strong> ถ้าจะให้กดเลือกจาก Google Drive ได้โดยตรงแบบปุ่ม Choose from Drive
-                ต้องเชื่อม Google Picker API และระบบล็อกอิน Google เพิ่มก่อน
-                โค้ดนี้เลยรองรับแบบอัปโหลดจากเครื่อง หรือวางลิงก์รูปก่อน
-            </div>
-
             <div class="upload-actions">
                 <button class="outline-btn" type="button" onclick="applyUrlAvatar()">ใช้ลิงก์รูปนี้</button>
-                <button class="ghost-btn" type="button" onclick="resetAvatarToDefault()">ลบรูป ใช้ค่าเริ่มต้น</button>
+                <button class="ghost-btn" type="button" onclick="resetAvatarToDefault()">ลบรูปโปรไฟล์</button>
             </div>
 
-            <div class="modal-footer">
+            <div class="modal-footer-row">
                 <button class="ghost-btn" type="button" onclick="closeAvatarModal()">ปิด</button>
             </div>
         </div>
     </div>
 </div>
 
-<!-- js  -->
 <script src="js/auth.js"></script>
 <script src="js/index_func.js"></script>
 
+<script>
+    /* ---------- Scroll reveal ---------- */
+    const revealEls = document.querySelectorAll('.reveal');
+    const revealObserver = new IntersectionObserver((entries) => {
+        entries.forEach(e => {
+            if (e.isIntersecting) {
+                e.target.classList.add('revealed');
+                revealObserver.unobserve(e.target);
+            }
+        });
+    }, { threshold: 0.12 });
+    revealEls.forEach(el => revealObserver.observe(el));
+</script>
 </body>
 </html>

@@ -152,26 +152,27 @@ describe('Quiz Web App Test (11 Cases)', () => {
 ![Register](readme_images/Register.png)
 
 - หน้า dashboard
-![Register](readme_images/dashboard.png)
+![dashboard](readme_images/dashboard.png)
 
 - หน้า join quiz
-![Register](readme_images/join.png)
+![join quiz](readme_images/join.png)
 
 - หน้า create quiz
-![Register](readme_images/create.png)
+![create quiz](readme_images/create.png)
 
 - หน้า edit quiz
-![edit](readme_images/edit1.png)
+![edit quiz](readme_images/edit1.png)
 - หน้า edit(ต่อ 1)
-![edit](readme_images/edit2.png)
+![edit quiz](readme_images/edit2.png)
 - หน้า edit(ต่อ 2)
-![edit](readme_images/edit3.png)
+![edit quiz](readme_images/edit3.png)
 
 - หน้า play quiz
-![edit](readme_images/play.png)
+![play quiz](readme_images/play.png)
 
 - หน้า admin
-![Register](readme_images/admin.png)
+![admin](readme_images/admin.png)
+
 
 ---
 
@@ -202,10 +203,10 @@ describe('Quiz Web App Test (11 Cases)', () => {
 
 ทีมงานได้มีการจัดประชุม Retrospective หลังการดำเนินงานในช่วงการออกแบบและวางโครงสร้าง โดยมีข้อสรุปดังนี้
 
-* **สิ่งที่ทำได้ดี:** 
-* **สิ่งที่ควรปรับปรุง:** 
-* **แนวทางการพัฒนาในอนาคต:** 
+* **สิ่งที่ทำได้ดี:** ส่วนของการพัฒนา frontend จนเห็นรูปแบบฟังก์ชันและ UI/UX ที่พร้อมใช้งาน มีการแบ่งหน้าที่รับผิดชอบที่ชัดเจนและสื่อสารกันได้ดีขึ้น และทีมมีความเชี่ยวชาญในการใช้ Git ผ่าน Terminal หรือ command ได้ดียิ่งขึ้นจากเฟสก่อนๆ
+* **สิ่งที่ควรปรับปรุง:** การจัดการเวลาในการทำ ทำให้การเชื่อมโยงข้อมูลและการจัดเก็บข้อมูลในส่วน Backend ยังทำได้ไม่ครบถ้วนตามแผน
+* **แนวทางการพัฒนาในอนาคต:** มุ่งเน้นการพัฒนาส่วนหลังบ้านและระบบฐานข้อมูลให้สมบูรณ์ และนำฟีเจอร์ที่วางโครงร่างไว้มาเชื่อมต่อกับ API เพื่อให้ตัวเว็บทำงานได้จริง
 
-ลิงก์วิดีโอ Retrospective : 
+ลิงก์วิดีโอ Retrospective : https://youtu.be/iHDMbaRjDIQ?si=-huqMsOPw68BX2do
 
 ---
