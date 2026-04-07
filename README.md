@@ -500,16 +500,16 @@ describe('Quiz Web App Test (11 Cases)', () => {
 ## 24. Website screenshot
 
 ## 25. สร้าง 5 UI testcases.
+(เช็คให้แน่ใจว่า testcases โดยที่ทุก testcase ต้องมี การเช็คค่าสำหรับ expected results)
 
-## 26. เช็คให้แน่ใจว่า testcases โดยที่ทุก testcase ต้องมี การเช็คค่าสำหรับ expected results
 
-## 27. ผล profiling (Static profiling และ Dynamic profiling) เทีบยกับ phase 3
+## 26. ผล profiling (Static profiling และ Dynamic profiling) เทีบยกับ phase 3
 
-## 28. อธิบายการทำ CI/CD ที่ใช้ในการทำ product โดยที่ CI (Pipeline) ให้ใช้ script ที่มีให้ (จำเป็นต้องมี free tier parallel job) 
+## 27. อธิบายการทำ CI/CD ที่ใช้ในการทำ product โดยที่ CI (Pipeline) ให้ใช้ script ที่มีให้ (จำเป็นต้องมี free tier parallel job) 
 
-## 29. อธิบายกระบวนการทำงาน โดยใช้ process, methods, and tools ที่เพิ่มเติมจาก phase 1,2 and 3 เช่น การบริหาร project, การ monitor build, การจัดการ bugs  
+## 28. อธิบายกระบวนการทำงาน โดยใช้ process, methods, and tools ที่เพิ่มเติมจาก phase 1,2 and 3 เช่น การบริหาร project, การ monitor build, การจัดการ bugs  
 
-## 30. Final Retrospective 
+## 29. Final Retrospective 
 Link to Retrospective Youtube video: 
 
 
