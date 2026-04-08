@@ -4,51 +4,22 @@ const cors = require("cors");
 const bodyParser = require("body-parser");
 const session = require("express-session");
 const bcrypt = require("bcryptjs");
-const Database = require("better-sqlite3");
+const { createClient } = require("@supabase/supabase-js");
+require("dotenv").config();
 
 const app = express();
 const PORT = process.env.PORT || 5001;
 
-const dbPath = path.join(__dirname, "quiz_scores.sqlite");
-const db = new Database(dbPath);
+// Initialize Supabase client
+const supabaseUrl = process.env.SUPABASE_URL;
+const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+if (!supabaseUrl || !supabaseKey) {
+  console.error("Missing SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY environment variables");
+  process.exit(1);
+}
+const supabase = createClient(supabaseUrl, supabaseKey);
 
-db.pragma("foreign_keys = ON");
-
-db.exec(`
-  CREATE TABLE IF NOT EXISTS users (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    username TEXT NOT NULL UNIQUE,
-    email TEXT NOT NULL UNIQUE,
-    password_hash TEXT NOT NULL,
-    role TEXT NOT NULL DEFAULT 'user',
-    status TEXT NOT NULL DEFAULT 'active',
-    created_at TEXT NOT NULL DEFAULT (datetime('now'))
-  );
-`);
-
-// db.prepare("UPDATE users SET role = 'admin' WHERE username = 'adminTester'").run();
-
-db.exec(`
-  CREATE TABLE IF NOT EXISTS scores (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    user_id INTEGER,
-    username TEXT NOT NULL,
-    score INTEGER NOT NULL,
-    timestamp TEXT NOT NULL DEFAULT (datetime('now'))
-  );
-`);
-
-db.exec(`
-  CREATE TABLE IF NOT EXISTS quizzes (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    code TEXT NOT NULL UNIQUE,
-    title TEXT NOT NULL,
-    data_json TEXT NOT NULL,
-    created_by INTEGER,
-    hidden INTEGER NOT NULL DEFAULT 0,
-    created_at TEXT NOT NULL DEFAULT (datetime('now'))
-  );
-`);
+// Tables are created in Supabase dashboard - no need to create them here
 
 function safeJsonParse(text, fallback) {
   try {
@@ -57,42 +28,6 @@ function safeJsonParse(text, fallback) {
     return fallback;
   }
 }
-
-// Backfill/migrate columns (older DBs)
-try {
-  const userCols = db.prepare("PRAGMA table_info(users)").all();
-  if (userCols.length > 0 && !userCols.some((c) => c.name === "status")) {
-    db.exec("ALTER TABLE users ADD COLUMN status TEXT NOT NULL DEFAULT 'active'");
-  }
-} catch (e) {}
-
-try {
-  const quizCols = db.prepare("PRAGMA table_info(quizzes)").all();
-  if (quizCols.length > 0 && !quizCols.some((c) => c.name === "hidden")) {
-    db.exec("ALTER TABLE quizzes ADD COLUMN hidden INTEGER NOT NULL DEFAULT 0");
-  }
-} catch (e) {}
-
-const cols = db.prepare("PRAGMA table_info(scores)").all();
-if (
-  cols.length > 0 &&
-  !cols.some((c) => c.name === "timestamp") &&
-  cols.some((c) => c.name === "created_at")
-) {
-  db.exec("ALTER TABLE scores RENAME COLUMN created_at TO timestamp");
-}
-
-if (cols.length > 0 && !cols.some((c) => c.name === "user_id")) {
-  db.exec("ALTER TABLE scores ADD COLUMN user_id INTEGER");
-}
-
-try {
-  db.prepare(`
-    UPDATE scores
-    SET user_id = (SELECT id FROM users WHERE users.username = scores.username)
-    WHERE user_id IS NULL
-  `).run();
-} catch (e) {}
 
 app.use(cors());
 app.use(bodyParser.json({ limit: "512kb" }));
@@ -136,26 +71,43 @@ function isAdmin(options = {}) {
       return res.status(401).json({ error: "not_logged_in" });
     }
 
-    const row = db
-      .prepare("SELECT role FROM users WHERE id = ?")
-      .get(Number(userId));
+    // Use async IIFE to handle async operations in middleware
+    (async () => {
+      try {
+        const { data: user, error } = await supabase
+          .from('users')
+          .select('role')
+          .eq('id', Number(userId))
+          .single();
 
-    const role = String(row?.role || "").toLowerCase();
-    if (log) {
-      console.log(
-        `[isAdmin] path=${req.path} method=${req.method} userId=${Number(userId)} role=${role || "(none)"}`
-      );
-    }
-    if (role !== "admin") {
-      if (forceHtmlRedirect || req.accepts("html")) return res.redirect(redirectTo);
-      return res.status(403).json({ error: "forbidden" });
-    }
+        if (error || !user) {
+          if (log) {
+            console.log(`[isAdmin] user_not_found path=${req.path} method=${req.method} userId=${Number(userId)}`);
+          }
+          return res.status(401).json({ error: "not_logged_in" });
+        }
 
-    return next();
+        const role = String(user.role || "").toLowerCase();
+        if (log) {
+          console.log(
+            `[isAdmin] path=${req.path} method=${req.method} userId=${Number(userId)} role=${role || "(none)"}`
+          );
+        }
+        if (role !== "admin") {
+          if (forceHtmlRedirect || req.accepts("html")) return res.redirect(redirectTo);
+          return res.status(403).json({ error: "forbidden" });
+        }
+
+        return next();
+      } catch (error) {
+        console.error('Admin middleware error:', error);
+        return res.status(500).json({ error: "server_error" });
+      }
+    })();
   };
 }
 
-app.post("/api/register", (req, res) => {
+app.post("/api/register", async (req, res) => {
   const username = String(req.body?.username || "").trim();
   const email = String(req.body?.email || "").trim().toLowerCase();
   const password = String(req.body?.password || "");
@@ -164,48 +116,72 @@ app.post("/api/register", (req, res) => {
   if (!email || !email.includes("@")) return res.status(400).json({ error: "invalid_email" });
   if (password.length < 8) return res.status(400).json({ error: "password_too_short" });
 
-  const exists = db
-    .prepare("SELECT id FROM users WHERE username = ? OR email = ?")
-    .get(username, email);
-  if (exists) return res.status(409).json({ error: "user_exists" });
+  // Check if user exists
+  const { data: existingUser, error: checkError } = await supabase
+    .from('users')
+    .select('id')
+    .or(`username.eq.${username},email.eq.${email}`)
+    .maybeSingle();
+
+  if (checkError && checkError.code !== 'PGRST116') {
+    return res.status(500).json({ error: "database_error" });
+  }
+  if (existingUser) return res.status(409).json({ error: "user_exists" });
 
   const passwordHash = bcrypt.hashSync(password, 10);
-  const result = db
-    .prepare("INSERT INTO users (username, email, password_hash) VALUES (?, ?, ?)")
-    .run(username, email, passwordHash);
+  
+  const { data: newUser, error: insertError } = await supabase
+    .from('users')
+    .insert({
+      username,
+      email,
+      password_hash: passwordHash,
+      role: 'user',
+      status: 'active'
+    })
+    .select('id, username, email, role, status')
+    .single();
 
-  req.session.userId = Number(result.lastInsertRowid);
-  const user = db
-    .prepare("SELECT id, username, email, role FROM users WHERE id = ?")
-    .get(req.session.userId);
-  res.json({ ok: true, user: sanitizeUser(user) });
+  if (insertError || !newUser) {
+    return res.status(500).json({ error: "registration_failed" });
+  }
+
+  req.session.userId = newUser.id;
+  res.json({ ok: true, user: sanitizeUser(newUser) });
 });
 
-app.post("/api/login", (req, res) => {
+app.post("/api/login", async (req, res) => {
   const username = String(req.body?.username || "").trim();
   const password = String(req.body?.password || "");
   if (!username || !password) return res.status(400).json({ error: "missing_credentials" });
 
-  const row = db
-    .prepare("SELECT id, username, email, role, password_hash FROM users WHERE username = ?")
-    .get(username);
-  if (!row) return res.status(401).json({ error: "invalid_credentials" });
+  const { data: user, error } = await supabase
+    .from('users')
+    .select('id, username, email, role, password_hash')
+    .eq('username', username)
+    .single();
 
-  const ok = bcrypt.compareSync(password, row.password_hash);
+  if (error || !user) return res.status(401).json({ error: "invalid_credentials" });
+
+  const ok = bcrypt.compareSync(password, user.password_hash);
   if (!ok) return res.status(401).json({ error: "invalid_credentials" });
 
-  req.session.userId = row.id;
-  res.json({ ok: true, user: sanitizeUser(row) });
+  req.session.userId = user.id;
+  res.json({ ok: true, user: sanitizeUser(user) });
 });
 
-app.get("/api/me", (req, res) => {
+app.get("/api/me", async (req, res) => {
   const userId = req.session?.userId;
   if (!userId) return res.status(401).json({ error: "not_logged_in" });
-  const row = db
-    .prepare("SELECT id, username, email, role, status FROM users WHERE id = ?")
-    .get(Number(userId));
-  if (!row) return res.status(401).json({ error: "not_logged_in" });
-  res.json({ user: sanitizeUser(row) });
+  
+  const { data: user, error } = await supabase
+    .from('users')
+    .select('id, username, email, role, status')
+    .eq('id', Number(userId))
+    .single();
+  
+  if (error || !user) return res.status(401).json({ error: "not_logged_in" });
+  res.json({ user: sanitizeUser(user) });
 });
 
 app.post("/api/logout", (req, res) => {
@@ -213,59 +189,101 @@ app.post("/api/logout", (req, res) => {
 });
 
 /* =====================
-   ADMIN APIs (SQLite)
+   ADMIN APIs (Supabase)
 ===================== */
-app.get("/api/admin/stats", isAdmin({ log: true }), (req, res) => {
-  const totalUsers = Number(db.prepare("SELECT COUNT(*) AS c FROM users").get().c || 0);
-  const totalAdmins = Number(
-    db.prepare("SELECT COUNT(*) AS c FROM users WHERE LOWER(role) = 'admin'").get().c || 0
-  );
-  const totalQuizzes = Number(db.prepare("SELECT COUNT(*) AS c FROM quizzes").get().c || 0);
-  const hiddenQuizzes = Number(
-    db.prepare("SELECT COUNT(*) AS c FROM quizzes WHERE COALESCE(hidden, 0) = 1").get().c || 0
-  );
+app.get("/api/admin/stats", isAdmin({ log: true }), async (req, res) => {
+  const { count: totalUsers } = await supabase
+    .from('users')
+    .select('*', { count: 'exact', head: true });
+  
+  const { count: totalAdmins } = await supabase
+    .from('users')
+    .select('*', { count: 'exact', head: true })
+    .eq('role', 'admin');
+  
+  const { count: totalQuizzes } = await supabase
+    .from('quizzes')
+    .select('*', { count: 'exact', head: true });
+  
+  const { count: hiddenQuizzes } = await supabase
+    .from('quizzes')
+    .select('*', { count: 'exact', head: true })
+    .eq('hidden', true);
 
-  res.json({ totalUsers, totalAdmins, totalQuizzes, hiddenQuizzes });
+  res.json({ 
+    totalUsers: totalUsers || 0, 
+    totalAdmins: totalAdmins || 0, 
+    totalQuizzes: totalQuizzes || 0, 
+    hiddenQuizzes: hiddenQuizzes || 0 
+  });
 });
 
-app.get("/api/admin/users", isAdmin({ log: true }), (req, res) => {
-  const rows = db
-    .prepare(
-      `SELECT id, username, email, role, status, created_at
-       FROM users
-       ORDER BY created_at DESC`
-    )
-    .all();
+app.get("/api/admin/users", isAdmin({ log: true }), async (req, res) => {
+  const { data: rows, error } = await supabase
+    .from('users')
+    .select('id, username, email, role, status, created_at')
+    .order('created_at', { ascending: false });
+  
+  if (error) {
+    return res.status(500).json({ error: "database_error" });
+  }
+  
   res.json({ users: rows.map(sanitizeUser) });
 });
 
-app.post("/api/admin/users/:id/role", isAdmin({ log: true }), (req, res) => {
+app.post("/api/admin/users/:id/role", isAdmin({ log: true }), async (req, res) => {
   const id = Number(req.params?.id);
   const roleRaw = String(req.body?.role || "").trim().toLowerCase();
   const role = roleRaw === "admin" ? "admin" : "user";
   if (!Number.isFinite(id) || id <= 0) return res.status(400).json({ error: "invalid_user_id" });
 
-  const exists = db.prepare("SELECT id FROM users WHERE id = ?").get(id);
-  if (!exists) return res.status(404).json({ error: "not_found" });
+  const { data: exists, error: checkError } = await supabase
+    .from('users')
+    .select('id')
+    .eq('id', id)
+    .maybeSingle();
+  
+  if (checkError || !exists) return res.status(404).json({ error: "not_found" });
 
-  db.prepare("UPDATE users SET role = ? WHERE id = ?").run(role, id);
+  const { error: updateError } = await supabase
+    .from('users')
+    .update({ role })
+    .eq('id', id);
+  
+  if (updateError) {
+    return res.status(500).json({ error: "update_failed" });
+  }
+  
   res.json({ ok: true });
 });
 
-app.post("/api/admin/users/:id/status", isAdmin({ log: true }), (req, res) => {
+app.post("/api/admin/users/:id/status", isAdmin({ log: true }), async (req, res) => {
   const id = Number(req.params?.id);
   const statusRaw = String(req.body?.status || "").trim().toLowerCase();
   const status = statusRaw === "inactive" ? "inactive" : "active";
   if (!Number.isFinite(id) || id <= 0) return res.status(400).json({ error: "invalid_user_id" });
 
-  const exists = db.prepare("SELECT id FROM users WHERE id = ?").get(id);
-  if (!exists) return res.status(404).json({ error: "not_found" });
+  const { data: exists, error: checkError } = await supabase
+    .from('users')
+    .select('id')
+    .eq('id', id)
+    .maybeSingle();
+  
+  if (checkError || !exists) return res.status(404).json({ error: "not_found" });
 
-  db.prepare("UPDATE users SET status = ? WHERE id = ?").run(status, id);
+  const { error: updateError } = await supabase
+    .from('users')
+    .update({ status })
+    .eq('id', id);
+  
+  if (updateError) {
+    return res.status(500).json({ error: "update_failed" });
+  }
+  
   res.json({ ok: true });
 });
 
-app.delete("/api/admin/users/:id", isAdmin({ log: true }), (req, res) => {
+app.delete("/api/admin/users/:id", isAdmin({ log: true }), async (req, res) => {
   const id = Number(req.params?.id);
   if (!Number.isFinite(id) || id <= 0) return res.status(400).json({ error: "invalid_user_id" });
 
@@ -275,24 +293,35 @@ app.delete("/api/admin/users/:id", isAdmin({ log: true }), (req, res) => {
     return res.status(400).json({ error: "cannot_delete_self" });
   }
 
-  const exists = db.prepare("SELECT id FROM users WHERE id = ?").get(id);
-  if (!exists) return res.status(404).json({ error: "not_found" });
+  const { data: exists, error: checkError } = await supabase
+    .from('users')
+    .select('id')
+    .eq('id', id)
+    .maybeSingle();
+  
+  if (checkError || !exists) return res.status(404).json({ error: "not_found" });
 
-  db.prepare("DELETE FROM users WHERE id = ?").run(id);
+  const { error: deleteError } = await supabase
+    .from('users')
+    .delete()
+    .eq('id', id);
+  
+  if (deleteError) {
+    return res.status(500).json({ error: "delete_failed" });
+  }
+  
   res.json({ ok: true });
 });
 
-app.get("/api/admin/quizzes", isAdmin({ log: true }), (req, res) => {
-  const rows = db
-    .prepare(
-      `SELECT q.id, q.code, q.title, q.created_by, q.hidden, q.created_at,
-              u.username AS created_by_username,
-              q.data_json
-       FROM quizzes q
-       LEFT JOIN users u ON u.id = q.created_by
-       ORDER BY q.created_at DESC`
-    )
-    .all();
+app.get("/api/admin/quizzes", isAdmin({ log: true }), async (req, res) => {
+  const { data: rows, error } = await supabase
+    .from('quizzes')
+    .select('id, code, title, created_by, hidden, created_at, data_json, users!inner(username)')
+    .order('created_at', { ascending: false });
+
+  if (error) {
+    return res.status(500).json({ error: "database_error" });
+  }
 
   const quizzes = rows.map((r) => {
     const data = safeJsonParse(r.data_json, {});
@@ -301,8 +330,8 @@ app.get("/api/admin/quizzes", isAdmin({ log: true }), (req, res) => {
       code: r.code,
       title: r.title,
       created_by: r.created_by,
-      created_by_username: r.created_by_username,
-      hidden: Number(r.hidden) ? 1 : 0,
+      created_by_username: r.users?.username || null,
+      hidden: r.hidden ? 1 : 0,
       created_at: r.created_at,
       data
     };
@@ -311,30 +340,56 @@ app.get("/api/admin/quizzes", isAdmin({ log: true }), (req, res) => {
   res.json({ quizzes });
 });
 
-app.post("/api/admin/quizzes/:id/hidden", isAdmin({ log: true }), (req, res) => {
+app.post("/api/admin/quizzes/:id/hidden", isAdmin({ log: true }), async (req, res) => {
   const id = Number(req.params?.id);
-  const hidden = req.body?.hidden ? 1 : 0;
+  const hidden = req.body?.hidden ? true : false;
   if (!Number.isFinite(id) || id <= 0) return res.status(400).json({ error: "invalid_quiz_id" });
 
-  const exists = db.prepare("SELECT id FROM quizzes WHERE id = ?").get(id);
-  if (!exists) return res.status(404).json({ error: "not_found" });
+  const { data: exists, error: checkError } = await supabase
+    .from('quizzes')
+    .select('id')
+    .eq('id', id)
+    .maybeSingle();
+  
+  if (checkError || !exists) return res.status(404).json({ error: "not_found" });
 
-  db.prepare("UPDATE quizzes SET hidden = ? WHERE id = ?").run(hidden, id);
+  const { error: updateError } = await supabase
+    .from('quizzes')
+    .update({ hidden })
+    .eq('id', id);
+  
+  if (updateError) {
+    return res.status(500).json({ error: "update_failed" });
+  }
+  
   res.json({ ok: true });
 });
 
-app.delete("/api/admin/quizzes/:id", isAdmin({ log: true }), (req, res) => {
+app.delete("/api/admin/quizzes/:id", isAdmin({ log: true }), async (req, res) => {
   const id = Number(req.params?.id);
   if (!Number.isFinite(id) || id <= 0) return res.status(400).json({ error: "invalid_quiz_id" });
 
-  const exists = db.prepare("SELECT id FROM quizzes WHERE id = ?").get(id);
-  if (!exists) return res.status(404).json({ error: "not_found" });
+  const { data: exists, error: checkError } = await supabase
+    .from('quizzes')
+    .select('id')
+    .eq('id', id)
+    .maybeSingle();
+  
+  if (checkError || !exists) return res.status(404).json({ error: "not_found" });
 
-  db.prepare("DELETE FROM quizzes WHERE id = ?").run(id);
+  const { error: deleteError } = await supabase
+    .from('quizzes')
+    .delete()
+    .eq('id', id);
+  
+  if (deleteError) {
+    return res.status(500).json({ error: "delete_failed" });
+  }
+  
   res.json({ ok: true });
 });
 
-app.post("/api/save-score", (req, res) => {
+app.post("/api/save-score", async (req, res) => {
   const { username, score } = req.body || {};
 
   const scoreNum = Number(score);
@@ -350,28 +405,47 @@ app.post("/api/save-score", (req, res) => {
   let finalUserId = null;
 
   if (sessionUserId) {
-    const u = db.prepare("SELECT id, username FROM users WHERE id = ?").get(sessionUserId);
-    if (u) {
+    const { data: u, error } = await supabase
+      .from('users')
+      .select('id, username')
+      .eq('id', sessionUserId)
+      .single();
+    
+    if (!error && u) {
       finalUserId = u.id;
       finalUsername = u.username;
     }
   } else if (bodyUsername) {
     finalUsername = bodyUsername;
-    const u = db.prepare("SELECT id FROM users WHERE username = ?").get(finalUsername);
-    if (u) finalUserId = u.id;
+    const { data: u, error } = await supabase
+      .from('users')
+      .select('id')
+      .eq('username', finalUsername)
+      .maybeSingle();
+    
+    if (!error && u) finalUserId = u.id;
   }
 
   if (!finalUsername) return res.status(400).json({ error: "username is required" });
 
-  const stmt = db.prepare(
-    "INSERT INTO scores (user_id, username, score) VALUES (?, ?, ?)"
-  );
-  const result = stmt.run(finalUserId, finalUsername, Math.round(scoreNum));
+  const { data: result, error: insertError } = await supabase
+    .from('scores')
+    .insert({
+      user_id: finalUserId,
+      username: finalUsername,
+      score: Math.round(scoreNum)
+    })
+    .select('id')
+    .single();
 
-  res.json({ ok: true, id: Number(result.lastInsertRowid) });
+  if (insertError || !result) {
+    return res.status(500).json({ error: "score_save_failed" });
+  }
+
+  res.json({ ok: true, id: result.id });
 });
 
-app.post("/api/save-quiz", (req, res) => {
+app.post("/api/save-quiz", async (req, res) => {
   const sessionUserId = req.session?.userId ? Number(req.session.userId) : null;
   if (!sessionUserId) return res.status(401).json({ error: "not_logged_in" });
 
@@ -382,9 +456,16 @@ app.post("/api/save-quiz", (req, res) => {
   if (!code) return res.status(400).json({ error: "missing_code" });
   if (!title) return res.status(400).json({ error: "missing_title" });
 
-  const existing = db
-    .prepare("SELECT id, created_by FROM quizzes WHERE code = ?")
-    .get(code);
+  // Check existing quiz
+  const { data: existing, error: existingError } = await supabase
+    .from('quizzes')
+    .select('id, created_by')
+    .eq('code', code)
+    .maybeSingle();
+
+  if (existingError && existingError.code !== 'PGRST116') {
+    return res.status(500).json({ error: "database_error" });
+  }
 
   if (existing && Number(existing.created_by) !== sessionUserId) {
     return res.status(403).json({ error: "forbidden" });
@@ -399,55 +480,70 @@ app.post("/api/save-quiz", (req, res) => {
   };
   const dataJson = JSON.stringify(payload);
 
+  let result;
   if (existing) {
-    db.prepare(
-      "UPDATE quizzes SET title = ?, data_json = ? WHERE code = ?"
-    ).run(title, dataJson, code);
+    const { data: updatedQuiz, error: updateError } = await supabase
+      .from('quizzes')
+      .update({ title, data_json: dataJson })
+      .eq('code', code)
+      .select('code, title, created_by, created_at')
+      .single();
+    
+    if (updateError || !updatedQuiz) {
+      return res.status(500).json({ error: "update_failed" });
+    }
+    result = updatedQuiz;
   } else {
-    db.prepare(
-      "INSERT INTO quizzes (code, title, data_json, created_by) VALUES (?, ?, ?, ?)"
-    ).run(code, title, dataJson, sessionUserId);
+    const { data: newQuiz, error: insertError } = await supabase
+      .from('quizzes')
+      .insert({
+        code,
+        title,
+        data_json: dataJson,
+        created_by: sessionUserId
+      })
+      .select('code, title, created_by, created_at')
+      .single();
+    
+    if (insertError || !newQuiz) {
+      return res.status(500).json({ error: "insert_failed" });
+    }
+    result = newQuiz;
   }
 
-  const row = db
-    .prepare(
-      `SELECT q.code, q.title, q.created_by, q.created_at, u.username AS created_by_username
-       FROM quizzes q
-       LEFT JOIN users u ON u.id = q.created_by
-       WHERE q.code = ?`
-    )
-    .get(code);
+  // Get username for created_by_user
+  const { data: userData } = await supabase
+    .from('users')
+    .select('username')
+    .eq('id', result.created_by)
+    .single();
 
-  res.json({ ok: true, quiz: row });
+  const quizWithUsername = {
+    ...result,
+    created_by_username: userData?.username || null
+  };
+
+  res.json({ ok: true, quiz: quizWithUsername });
 });
 
-app.get("/api/quizzes", (req, res) => {
+app.get("/api/quizzes", async (req, res) => {
   const mine = String(req.query?.mine || "").trim() === "1";
   const sessionUserId = req.session?.userId ? Number(req.session.userId) : null;
 
-  let rows = [];
+  let query = supabase
+    .from('quizzes')
+    .select('code, title, data_json, created_by, created_at, users!inner(username)')
+    .order('created_at', { ascending: false });
+
   if (mine) {
     if (!sessionUserId) return res.status(401).json({ error: "not_logged_in" });
-    rows = db
-      .prepare(
-        `SELECT q.code, q.title, q.data_json, q.created_by, q.created_at,
-                u.username AS created_by_username
-         FROM quizzes q
-         LEFT JOIN users u ON u.id = q.created_by
-         WHERE q.created_by = ?
-         ORDER BY q.created_at DESC`
-      )
-      .all(sessionUserId);
-  } else {
-    rows = db
-      .prepare(
-        `SELECT q.code, q.title, q.data_json, q.created_by, q.created_at,
-                u.username AS created_by_username
-         FROM quizzes q
-         LEFT JOIN users u ON u.id = q.created_by
-         ORDER BY q.created_at DESC`
-      )
-      .all();
+    query = query.eq('created_by', sessionUserId);
+  }
+
+  const { data: rows, error } = await query;
+  
+  if (error) {
+    return res.status(500).json({ error: "database_error" });
   }
 
   const quizzes = rows.map((r) => {
@@ -456,7 +552,7 @@ app.get("/api/quizzes", (req, res) => {
       code: r.code,
       title: r.title,
       created_by: r.created_by,
-      created_by_username: r.created_by_username,
+      created_by_username: r.users?.username || null,
       created_at: r.created_at,
       data
     };
@@ -465,21 +561,17 @@ app.get("/api/quizzes", (req, res) => {
   res.json({ quizzes });
 });
 
-app.get("/api/quiz/:code", (req, res) => {
+app.get("/api/quiz/:code", async (req, res) => {
   const code = String(req.params?.code || "").trim();
   if (!code) return res.status(400).json({ error: "missing_code" });
 
-  const row = db
-    .prepare(
-      `SELECT q.code, q.title, q.data_json, q.created_by, q.created_at,
-              u.username AS created_by_username
-       FROM quizzes q
-       LEFT JOIN users u ON u.id = q.created_by
-       WHERE q.code = ?`
-    )
-    .get(code);
+  const { data: row, error } = await supabase
+    .from('quizzes')
+    .select('code, title, data_json, created_by, created_at, users!inner(username)')
+    .eq('code', code)
+    .single();
 
-  if (!row) return res.status(404).json({ error: "not_found" });
+  if (error || !row) return res.status(404).json({ error: "not_found" });
   const data = safeJsonParse(row.data_json, null);
   if (!data) return res.status(500).json({ error: "invalid_quiz_data" });
 
@@ -488,25 +580,38 @@ app.get("/api/quiz/:code", (req, res) => {
       code: row.code,
       title: row.title,
       created_by: row.created_by,
-      created_by_username: row.created_by_username,
+      created_by_username: row.users?.username || null,
       created_at: row.created_at,
       data
     }
   });
 });
 
-app.delete("/api/quiz/:code", (req, res) => {
+app.delete("/api/quiz/:code", async (req, res) => {
   const sessionUserId = req.session?.userId ? Number(req.session.userId) : null;
   if (!sessionUserId) return res.status(401).json({ error: "not_logged_in" });
 
   const code = String(req.params?.code || "").trim();
   if (!code) return res.status(400).json({ error: "missing_code" });
 
-  const row = db.prepare("SELECT created_by FROM quizzes WHERE code = ?").get(code);
-  if (!row) return res.status(404).json({ error: "not_found" });
+  const { data: row, error: fetchError } = await supabase
+    .from('quizzes')
+    .select('created_by')
+    .eq('code', code)
+    .single();
+
+  if (fetchError || !row) return res.status(404).json({ error: "not_found" });
   if (Number(row.created_by) !== sessionUserId) return res.status(403).json({ error: "forbidden" });
 
-  db.prepare("DELETE FROM quizzes WHERE code = ?").run(code);
+  const { error: deleteError } = await supabase
+    .from('quizzes')
+    .delete()
+    .eq('code', code);
+
+  if (deleteError) {
+    return res.status(500).json({ error: "delete_failed" });
+  }
+
   res.json({ ok: true });
 });
 
