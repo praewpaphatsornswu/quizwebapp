@@ -21,6 +21,7 @@ db.exec(`
     email TEXT NOT NULL UNIQUE,
     password_hash TEXT NOT NULL,
     role TEXT NOT NULL DEFAULT 'user',
+    status TEXT NOT NULL DEFAULT 'active',
     created_at TEXT NOT NULL DEFAULT (datetime('now'))
   );
 `);
@@ -44,6 +45,7 @@ db.exec(`
     title TEXT NOT NULL,
     data_json TEXT NOT NULL,
     created_by INTEGER,
+    hidden INTEGER NOT NULL DEFAULT 0,
     created_at TEXT NOT NULL DEFAULT (datetime('now'))
   );
 `);
@@ -55,6 +57,21 @@ function safeJsonParse(text, fallback) {
     return fallback;
   }
 }
+
+// Backfill/migrate columns (older DBs)
+try {
+  const userCols = db.prepare("PRAGMA table_info(users)").all();
+  if (userCols.length > 0 && !userCols.some((c) => c.name === "status")) {
+    db.exec("ALTER TABLE users ADD COLUMN status TEXT NOT NULL DEFAULT 'active'");
+  }
+} catch (e) {}
+
+try {
+  const quizCols = db.prepare("PRAGMA table_info(quizzes)").all();
+  if (quizCols.length > 0 && !quizCols.some((c) => c.name === "hidden")) {
+    db.exec("ALTER TABLE quizzes ADD COLUMN hidden INTEGER NOT NULL DEFAULT 0");
+  }
+} catch (e) {}
 
 const cols = db.prepare("PRAGMA table_info(scores)").all();
 if (
@@ -92,7 +109,13 @@ app.use(
 
 function sanitizeUser(row) {
   if (!row) return null;
-  return { id: row.id, username: row.username, email: row.email, role: row.role };
+  return {
+    id: row.id,
+    username: row.username,
+    email: row.email,
+    role: row.role,
+    status: row.status
+  };
 }
 
 function isAdmin(options = {}) {
@@ -179,7 +202,7 @@ app.get("/api/me", (req, res) => {
   const userId = req.session?.userId;
   if (!userId) return res.status(401).json({ error: "not_logged_in" });
   const row = db
-    .prepare("SELECT id, username, email, role FROM users WHERE id = ?")
+    .prepare("SELECT id, username, email, role, status FROM users WHERE id = ?")
     .get(Number(userId));
   if (!row) return res.status(401).json({ error: "not_logged_in" });
   res.json({ user: sanitizeUser(row) });
@@ -187,6 +210,128 @@ app.get("/api/me", (req, res) => {
 
 app.post("/api/logout", (req, res) => {
   req.session.destroy(() => res.json({ ok: true }));
+});
+
+/* =====================
+   ADMIN APIs (SQLite)
+===================== */
+app.get("/api/admin/stats", isAdmin({ log: true }), (req, res) => {
+  const totalUsers = Number(db.prepare("SELECT COUNT(*) AS c FROM users").get().c || 0);
+  const totalAdmins = Number(
+    db.prepare("SELECT COUNT(*) AS c FROM users WHERE LOWER(role) = 'admin'").get().c || 0
+  );
+  const totalQuizzes = Number(db.prepare("SELECT COUNT(*) AS c FROM quizzes").get().c || 0);
+  const hiddenQuizzes = Number(
+    db.prepare("SELECT COUNT(*) AS c FROM quizzes WHERE COALESCE(hidden, 0) = 1").get().c || 0
+  );
+
+  res.json({ totalUsers, totalAdmins, totalQuizzes, hiddenQuizzes });
+});
+
+app.get("/api/admin/users", isAdmin({ log: true }), (req, res) => {
+  const rows = db
+    .prepare(
+      `SELECT id, username, email, role, status, created_at
+       FROM users
+       ORDER BY created_at DESC`
+    )
+    .all();
+  res.json({ users: rows.map(sanitizeUser) });
+});
+
+app.post("/api/admin/users/:id/role", isAdmin({ log: true }), (req, res) => {
+  const id = Number(req.params?.id);
+  const roleRaw = String(req.body?.role || "").trim().toLowerCase();
+  const role = roleRaw === "admin" ? "admin" : "user";
+  if (!Number.isFinite(id) || id <= 0) return res.status(400).json({ error: "invalid_user_id" });
+
+  const exists = db.prepare("SELECT id FROM users WHERE id = ?").get(id);
+  if (!exists) return res.status(404).json({ error: "not_found" });
+
+  db.prepare("UPDATE users SET role = ? WHERE id = ?").run(role, id);
+  res.json({ ok: true });
+});
+
+app.post("/api/admin/users/:id/status", isAdmin({ log: true }), (req, res) => {
+  const id = Number(req.params?.id);
+  const statusRaw = String(req.body?.status || "").trim().toLowerCase();
+  const status = statusRaw === "inactive" ? "inactive" : "active";
+  if (!Number.isFinite(id) || id <= 0) return res.status(400).json({ error: "invalid_user_id" });
+
+  const exists = db.prepare("SELECT id FROM users WHERE id = ?").get(id);
+  if (!exists) return res.status(404).json({ error: "not_found" });
+
+  db.prepare("UPDATE users SET status = ? WHERE id = ?").run(status, id);
+  res.json({ ok: true });
+});
+
+app.delete("/api/admin/users/:id", isAdmin({ log: true }), (req, res) => {
+  const id = Number(req.params?.id);
+  if (!Number.isFinite(id) || id <= 0) return res.status(400).json({ error: "invalid_user_id" });
+
+  // Prevent deleting yourself
+  const sessionUserId = req.session?.userId ? Number(req.session.userId) : null;
+  if (sessionUserId && id === sessionUserId) {
+    return res.status(400).json({ error: "cannot_delete_self" });
+  }
+
+  const exists = db.prepare("SELECT id FROM users WHERE id = ?").get(id);
+  if (!exists) return res.status(404).json({ error: "not_found" });
+
+  db.prepare("DELETE FROM users WHERE id = ?").run(id);
+  res.json({ ok: true });
+});
+
+app.get("/api/admin/quizzes", isAdmin({ log: true }), (req, res) => {
+  const rows = db
+    .prepare(
+      `SELECT q.id, q.code, q.title, q.created_by, q.hidden, q.created_at,
+              u.username AS created_by_username,
+              q.data_json
+       FROM quizzes q
+       LEFT JOIN users u ON u.id = q.created_by
+       ORDER BY q.created_at DESC`
+    )
+    .all();
+
+  const quizzes = rows.map((r) => {
+    const data = safeJsonParse(r.data_json, {});
+    return {
+      id: r.id,
+      code: r.code,
+      title: r.title,
+      created_by: r.created_by,
+      created_by_username: r.created_by_username,
+      hidden: Number(r.hidden) ? 1 : 0,
+      created_at: r.created_at,
+      data
+    };
+  });
+
+  res.json({ quizzes });
+});
+
+app.post("/api/admin/quizzes/:id/hidden", isAdmin({ log: true }), (req, res) => {
+  const id = Number(req.params?.id);
+  const hidden = req.body?.hidden ? 1 : 0;
+  if (!Number.isFinite(id) || id <= 0) return res.status(400).json({ error: "invalid_quiz_id" });
+
+  const exists = db.prepare("SELECT id FROM quizzes WHERE id = ?").get(id);
+  if (!exists) return res.status(404).json({ error: "not_found" });
+
+  db.prepare("UPDATE quizzes SET hidden = ? WHERE id = ?").run(hidden, id);
+  res.json({ ok: true });
+});
+
+app.delete("/api/admin/quizzes/:id", isAdmin({ log: true }), (req, res) => {
+  const id = Number(req.params?.id);
+  if (!Number.isFinite(id) || id <= 0) return res.status(400).json({ error: "invalid_quiz_id" });
+
+  const exists = db.prepare("SELECT id FROM quizzes WHERE id = ?").get(id);
+  if (!exists) return res.status(404).json({ error: "not_found" });
+
+  db.prepare("DELETE FROM quizzes WHERE id = ?").run(id);
+  res.json({ ok: true });
 });
 
 app.post("/api/save-score", (req, res) => {
@@ -375,9 +520,7 @@ app.get(
 );
 
 // Protect any admin APIs under /api/admin/*
-app.use("/api/admin", isAdmin(), (req, res) => {
-  res.json({ ok: true });
-});
+// (Handled explicitly above)
 
 app.use(express.static(__dirname));
 

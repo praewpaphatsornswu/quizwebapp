@@ -73,7 +73,6 @@
           <option value="admin">เฉพาะ admin</option>
           <option value="user">เฉพาะ user</option>
         </select>
-        <button class="outline-btn" onclick="seedDemoData()">ใส่ข้อมูลตัวอย่าง</button>
         <button class="outline-btn" onclick="refreshAll()">รีเฟรช</button>
       </div>
     </section>
@@ -136,11 +135,11 @@
     </section>
 
     <div class="notice">
-      หน้านี้ยังเป็นเวอร์ชัน frontend ก่อน จึงใช้ <strong>localStorage</strong> ในการเก็บข้อมูลชั่วคราว
-      พอคุณทำ backend/database ทีหลัง ค่อยเปลี่ยนฟังก์ชันอ่านข้อมูลให้ดึงจาก API แทนได้เลย
+      หน้านี้ดึงข้อมูลจริงจากฐานข้อมูล <strong>SQLite</strong> ผ่าน Admin API และต้องใช้สิทธิ์ <strong>admin</strong> เท่านั้น
     </div>
   </main>
 
+  <script src="js/auth.js"></script>
   <script src="js/admin_func.js"></script>
   
 </body>

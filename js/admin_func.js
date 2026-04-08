@@ -1,108 +1,52 @@
 let currentTab = "usersPanel";
-    let allUsers = [];
-    let allQuizzes = [];
+let allUsers = [];
+let allQuizzes = [];
 
-    function getCurrentUser() {
-      try {
-        return JSON.parse(localStorage.getItem("loggedInUser"))
-          || JSON.parse(localStorage.getItem("currentUser"))
-          || JSON.parse(localStorage.getItem("user"));
-      } catch (e) {
-        return null;
-      }
-    }
+async function apiJson(url, options) {
+  const res = await fetch(url, options);
+  const body = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(body?.error || res.statusText || "request_failed");
+  return body;
+}
 
-    function checkAdminAccess() {
-      const user = getCurrentUser();
+async function logoutAdmin() {
+  try {
+    await fetch("/api/logout", { method: "POST" });
+  } catch (e) {}
+  try {
+    localStorage.removeItem("loggedInUser");
+    localStorage.removeItem("currentUser");
+    localStorage.removeItem("user");
+  } catch (e) {}
+  window.location.href = "/index.html";
+}
 
-      if (!user) {
-        alert("กรุณาเข้าสู่ระบบก่อน");
-        window.location.href = "login.html";
-        return false;
-      }
+function normalizeUser(user, index) {
+  return {
+    id: user.id ?? index + 1,
+    username: user.username || "ไม่มีชื่อ",
+    email: user.email || "-",
+    role: String(user.role || "user").toLowerCase(),
+    status: String(user.status || "active").toLowerCase(),
+    created_at: user.created_at || "-"
+  };
+}
 
-      const role = String(user.role || "").toLowerCase();
-      if (role !== "admin") {
-        alert("หน้านี้สำหรับ Admin เท่านั้น");
-        window.location.href = "index.html";
-        return false;
-      }
-
-      return true;
-    }
-
-    function logoutAdmin() {
-      localStorage.removeItem("loggedInUser");
-      localStorage.removeItem("currentUser");
-      localStorage.removeItem("user");
-      window.location.href = "index.html";
-    }
-
-    function safeParse(key, fallback = []) {
-      try {
-        const raw = localStorage.getItem(key);
-        if (!raw) return fallback;
-        const parsed = JSON.parse(raw);
-        return Array.isArray(parsed) ? parsed : fallback;
-      } catch (e) {
-        return fallback;
-      }
-    }
-
-    function getUsers() {
-      let users =
-        safeParse("users") ||
-        safeParse("quizUsers") ||
-        safeParse("allUsers");
-
-      if (!Array.isArray(users) || users.length === 0) {
-        users = safeParse("users");
-      }
-
-      return Array.isArray(users) ? users : [];
-    }
-
-    function saveUsers(users) {
-      localStorage.setItem("users", JSON.stringify(users));
-    }
-
-    function getQuizzes() {
-      const possibleKeys = ["quizzes", "quizList", "allQuizzes", "myQuizzes"];
-      for (const key of possibleKeys) {
-        const data = safeParse(key);
-        if (Array.isArray(data) && data.length > 0) return data;
-      }
-      return safeParse("quizzes");
-    }
-
-    function saveQuizzes(quizzes) {
-      localStorage.setItem("quizzes", JSON.stringify(quizzes));
-    }
-
-    function normalizeUser(user, index) {
-      return {
-        id: user.id ?? index + 1,
-        username: user.username || user.name || "ไม่มีชื่อ",
-        email: user.email || "-",
-        role: (user.role || "user").toLowerCase(),
-        status: (user.status || (user.is_active === false ? "inactive" : "active")).toLowerCase(),
-        created_at: user.created_at || user.createdAt || "-"
-      };
-    }
-
-    function normalizeQuiz(quiz, index) {
-      const questions = Array.isArray(quiz.questions) ? quiz.questions : [];
-      return {
-        id: quiz.id ?? index + 1,
-        title: quiz.title || quiz.name || "ไม่มีชื่อควิซ",
-        code: quiz.code || quiz.joinCode || quiz.quizCode || "-",
-        creatorId: quiz.creator_id ?? quiz.creatorId ?? quiz.ownerId ?? null,
-        creatorName: quiz.creatorName || quiz.ownerName || null,
-        status: (quiz.status || (quiz.is_published === false ? "hidden" : "active")).toLowerCase(),
-        questions,
-        created_at: quiz.created_at || quiz.createdAt || "-"
-      };
-    }
+function normalizeQuiz(quiz, index) {
+  const q = quiz?.data || {};
+  const questions = Array.isArray(q.questions) ? q.questions : [];
+  const hidden = Number(quiz.hidden) ? 1 : 0;
+  return {
+    id: quiz.id ?? index + 1,
+    title: quiz.title || q.title || "ไม่มีชื่อควิซ",
+    code: quiz.code || q.code || "-",
+    creatorId: quiz.created_by ?? null,
+    creatorName: quiz.created_by_username || null,
+    status: hidden ? "hidden" : "active",
+    questions,
+    created_at: quiz.created_at || "-"
+  };
+}
 
     function formatDate(value) {
       if (!value || value === "-") return "-";
@@ -126,14 +70,12 @@ let currentTab = "usersPanel";
       return `<span class="tag user">${s || "UNKNOWN"}</span>`;
     }
 
-    function updateStats() {
-      document.getElementById("totalUsers").textContent = allUsers.length;
-      document.getElementById("totalQuizzes").textContent = allQuizzes.length;
-      document.getElementById("hiddenQuizzes").textContent =
-        allQuizzes.filter(q => q.status === "hidden").length;
-      document.getElementById("totalAdmins").textContent =
-        allUsers.filter(u => u.role === "admin").length;
-    }
+function updateStatsFromServer(stats) {
+  document.getElementById("totalUsers").textContent = String(stats?.totalUsers ?? 0);
+  document.getElementById("totalQuizzes").textContent = String(stats?.totalQuizzes ?? 0);
+  document.getElementById("hiddenQuizzes").textContent = String(stats?.hiddenQuizzes ?? 0);
+  document.getElementById("totalAdmins").textContent = String(stats?.totalAdmins ?? 0);
+}
 
     function renderUsers(users) {
       const tbody = document.getElementById("usersTableBody");
@@ -223,12 +165,21 @@ let currentTab = "usersPanel";
       `).join("");
     }
 
-    function refreshAll() {
-      allUsers = getUsers().map(normalizeUser);
-      allQuizzes = getQuizzes().map(normalizeQuiz);
-      updateStats();
-      handleSearch();
-    }
+async function refreshAll() {
+  // Stats
+  const stats = await apiJson("/api/admin/stats");
+  updateStatsFromServer(stats);
+
+  // Users
+  const usersBody = await apiJson("/api/admin/users");
+  allUsers = (Array.isArray(usersBody?.users) ? usersBody.users : []).map(normalizeUser);
+
+  // Quizzes (for the Quizzes tab + hidden stats parity)
+  const quizzesBody = await apiJson("/api/admin/quizzes");
+  allQuizzes = (Array.isArray(quizzesBody?.quizzes) ? quizzesBody.quizzes : []).map(normalizeQuiz);
+
+  handleSearch();
+}
 
     function switchTab(tabId, btn) {
       currentTab = tabId;
@@ -294,60 +245,45 @@ let currentTab = "usersPanel";
       }
     }
 
-    function changeUserRole(userId, newRole) {
-      const users = getUsers().map(normalizeUser);
-      const idx = users.findIndex(u => String(u.id) === String(userId));
-      if (idx === -1) return;
+async function changeUserRole(userId, newRole) {
+  await apiJson(`/api/admin/users/${encodeURIComponent(userId)}/role`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ role: newRole })
+  });
+  await refreshAll();
+}
 
-      users[idx].role = newRole;
-      saveUsers(users);
-      refreshAll();
-      alert("อัปเดต role เรียบร้อย");
-    }
+async function toggleUserStatus(userId, newStatus) {
+  await apiJson(`/api/admin/users/${encodeURIComponent(userId)}/status`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ status: newStatus })
+  });
+  await refreshAll();
+}
 
-    function toggleUserStatus(userId, newStatus) {
-      const users = getUsers().map(normalizeUser);
-      const idx = users.findIndex(u => String(u.id) === String(userId));
-      if (idx === -1) return;
+async function deleteUser(userId) {
+  if (!confirm("ต้องการลบผู้ใช้นี้จริงหรือไม่?")) return;
+  await apiJson(`/api/admin/users/${encodeURIComponent(userId)}`, { method: "DELETE" });
+  await refreshAll();
+}
 
-      users[idx].status = newStatus;
-      saveUsers(users);
-      refreshAll();
-      alert("อัปเดตสถานะผู้ใช้เรียบร้อย");
-    }
+async function toggleQuizStatus(quizId, newStatus) {
+  const hidden = newStatus === "hidden";
+  await apiJson(`/api/admin/quizzes/${encodeURIComponent(quizId)}/hidden`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ hidden })
+  });
+  await refreshAll();
+}
 
-    function deleteUser(userId) {
-      if (!confirm("ต้องการลบผู้ใช้นี้จริงหรือไม่?")) return;
-
-      let users = getUsers().map(normalizeUser);
-      users = users.filter(u => String(u.id) !== String(userId));
-      saveUsers(users);
-
-      refreshAll();
-      alert("ลบผู้ใช้เรียบร้อย");
-    }
-
-    function toggleQuizStatus(quizId, newStatus) {
-      const quizzes = getQuizzes().map(normalizeQuiz);
-      const idx = quizzes.findIndex(q => String(q.id) === String(quizId));
-      if (idx === -1) return;
-
-      quizzes[idx].status = newStatus;
-      saveQuizzes(quizzes);
-      refreshAll();
-      alert("อัปเดตสถานะควิซเรียบร้อย");
-    }
-
-    function deleteQuiz(quizId) {
-      if (!confirm("ต้องการลบควิซนี้จริงหรือไม่?")) return;
-
-      let quizzes = getQuizzes().map(normalizeQuiz);
-      quizzes = quizzes.filter(q => String(q.id) !== String(quizId));
-      saveQuizzes(quizzes);
-
-      refreshAll();
-      alert("ลบควิซเรียบร้อย");
-    }
+async function deleteQuiz(quizId) {
+  if (!confirm("ต้องการลบควิซนี้จริงหรือไม่?")) return;
+  await apiJson(`/api/admin/quizzes/${encodeURIComponent(quizId)}`, { method: "DELETE" });
+  await refreshAll();
+}
 
     function escapeHtml(str) {
       return String(str ?? "")
@@ -358,72 +294,16 @@ let currentTab = "usersPanel";
         .replaceAll("'", "&#039;");
     }
 
-    function seedDemoData() {
-      const demoUsers = [
-        {
-          id: 1,
-          username: "admin",
-          email: "admin@quizweb.com",
-          role: "admin",
-          status: "active",
-          created_at: new Date().toISOString()
-        },
-        {
-          id: 2,
-          username: "andy",
-          email: "andy@example.com",
-          role: "user",
-          status: "active",
-          created_at: new Date().toISOString()
-        },
-        {
-          id: 3,
-          username: "user_test",
-          email: "test@example.com",
-          role: "user",
-          status: "inactive",
-          created_at: new Date().toISOString()
-        }
-      ];
-
-      const demoQuizzes = [
-        {
-          id: 1,
-          title: "แบบทดสอบวิชา SE",
-          code: "SE1234",
-          creatorId: 2,
-          status: "active",
-          created_at: new Date().toISOString(),
-          questions: [
-            { id: 1, text: "SE คืออะไร?" },
-            { id: 2, text: "Waterfall คืออะไร?" }
-          ]
-        },
-        {
-          id: 2,
-          title: "ควิซทดลองไม่เหมาะสม",
-          code: "BAD999",
-          creatorId: 3,
-          status: "hidden",
-          created_at: new Date().toISOString(),
-          questions: [
-            { id: 1, text: "ตัวอย่างข้อสอบ" }
-          ]
-        }
-      ];
-
-      localStorage.setItem("users", JSON.stringify(demoUsers));
-      localStorage.setItem("quizzes", JSON.stringify(demoQuizzes));
-
-      const current = getCurrentUser();
-      if (!current || String(current.role || "").toLowerCase() !== "admin") {
-        localStorage.setItem("loggedInUser", JSON.stringify(demoUsers[0]));
-      }
-
-      refreshAll();
-      alert("เพิ่มข้อมูลตัวอย่างแล้ว");
+// Init (admin page is already protected by server-side route guard)
+(async function init() {
+  try {
+    await refreshAll();
+  } catch (err) {
+    const msg = String(err && err.message ? err.message : err);
+    if (msg === "not_logged_in" || msg === "forbidden") {
+      window.location.href = "/index.html";
+      return;
     }
-
-    if (checkAdminAccess()) {
-      refreshAll();
-    }
+    alert("โหลดข้อมูล Admin ไม่สำเร็จ (เซิร์ฟเวอร์ไม่พร้อม)");
+  }
+})();
