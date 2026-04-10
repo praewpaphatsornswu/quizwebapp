@@ -5,1425 +5,199 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Quiz Player | quizWeb</title>
 <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-
-<style>
-*{
-    margin:0;
-    padding:0;
-    box-sizing:border-box;
-    font-family:'Prompt',sans-serif;
-}
-
-:root{
-    --bg:#f5fffb;
-    --bg2:#ecfff6;
-    --primary:#1f7a5a;
-    --primary-dark:#14513d;
-    --primary-soft:#dff7ec;
-    --text:#123126;
-    --text-soft:#4f6b61;
-    --white:#ffffff;
-    --border:rgba(31,122,90,0.15);
-    --shadow:0 10px 30px rgba(25,80,61,0.10);
-    --shadow-lg:0 20px 45px rgba(25,80,61,0.15);
-    --danger:#d64545;
-}
-
-body{
-    min-height:100vh;
-    color:var(--text);
-    background:
-        radial-gradient(circle at top left, #dff9ee 0%, transparent 28%),
-        radial-gradient(circle at bottom right, #d8f5ff 0%, transparent 24%),
-        linear-gradient(135deg, var(--bg), #ffffff 52%, var(--bg2) 100%);
-}
-
-a{
-    text-decoration:none;
-    color:inherit;
-}
-
-.container-wide{
-    width:min(1200px, calc(100% - 32px));
-    margin:0 auto;
-}
-
-nav{
-    position:sticky;
-    top:0;
-    z-index:50;
-    backdrop-filter:blur(12px);
-    background:rgba(255,255,255,0.82);
-    border-bottom:1px solid rgba(31,122,90,0.08);
-}
-
-.nav-inner{
-    min-height:78px;
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-    gap:20px;
-}
-
-.logo{
-    display:flex;
-    align-items:center;
-    gap:12px;
-    cursor:pointer;
-}
-
-.logo-badge{
-    width:42px;
-    height:42px;
-    border-radius:14px;
-    background:linear-gradient(135deg, var(--primary), #3bb789);
-    color:white;
-    display:grid;
-    place-items:center;
-    font-size:20px;
-    box-shadow:var(--shadow);
-}
-
-.logo-text{
-    display:flex;
-    flex-direction:column;
-    line-height:1.1;
-}
-
-.logo-text strong{
-    font-size:22px;
-    color:var(--primary-dark);
-}
-
-.logo-text span{
-    font-size:12px;
-    color:var(--text-soft);
-}
-
-.auth-area{
-    display:flex;
-    align-items:center;
-    gap:10px;
-    position:relative;
-}
-
-.profile-menu-wrap{
-    position:relative;
-    display:none;
-}
-
-.profile-menu-wrap.show{
-    display:block;
-}
-
-.profile-pill{
-    min-width:290px;
-    display:flex;
-    align-items:center;
-    gap:14px;
-    padding:14px 18px;
-    border-radius:999px;
-    border:1px solid var(--border);
-    background:rgba(255,255,255,0.95);
-    box-shadow:var(--shadow);
-    cursor:pointer;
-    transition:0.2s ease;
-}
-
-.profile-pill:hover{
-    transform:translateY(-1px);
-    box-shadow:var(--shadow-lg);
-}
-
-.profile-avatar{
-    width:74px;
-    height:74px;
-    border-radius:50%;
-    overflow:hidden;
-    flex-shrink:0;
-    border:4px solid white;
-    background:linear-gradient(135deg, #d9f7eb, #ecfff6);
-    display:grid;
-    place-items:center;
-    box-shadow:0 8px 18px rgba(18,49,38,0.10);
-}
-
-.profile-avatar img{
-    width:100%;
-    height:100%;
-    object-fit:cover;
-}
-
-.profile-avatar-fallback{
-    font-size:26px;
-    font-weight:700;
-    color:var(--primary-dark);
-}
-
-.profile-pill-text{
-    display:flex;
-    flex-direction:column;
-    min-width:0;
-    flex:1;
-    line-height:1.2;
-}
-
-.profile-pill-text strong{
-    font-size:23px;
-    color:var(--primary-dark);
-    white-space:nowrap;
-    overflow:hidden;
-    text-overflow:ellipsis;
-}
-
-.profile-pill-text span{
-    font-size:14px;
-    color:var(--text-soft);
-}
-
-.profile-pill-arrow{
-    font-size:18px;
-    color:var(--primary-dark);
-    transition:transform 0.2s ease;
-    flex-shrink:0;
-}
-
-.profile-menu-wrap.open .profile-pill-arrow{
-    transform:rotate(180deg);
-}
-
-.profile-dropdown{
-    position:absolute;
-    top:calc(100% + 12px);
-    right:0;
-    width:260px;
-    background:white;
-    border:1px solid rgba(31,122,90,0.12);
-    border-radius:20px;
-    box-shadow:0 20px 45px rgba(20,81,61,0.15);
-    padding:10px;
-    display:none;
-    z-index:120;
-}
-
-.profile-menu-wrap.open .profile-dropdown{
-    display:block;
-}
-
-.dropdown-item{
-    width:100%;
-    border:none;
-    background:white;
-    padding:14px 14px;
-    border-radius:14px;
-    cursor:pointer;
-    display:flex;
-    align-items:center;
-    gap:12px;
-    text-align:left;
-    color:var(--text);
-    font-size:15px;
-    font-weight:500;
-    transition:0.2s ease;
-}
-
-.dropdown-item:hover{
-    background:#f4fbf7;
-}
-
-.dropdown-item.danger{
-    color:var(--danger);
-}
-
-.dropdown-divider{
-    height:1px;
-    background:rgba(31,122,90,0.08);
-    margin:8px 4px;
-}
-
-.solid-btn,
-.outline-btn,
-.ghost-btn{
-    border:none;
-    cursor:pointer;
-    border-radius:14px;
-    font-size:15px;
-    font-weight:600;
-    transition:0.2s ease;
-}
-
-.solid-btn{
-    background:linear-gradient(135deg, var(--primary), #2ea777);
-    color:white;
-    padding:13px 20px;
-    box-shadow:0 10px 25px rgba(31,122,90,0.22);
-}
-
-.solid-btn:hover{
-    transform:translateY(-1px);
-    filter:brightness(0.98);
-}
-
-.outline-btn{
-    background:white;
-    color:var(--primary-dark);
-    border:1.5px solid rgba(31,122,90,0.22);
-    padding:12px 18px;
-}
-
-.outline-btn:hover{
-    background:var(--primary-soft);
-}
-
-.ghost-btn{
-    background:transparent;
-    color:var(--primary-dark);
-    padding:10px 14px;
-}
-
-.ghost-btn:hover{
-    background:rgba(31,122,90,0.08);
-}
-
-.login-inline-btn{
-    display:none;
-}
-
-.login-inline-btn.show{
-    display:inline-flex;
-}
-
-/* play page */
-.top-wrap{
-    max-width:1280px;
-    margin:24px auto 0;
-    padding:0 24px;
-}
-
-.preview-banner{
-    background:linear-gradient(135deg,#fff7d6,#fff2b2);
-    color:#7a5c00;
-    padding:14px 18px;
-    border-radius:16px;
-    margin-bottom:16px;
-    border:1px solid #f1df8e;
-    font-weight:500;
-}
-
-.top{
-    background:#fff;
-    border-radius:20px;
-    box-shadow:0 10px 30px rgba(0,0,0,0.05);
-    padding:18px 20px;
-}
-
-.top-head{
-    display:flex;
-    justify-content:space-between;
-    gap:16px;
-    align-items:center;
-    flex-wrap:wrap;
-}
-
-.quiz-title{
-    color:#1b4332;
-    font-size:28px;
-    font-weight:600;
-}
-
-.quiz-sub{
-    color:#52796f;
-    margin-top:4px;
-    font-size:14px;
-}
-
-.timer-box{
-    background:#d8f3dc;
-    padding:12px 18px;
-    border-radius:16px;
-    min-width:150px;
-    text-align:center;
-}
-
-.timer-box .small{
-    font-size:12px;
-    color:#2d6a4f;
-}
-
-.timer{
-    font-size:28px;
-    font-weight:700;
-    color:#1b4332;
-}
-
-.progress-text{
-    margin-top:14px;
-    color:#2d6a4f;
-    font-weight:500;
-}
-
-.progress-bar{
-    height:12px;
-    background:#dfe7e3;
-    border-radius:999px;
-    margin-top:8px;
-    overflow:hidden;
-}
-
-.progress{
-    height:12px;
-    background:#52b788;
-    border-radius:999px;
-    width:0%;
-    transition:0.25s;
-}
-
-.container{
-    max-width:1280px;
-    margin:20px auto 40px;
-    padding:0 24px;
-    display:grid;
-    grid-template-columns:2fr 1fr;
-    gap:20px;
-}
-
-.left{
-    background:#fff;
-    border-radius:22px;
-    box-shadow:0 10px 30px rgba(0,0,0,0.05);
-    padding:28px;
-}
-
-.badge{
-    display:inline-block;
-    background:#d8f3dc;
-    color:#2d6a4f;
-    padding:8px 14px;
-    border-radius:999px;
-    font-size:14px;
-    font-weight:600;
-    margin-bottom:14px;
-}
-
-.question-text{
-    color:#1b4332;
-    font-size:28px;
-    line-height:1.5;
-    margin-bottom:14px;
-}
-
-.question-type{
-    margin-bottom:18px;
-    color:#52796f;
-    font-size:14px;
-}
-
-.option{
-    border:1px solid #d8e6de;
-    background:#fff;
-    padding:16px;
-    border-radius:18px;
-    margin-top:12px;
-    cursor:pointer;
-    display:flex;
-    gap:16px;
-    align-items:center;
-    transition:0.2s;
-}
-
-.option:hover{
-    background:#f7fffb;
-    border-color:#a6d8bc;
-}
-
-.option.active{
-    background:#d8f3dc;
-    border-color:#52b788;
-}
-
-.letter{
-    width:46px;
-    height:46px;
-    border-radius:14px;
-    background:#e9f7ef;
-    color:#2d6a4f;
-    display:flex;
-    justify-content:center;
-    align-items:center;
-    font-weight:700;
-    flex-shrink:0;
-}
-
-.option-text{
-    color:#222;
-    font-size:16px;
-    line-height:1.5;
-    flex:1;
-}
-
-.option-mark{
-    font-size:14px;
-    color:#2d6a4f;
-    font-weight:600;
-}
-
-.actions{
-    display:flex;
-    justify-content:space-between;
-    gap:12px;
-    margin-top:28px;
-    flex-wrap:wrap;
-}
-
-button{
-    border:none;
-    border-radius:12px;
-    padding:12px 18px;
-    cursor:pointer;
-    font-size:15px;
-    font-weight:600;
-    transition:0.2s;
-}
-
-.btn-light{
-    background:#fff;
-    color:#2d6a4f;
-    border:1px solid #cfe9db;
-}
-
-.btn-light:hover{
-    background:#f7fffb;
-}
-
-.btn-primary{
-    background:#52b788;
-    color:#fff;
-}
-
-.btn-primary:hover{
-    background:#40916c;
-}
-
-.right{
-    background:#fff;
-    border-radius:22px;
-    box-shadow:0 10px 30px rgba(0,0,0,0.05);
-    padding:24px;
-    height:fit-content;
-}
-
-.right h2{
-    color:#1b4332;
-    margin-bottom:6px;
-}
-
-.right p{
-    color:#666;
-    font-size:14px;
-    margin-bottom:16px;
-}
-
-.nav-grid{
-    display:grid;
-    grid-template-columns:repeat(auto-fill,minmax(52px,1fr));
-    gap:10px;
-}
-
-.nav-item{
-    height:52px;
-    display:flex;
-    justify-content:center;
-    align-items:center;
-    border-radius:14px;
-    cursor:pointer;
-    background:#e2e8e4;
-    color:#333;
-    font-weight:600;
-    transition:0.2s;
-}
-
-.nav-item:hover{
-    transform:translateY(-2px);
-}
-
-.nav-item.answered{
-    background:#52b788;
-    color:#fff;
-}
-
-.nav-item.current{
-    background:#9d4edd;
-    color:#fff;
-}
-
-.legend{
-    margin-top:20px;
-    background:#f7faf8;
-    padding:14px;
-    border-radius:16px;
-}
-
-.legend div{
-    display:flex;
-    align-items:center;
-    gap:10px;
-    margin-top:8px;
-    color:#2d6a4f;
-    font-size:14px;
-}
-
-.box{
-    width:18px;
-    height:18px;
-    border-radius:6px;
-}
-
-.green{background:#52b788;}
-.gray{background:#e2e8e4;}
-.purple{background:#9d4edd;}
-
-.submit-btn{
-    width:100%;
-    margin-top:16px;
-}
-
-.result-wrap{
-    min-height:100vh;
-    display:flex;
-    justify-content:center;
-    align-items:center;
-    padding:20px;
-    background:linear-gradient(135deg,#eef5f2,#ffffff);
-}
-
-.result-card{
-    background:#fff;
-    padding:40px;
-    border-radius:24px;
-    box-shadow:0 20px 50px rgba(0,0,0,0.08);
-    text-align:center;
-    max-width:920px;
-    width:100%;
-}
-
-.result-icon{
-    font-size:56px;
-    margin-bottom:10px;
-}
-
-.result-card h1{
-    color:#1b4332;
-    margin-bottom:10px;
-}
-
-.result-card p{
-    color:#666;
-    margin-bottom:24px;
-}
-
-.score{
-    font-size:48px;
-    font-weight:700;
-    color:#2d6a4f;
-    margin-bottom:10px;
-}
-
-.score-sub{
-    color:#52796f;
-    margin-bottom:28px;
-}
-
-.result-actions{
-    display:flex;
-    justify-content:center;
-    gap:12px;
-    flex-wrap:wrap;
-    margin-top:24px;
-}
-
-.review-wrap{
-    margin-top:28px;
-    text-align:left;
-}
-
-.review-title{
-    color:#1b4332;
-    font-size:24px;
-    margin-bottom:16px;
-}
-
-.review-card{
-    margin-bottom:16px;
-    padding:18px;
-    border-radius:16px;
-    background:#f7fbf8;
-    border:1px solid #dcefe5;
-}
-
-.review-question{
-    font-weight:600;
-    color:#1b4332;
-    margin-bottom:10px;
-    line-height:1.6;
-}
-
-.review-meta{
-    font-size:13px;
-    color:#52796f;
-    margin-bottom:12px;
-}
-
-.review-option{
-    padding:10px 12px;
-    border-radius:12px;
-    margin-top:8px;
-    background:#fff;
-    border:1px solid #e3ece7;
-    color:#333;
-}
-
-.review-option.correct{
-    background:#e8f9ee;
-    border-color:#52b788;
-    color:#1b4332;
-    font-weight:600;
-}
-
-.review-option.wrong{
-    background:#ffeaea;
-    border-color:#e63946;
-    color:#a4161a;
-    font-weight:600;
-}
-
-.review-note{
-    margin-top:12px;
-    font-size:14px;
-    color:#52796f;
-}
-
-@media (max-width:1100px){
-    .profile-pill{
-        min-width:240px;
-        padding:12px 14px;
-    }
-
-    .profile-avatar{
-        width:62px;
-        height:62px;
-    }
-
-    .profile-pill-text strong{
-        font-size:19px;
-    }
-}
-
-@media (max-width:980px){
-    .container{
-        grid-template-columns:1fr;
-    }
-}
-
-@media (max-width:720px){
-    .nav-inner{
-        padding:14px 0;
-        align-items:flex-start;
-        flex-direction:column;
-    }
-
-    .auth-area{
-        width:100%;
-    }
-
-    .profile-pill{
-        min-width:100%;
-        width:100%;
-    }
-
-    .profile-dropdown{
-        width:100%;
-    }
-
-    .top-wrap,
-    .container{
-        padding:0 14px;
-    }
-
-    .left,
-    .right{
-        padding:18px;
-    }
-
-    .question-text{
-        font-size:22px;
-    }
-
-    .result-card{
-        padding:24px;
-    }
-}
-</style>
+<link rel="stylesheet" href="css/play.css">
 </head>
-
 <body>
 
+<!-- Blobs -->
+<div class="ambient-wrap" aria-hidden="true">
+    <div class="blob blob-1"></div>
+    <div class="blob blob-2"></div>
+</div>
+
+<!-- Particles -->
+<div class="particles" id="particles"></div>
+
 <nav>
-    <div class="container-wide nav-inner">
+    <div class="container nav-inner">
         <div class="logo" onclick="goHome()">
-            <div class="logo-badge">🧠</div>
+            <div class="logo-badge">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/>
+                    <circle cx="12" cy="12" r="10"/>
+                    <line x1="12" y1="17" x2="12.01" y2="17"/>
+                </svg>
+            </div>
             <div class="logo-text">
                 <strong>quizWeb</strong>
-                <span>สร้าง • แชร์ • เล่นควิซออนไลน์</span>
+                <span>สร้าง &bull; แชร์ &bull; เล่นควิซออนไลน์</span>
             </div>
         </div>
 
-        <div class="auth-area">
-            <div id="profileMenuWrap" class="profile-menu-wrap">
-                <button id="profilePill" class="profile-pill" type="button">
-                    <div class="profile-avatar">
-                        <span class="profile-avatar-fallback" id="navAvatarFallback">U</span>
-                        <img id="navAvatarImg" alt="user avatar" style="display:none;">
+        <div class="nav-right">
+            <div class="auth-area">
+                <div id="profileMenuWrap" class="profile-menu-wrap">
+                    <button id="profilePill" class="profile-pill" type="button">
+                        <div class="profile-avatar">
+                            <span class="profile-avatar-fallback" id="navAvatarFallback">U</span>
+                            <img id="navAvatarImg" alt="user avatar" style="display:none;">
+                        </div>
+                        <div class="profile-pill-text">
+                            <strong id="navUserName">ผู้ใช้</strong>
+                            <span>กดเพื่อเปิดเมนู</span>
+                        </div>
+                        <div class="profile-pill-arrow">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+                                <polyline points="6 9 12 15 18 9"/>
+                            </svg>
+                        </div>
+                    </button>
+
+                    <div class="profile-dropdown">
+                        <button class="dropdown-item" type="button" onclick="goDashboard()">
+                            <svg class="di-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+                            <span>ไปคลังข้อสอบ</span>
+                        </button>
+                        <button class="dropdown-item" type="button" onclick="goCreate()">
+                            <svg class="di-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
+                            <span>สร้างควิซ</span>
+                        </button>
+                        <div class="dropdown-divider"></div>
+                        <button class="dropdown-item danger" type="button" onclick="handleLogout()">
+                            <svg class="di-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+                            <span>ออกจากระบบ</span>
+                        </button>
                     </div>
-
-                    <div class="profile-pill-text">
-                        <strong id="navUserName">ผู้ใช้</strong>
-                        <span>กดเพื่อเปิดเมนู</span>
-                    </div>
-
-                    <div class="profile-pill-arrow">▾</div>
-                </button>
-
-                <div class="profile-dropdown">
-                    <button class="dropdown-item" type="button" onclick="goDashboard()">
-                        <span>📚</span>
-                        <span>ไปคลังข้อสอบ</span>
-                    </button>
-
-                    <button class="dropdown-item" type="button" onclick="goCreate()">
-                        <span>📝</span>
-                        <span>สร้างควิซ</span>
-                    </button>
-
-                    <div class="dropdown-divider"></div>
-
-                    <button class="dropdown-item danger" type="button" onclick="handleLogout()">
-                        <span>🚪</span>
-                        <span>ออกจากระบบ</span>
-                    </button>
                 </div>
-            </div>
 
-            <button id="loginBtn" class="solid-btn login-inline-btn" type="button" onclick="goLogin()">เข้าสู่ระบบ</button>
+                <button id="loginBtn" class="solid-btn login-inline-btn" type="button" onclick="goLogin()">เข้าสู่ระบบ</button>
+            </div>
         </div>
     </div>
 </nav>
 
-<div class="top-wrap">
+<!-- Page content -->
+<div class="page-wrapper">
+
     <div id="previewBanner" class="preview-banner" style="display:none;">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+            <path d="M12 9v4M12 17h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
         คุณกำลังอยู่ในโหมดทดลองเล่นสำหรับผู้สร้าง คะแนนครั้งนี้จะไม่ถูกนับเป็นสถิติ
     </div>
 
-    <div class="top">
-        <div class="top-head">
-            <div>
-                <div class="quiz-title" id="quizTitle">Quiz</div>
-                <div class="quiz-sub" id="quizSubtitle">พร้อมเริ่มทำควิซ</div>
+    <!-- Top Card -->
+    <div class="top-section">
+        <div class="top-card">
+            <div class="top-header">
+                <div class="quiz-info-block">
+                    <div class="quiz-title-row">
+                        <div class="quiz-title-icon">
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+                                <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                        </div>
+                        <div>
+                            <div class="quiz-title" id="quizTitle">Quiz</div>
+                            <div class="quiz-subtitle" id="quizSubtitle">พร้อมเริ่มทำควิซ</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="timer-box">
+                    <div class="timer-label">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none">
+                            <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
+                            <path d="M12 6v6l4 2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                        </svg>
+                        Time Remaining
+                    </div>
+                    <div class="timer" id="timer">00:00</div>
+                </div>
             </div>
 
-            <div class="timer-box">
-                <div class="small">Time Remaining</div>
-                <div class="timer" id="timer">00:00</div>
+            <div class="progress-section">
+                <div class="progress-info" id="progressText">0 of 0 answered</div>
+                <div class="progress-track">
+                    <div class="progress-fill" id="progressBar"></div>
+                </div>
             </div>
         </div>
+    </div>
 
-        <div class="progress-text" id="progressText">0 of 0 answered</div>
-        <div class="progress-bar">
-            <div class="progress" id="progressBar"></div>
+    <!-- Main Grid -->
+    <div class="main-grid">
+
+        <!-- Question Card -->
+        <div class="question-card">
+            <div id="questionBox"></div>
         </div>
+
+        <!-- Navigator Panel -->
+        <div class="navigator-panel">
+            <div class="nav-panel-header">
+                <div class="nav-panel-icon">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                        <rect x="3" y="3" width="7" height="7" rx="1.5" stroke="white" stroke-width="2"/>
+                        <rect x="14" y="3" width="7" height="7" rx="1.5" stroke="white" stroke-width="2"/>
+                        <rect x="3" y="14" width="7" height="7" rx="1.5" stroke="white" stroke-width="2"/>
+                        <rect x="14" y="14" width="7" height="7" rx="1.5" stroke="white" stroke-width="2"/>
+                    </svg>
+                </div>
+                <div>
+                    <div class="nav-panel-title">Question Navigator</div>
+                    <div class="nav-panel-sub">กดหมายเลขเพื่อข้ามข้อได้ทันที</div>
+                </div>
+            </div>
+
+            <div class="nav-grid" id="nav"></div>
+
+            <div class="legend-box">
+                <div class="legend-row">
+                    <div class="legend-dot answered-dot"></div>
+                    <span>ตอบแล้ว</span>
+                </div>
+                <div class="legend-row">
+                    <div class="legend-dot unanswered-dot"></div>
+                    <span>ยังไม่ตอบ</span>
+                </div>
+                <div class="legend-row">
+                    <div class="legend-dot current-dot"></div>
+                    <span>ข้อปัจจุบัน</span>
+                </div>
+            </div>
+
+            <button class="btn-submit" onclick="submitQuiz()">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                    <path d="M9 12l2 2 4-4M21 12a9 9 0 11-18 0 9 9 0 0118 0z" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                ส่งคำตอบ
+            </button>
+        </div>
+
     </div>
 </div>
 
-<div class="container">
-    <div class="left">
-        <div id="questionBox"></div>
-    </div>
-
-    <div class="right">
-        <h2>Question Navigator</h2>
-        <p>กดหมายเลขข้อเพื่อข้ามไปทำข้อนั้นได้ทันที</p>
-
-        <div class="nav-grid" id="nav"></div>
-
-        <div class="legend">
-            <div><div class="box green"></div> ตอบแล้ว</div>
-            <div><div class="box gray"></div> ยังไม่ตอบ</div>
-            <div><div class="box purple"></div> ข้อปัจจุบัน</div>
-        </div>
-
-        <button class="btn-primary submit-btn" onclick="submitQuiz()">ส่งคำตอบ</button>
-    </div>
-</div>
-
-<script src="auth.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/play_func.js"></script>
 <script>
-if (!requireLogin()) {
-    throw new Error("User not logged in");
-}
-
-loadUserUI();
-
-const params = new URLSearchParams(window.location.search);
-const code = params.get("code");
-
-let quizzes = JSON.parse(localStorage.getItem("myQuizzes")) || [];
-let quiz = quizzes.find(q => q.code === code);
-const currentUser = getUser();
-
-if (!quiz) {
-    alert("ไม่พบข้อสอบ");
-    window.location.href = "index.html";
-    throw new Error("Quiz not found");
-}
-
-function goHome(){
-    window.location.href = "index.html";
-}
-
-function goDashboard(){
-    window.location.href = "dashboard.html";
-}
-
-function goCreate(){
-    window.location.href = "create.html";
-}
-
-function goLogin(){
-    window.location.href = "login.html";
-}
-
-function getCurrentUserSafe() {
-    try {
-        if (typeof getUser === "function") {
-            return getUser();
-        }
-    } catch (e) {}
-    return null;
-}
-
-function getDisplayName(user) {
-    if (!user) return "ผู้ใช้";
-    return user.name || user.username || user.email || "ผู้ใช้";
-}
-
-function getUserId(user) {
-    if (!user) return "guest";
-    return user.id || user.email || user.username || user.name || "guest";
-}
-
-function getInitial(name) {
-    if (!name || typeof name !== "string") return "U";
-    return name.trim().charAt(0).toUpperCase();
-}
-
-function avatarStorageKey(user) {
-    return "quizweb_avatar_" + getUserId(user);
-}
-
-function getSavedAvatar(user) {
-    return localStorage.getItem(avatarStorageKey(user)) || "";
-}
-
-function setImageOrFallback(imgEl, fallbackEl, src, fallbackText) {
-    if (src) {
-        imgEl.src = src;
-        imgEl.style.display = "block";
-        fallbackEl.style.display = "none";
-    } else {
-        imgEl.removeAttribute("src");
-        imgEl.style.display = "none";
-        fallbackEl.textContent = fallbackText;
-        fallbackEl.style.display = "block";
-    }
-}
-
-function renderNavbarProfile() {
-    const user = getCurrentUserSafe();
-    const isLoggedIn = !!user;
-    const name = getDisplayName(user);
-    const avatar = getSavedAvatar(user);
-    const initial = getInitial(name);
-
-    const profileMenuWrap = document.getElementById("profileMenuWrap");
-    const loginBtn = document.getElementById("loginBtn");
-    const navUserName = document.getElementById("navUserName");
-    const navAvatarImg = document.getElementById("navAvatarImg");
-    const navAvatarFallback = document.getElementById("navAvatarFallback");
-
-    if (isLoggedIn) {
-        profileMenuWrap.classList.add("show");
-        loginBtn.classList.remove("show");
-        navUserName.textContent = name;
-    } else {
-        profileMenuWrap.classList.remove("show");
-        profileMenuWrap.classList.remove("open");
-        loginBtn.classList.add("show");
-    }
-
-    setImageOrFallback(navAvatarImg, navAvatarFallback, avatar, initial);
-}
-
-function toggleProfileMenu() {
-    const wrap = document.getElementById("profileMenuWrap");
-    wrap.classList.toggle("open");
-}
-
-function closeProfileMenu() {
-    document.getElementById("profileMenuWrap").classList.remove("open");
-}
-
-function handleLogout() {
-    closeProfileMenu();
-
-    if (typeof logout === "function") {
-        logout();
-        return;
-    }
-
-    localStorage.removeItem("loggedInUser");
-    localStorage.removeItem("currentUser");
-    localStorage.removeItem("user");
-    window.location.href = "index.html";
-}
-
-function normalizeQuestion(q){
-    const normalized = {
-        text: q?.text || "",
-        type: q?.type === "multiple" ? "multiple" : "single",
-        options: Array.isArray(q?.options) ? [...q.options] : ["", "", "", ""],
-        correctAnswers: []
-    };
-
-    while (normalized.options.length < 4) {
-        normalized.options.push("");
-    }
-    normalized.options = normalized.options.slice(0, 4);
-
-    if (Array.isArray(q?.correctAnswers)) {
-        normalized.correctAnswers = q.correctAnswers
-            .map(v => Number(v))
-            .filter(v => Number.isInteger(v) && v >= 0 && v < 4);
-    } else if (q?.correct !== null && q?.correct !== undefined && q.correct !== "") {
-        const one = Number(q.correct);
-        if (Number.isInteger(one) && one >= 0 && one < 4) {
-            normalized.correctAnswers = [one];
-        }
-    }
-
-    normalized.correctAnswers = [...new Set(normalized.correctAnswers)].sort((a, b) => a - b);
-
-    if (normalized.type === "single" && normalized.correctAnswers.length > 1) {
-        normalized.correctAnswers = [normalized.correctAnswers[0]];
-    }
-
-    return normalized;
-}
-
-if (!quiz.questions || quiz.questions.length === 0) {
-    alert("ข้อสอบนี้ยังไม่มีคำถาม");
-    if (currentUser.username === quiz.owner) {
-        window.location.href = `edit.html?code=${code}`;
-    } else {
-        window.location.href = "index.html";
-    }
-    throw new Error("Quiz has no questions");
-}
-
-quiz.questions = quiz.questions.map(normalizeQuestion);
-
-if (quiz.allowReview == null) quiz.allowReview = true;
-if (quiz.attemptsLimit == null) quiz.attemptsLimit = 0;
-
-const isCreator = currentUser.username === quiz.owner;
-const isPreview = isCreator;
-
-document.getElementById("quizTitle").innerText = quiz.title || "Quiz";
-document.getElementById("quizSubtitle").innerText =
-    `รหัสข้อสอบ ${quiz.code} • จำนวน ${quiz.questions.length} ข้อ`;
-
-if (isPreview) {
-    document.getElementById("previewBanner").style.display = "block";
-    document.title = "โหมดทดลองเล่น | quizWeb";
-}
-
-let quizResults = JSON.parse(localStorage.getItem("quizResults")) || [];
-let playerRecord = quizResults.find(r =>
-    r.quizCode === quiz.code && r.player === currentUser.username
-);
-
-if (!isCreator) {
-    const attemptsLimit = Number(quiz.attemptsLimit ?? 0);
-    const attemptsUsed = playerRecord ? playerRecord.attemptsUsed : 0;
-
-    if (attemptsLimit > 0 && attemptsUsed >= attemptsLimit) {
-        alert(`คุณใช้สิทธิ์ทำควิซนี้ครบ ${attemptsLimit} ครั้งแล้ว`);
-        window.location.href = "index.html";
-        throw new Error("Attempt limit reached");
-    }
-}
-
-let current = 0;
-let answers = quiz.questions.map(() => []);
-let timeLeft = Number(quiz.time) || 60;
-let submitted = false;
-let timerId = null;
-
-function escapeHtml(text){
-    return String(text ?? "")
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;")
-        .replace(/'/g, "&#039;");
-}
-
-function getSelectedAnswers(index){
-    return Array.isArray(answers[index]) ? answers[index] : [];
-}
-
-function isQuestionAnswered(index){
-    return getSelectedAnswers(index).length > 0;
-}
-
-function isSameAnswer(a, b){
-    const arrA = Array.isArray(a) ? [...a].sort((x, y) => x - y) : [];
-    const arrB = Array.isArray(b) ? [...b].sort((x, y) => x - y) : [];
-
-    if (arrA.length !== arrB.length) return false;
-
-    for (let i = 0; i < arrA.length; i++) {
-        if (arrA[i] !== arrB[i]) return false;
-    }
-
-    return true;
-}
-
-function formatAnswerLetters(arr){
-    if (!Array.isArray(arr) || arr.length === 0) return "-";
-    return arr
-        .slice()
-        .sort((a, b) => a - b)
-        .map(v => String.fromCharCode(65 + v))
-        .join(", ");
-}
-
-function render(){
-    const q = quiz.questions[current];
-    const selected = getSelectedAnswers(current);
-
-    let html = `
-        <div class="badge">Question ${current + 1} of ${quiz.questions.length}</div>
-        <div class="question-text">${escapeHtml(q.text)}</div>
-        <div class="question-type">
-            ${q.type === "multiple"
-                ? "คำถามแบบหลายคำตอบ: เลือกได้มากกว่า 1 ข้อ"
-                : "คำถามแบบคำตอบเดียว: เลือกได้ 1 ข้อ"}
-        </div>
-    `;
-
-    q.options.forEach((opt, i) => {
-        const active = selected.includes(i);
-
-        html += `
-            <div class="option ${active ? "active" : ""}" onclick="selectAnswer(${i})">
-                <div class="letter">${String.fromCharCode(65 + i)}</div>
-                <div class="option-text">${escapeHtml(opt)}</div>
-                <div class="option-mark">${active ? "เลือกแล้ว" : ""}</div>
-            </div>
-        `;
-    });
-
-    html += `
-        <div class="actions">
-            <button class="btn-light" onclick="prevQuestion()">← Previous</button>
-            <button class="btn-primary" onclick="nextQuestion()">Next →</button>
-        </div>
-    `;
-
-    document.getElementById("questionBox").innerHTML = html;
-
-    renderNav();
-    updateProgress();
-}
-
-function selectAnswer(i){
-    const q = quiz.questions[current];
-
-    if (q.type === "multiple") {
-        const currentAnswers = getSelectedAnswers(current);
-        const idx = currentAnswers.indexOf(i);
-
-        if (idx === -1) {
-            answers[current] = [...currentAnswers, i].sort((a, b) => a - b);
-        } else {
-            const cloned = [...currentAnswers];
-            cloned.splice(idx, 1);
-            answers[current] = cloned;
-        }
-    } else {
-        answers[current] = [i];
-    }
-
-    render();
-}
-
-function nextQuestion(){
-    if (current < quiz.questions.length - 1) {
-        current++;
-        render();
-    } else {
-        submitQuiz();
-    }
-}
-
-function prevQuestion(){
-    if (current > 0) {
-        current--;
-        render();
-    }
-}
-
-function jumpQuestion(i){
-    current = i;
-    render();
-}
-
-function renderNav(){
-    const nav = document.getElementById("nav");
-    nav.innerHTML = "";
-
-    quiz.questions.forEach((q, i) => {
-        let cls = "nav-item";
-        if (isQuestionAnswered(i)) cls += " answered";
-        if (i === current) cls += " current";
-
-        nav.innerHTML += `
-            <div class="${cls}" onclick="jumpQuestion(${i})">${i + 1}</div>
-        `;
-    });
-}
-
-function updateProgress(){
-    const answered = answers.filter(arr => Array.isArray(arr) && arr.length > 0).length;
-
-    document.getElementById("progressText").innerText =
-        `${answered} of ${quiz.questions.length} answered`;
-
-    document.getElementById("progressBar").style.width =
-        `${(answered / quiz.questions.length) * 100}%`;
-}
-
-function updateTimerUI(){
-    const m = Math.floor(timeLeft / 60);
-    const s = timeLeft % 60;
-
-    document.getElementById("timer").innerText =
-        `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
-}
-
-function startTimer(){
-    updateTimerUI();
-
-    timerId = setInterval(() => {
-        timeLeft--;
-        updateTimerUI();
-
-        if (timeLeft <= 0) {
-            submitQuiz();
-        }
-    }, 1000);
-}
-
-function saveOfficialResult(score, total){
-    let quizResults = JSON.parse(localStorage.getItem("quizResults")) || [];
-    let recordIndex = quizResults.findIndex(r =>
-        r.quizCode === quiz.code && r.player === currentUser.username
-    );
-
-    const percent = Math.round((score / total) * 100);
-    const newAttempt = {
-        score: score,
-        percent: percent,
-        submittedAt: new Date().toLocaleString("th-TH")
-    };
-
-    if (recordIndex === -1) {
-        quizResults.push({
-            quizCode: quiz.code,
-            quizTitle: quiz.title,
-            player: currentUser.username,
-            total: total,
-            attemptsUsed: 1,
-            bestScore: score,
-            bestPercent: percent,
-            attempts: [newAttempt]
-        });
-    } else {
-        const record = quizResults[recordIndex];
-        record.attempts.push(newAttempt);
-        record.attemptsUsed = record.attempts.length;
-
-        if (score > record.bestScore) {
-            record.bestScore = score;
-            record.bestPercent = percent;
-        } else if (score === record.bestScore && percent > record.bestPercent) {
-            record.bestPercent = percent;
-        }
-
-        quizResults[recordIndex] = record;
-    }
-
-    localStorage.setItem("quizResults", JSON.stringify(quizResults));
-}
-
-function buildReviewHTML(){
-    if (!quiz.allowReview) return "";
-
-    let html = `
-        <div class="review-wrap">
-            <div class="review-title">เฉลย</div>
-    `;
-
-    quiz.questions.forEach((q, i) => {
-        const userAnswers = getSelectedAnswers(i);
-        const correctAnswers = Array.isArray(q.correctAnswers) ? q.correctAnswers : [];
-        const isCorrect = isSameAnswer(userAnswers, correctAnswers);
-
-        html += `
-            <div class="review-card">
-                <div class="review-question">
-                    ข้อ ${i + 1}: ${escapeHtml(q.text)}
-                </div>
-                <div class="review-meta">
-                    ${q.type === "multiple" ? "Multiple Choice" : "Single Choice"}
-                </div>
-        `;
-
-        q.options.forEach((opt, j) => {
-            let className = "review-option";
-
-            if (correctAnswers.includes(j)) {
-                className += " correct";
-            }
-
-            if (userAnswers.includes(j) && !correctAnswers.includes(j)) {
-                className += " wrong";
-            }
-
-            let suffix = "";
-            if (correctAnswers.includes(j)) suffix += " ✅ คำตอบที่ถูก";
-            if (userAnswers.includes(j) && !correctAnswers.includes(j)) suffix += " ❌ คำตอบของคุณ";
-
-            html += `
-                <div class="${className}">
-                    ${String.fromCharCode(65 + j)}. ${escapeHtml(opt)}${suffix}
-                </div>
+    (function() {
+        const container = document.getElementById("particles");
+        if (!container) return;
+        for (let i = 0; i < 18; i++) {
+            const p = document.createElement("div");
+            p.className = "particle";
+            const size = Math.random() * 5 + 3;
+            p.style.cssText = `
+                width:${size}px; height:${size}px;
+                left:${Math.random()*100}%;
+                top:${Math.random()*100}%;
+                animation-duration:${Math.random()*10+8}s;
+                animation-delay:${Math.random()*8}s;
             `;
-        });
-
-        html += `
-                <div class="review-note">
-                    ${
-                        userAnswers.length === 0
-                        ? `คุณไม่ได้ตอบข้อนี้ • คำตอบที่ถูกคือ ${formatAnswerLetters(correctAnswers)}`
-                        : isCorrect
-                            ? `คุณตอบถูก • คำตอบคือ ${formatAnswerLetters(correctAnswers)}`
-                            : `คุณตอบ ${formatAnswerLetters(userAnswers)} แต่คำตอบที่ถูกคือ ${formatAnswerLetters(correctAnswers)}`
-                    }
-                </div>
-            </div>
-        `;
-    });
-
-    html += `</div>`;
-    return html;
-}
-
-function submitQuiz(){
-    if (submitted) return;
-    submitted = true;
-
-    if (timerId) clearInterval(timerId);
-
-    let score = 0;
-
-    quiz.questions.forEach((q, i) => {
-        const userAnswers = getSelectedAnswers(i);
-        const correctAnswers = Array.isArray(q.correctAnswers) ? q.correctAnswers : [];
-
-        if (isSameAnswer(userAnswers, correctAnswers)) {
-            score++;
+            container.appendChild(p);
         }
-    });
-
-    if (!isCreator) {
-        saveOfficialResult(score, quiz.questions.length);
-    }
-
-    const percent = Math.round((score / quiz.questions.length) * 100);
-
-    const heading = isCreator ? "โหมดทดลองเล่นสำหรับผู้สร้าง" : "ทำควิซเสร็จแล้ว";
-    const subText = isCreator
-        ? "คะแนนนี้เป็นเพียงการทดลองเล่น และจะไม่ถูกนับเป็นสถิติ"
-        : quiz.allowReview
-            ? "ระบบบันทึกผลการเล่นเรียบร้อยแล้ว และสามารถดูเฉลยได้"
-            : "ระบบบันทึกผลการเล่นเรียบร้อยแล้ว";
-
-    const reviewHTML = buildReviewHTML();
-
-    document.body.innerHTML = `
-        <div class="result-wrap">
-            <div class="result-card">
-                <div class="result-icon">🎉</div>
-                <h1>${heading}</h1>
-                <p>${subText}</p>
-
-                <div class="score">${score} / ${quiz.questions.length}</div>
-                <div class="score-sub">คิดเป็น ${percent}%</div>
-
-                ${quiz.allowReview ? reviewHTML : ""}
-
-                <div class="result-actions">
-                    ${
-                        isCreator
-                        ? `<button class="btn-light" onclick="window.location.href='edit.html?code=${quiz.code}'">กลับไปแก้ไข</button>`
-                        : `<button class="btn-light" onclick="window.location.href='index.html'">กลับหน้าแรก</button>`
-                    }
-                    <button class="btn-primary" onclick="window.location.href='dashboard.html'">ไปคลังข้อสอบ</button>
-                </div>
-            </div>
-        </div>
-    `;
-}
-
-const profilePill = document.getElementById("profilePill");
-if (profilePill) {
-    profilePill.addEventListener("click", function (e) {
-        e.stopPropagation();
-        toggleProfileMenu();
-    });
-}
-
-document.addEventListener("click", function (e) {
-    const wrap = document.getElementById("profileMenuWrap");
-    if (wrap && !wrap.contains(e.target)) {
-        closeProfileMenu();
-    }
-});
-
-renderNavbarProfile();
-render();
-startTimer();
+    })();
 </script>
-
 </body>
 </html>

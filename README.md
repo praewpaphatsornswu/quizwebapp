@@ -145,6 +145,8 @@
 
 ลิงก์วิดีโอ Retrospective: https://youtu.be/8sUTdzBlkeQ?si=CepGhHKbjgSgSOSg
 
+---
+
 ## 12. Design Document
 
 ### 12.1 Architectural Design
@@ -204,6 +206,7 @@ Admin --> ManageUsers[Manage Users]
 Admin --> ManageQuiz[Manage Quiz]
 Admin --> ViewReports[View Reports]
 ```
+---
 
 ## 13. Figma screenshot
 [![Figma Design](https://img.shields.io/badge/Figma-Design_Prototype-blue?style=for-the-badge&logo=figma)](https://www.figma.com/proto/OfZFo1CtLnYNR9EwDZ5AuN/QuizWeb_PJ?node-id=0-1&t=RpKzd3nvIpSk9lfs-1)
@@ -235,6 +238,7 @@ Admin --> ViewReports[View Reports]
 หน้า quiz test:
 ![quiz test](https://github.com/user-attachments/assets/c09de67f-9145-4f61-81ed-2aea147e9972)
 
+---
 
 ## 14. กระบวนการทำงาน (Process, Methods, and Tools)
 
@@ -279,13 +283,44 @@ GitHub
 Line
 Visual Studio Code
 
+---
+
 ## 15. สรุปการประชุม Retrospective Phase 2
-ลิงก์วิดีโอ: https://youtu.be/j3Xpjw5YBVo?si=r-ShhXsesSQTKDc1
+ทีมงานได้มีการจัดประชุม Retrospective หลังการดำเนินงานในช่วงการออกแบบและวางโครงสร้าง โดยมีข้อสรุปดังนี้
 
-## 16. อธิบายการทำงานของ program (เช่น มี get กี่ method, post กี่ method, ใช้ template อย่างไร, มีการเรียก API หรือไม่อย่างไร, มีการคำนวนอะไร หรือ graph อะไร)
+* **สิ่งที่ทำได้ดี:** การถ่ายทอดแนวคิดจาก Phase 1 ออกมาเป็นรูปธรรมผ่านการออกแบบ UI ใน Figma และการวางโครงสร้างระบบ (Architectural Design/Use Case) ที่ชัดเจน
+* **สิ่งที่ควรปรับปรุง:** รายละเอียดในดีไซน์บางส่วนยังมีความซับซ้อนเกินไปเมื่อต้องนำมาแปลงเป็นโค้ดจริง และการประสานงานระหว่างฝ่ายออกแบบกับฝ่ายพัฒนาที่ต้องปรับจูนให้ตรงกัน
+* **แนวทางการพัฒนาในอนาคต:** มุ่งเน้นการเปลี่ยนจากโครงร่างงานออกแบบไปสู่การเขียนโค้ดอย่างจริงจัง โดยเริ่มทำ Test Case ควบคู่ไปกับการพัฒนาเพื่อลดข้อผิดพลาด (Bug) ที่อาจเกิดขึ้น
 
-## 17. Test cases
-### 17.1 ตาราง Unit Test Cases (Data Structure)
+ลิงก์วิดีโอ Retrospective : https://youtu.be/j3Xpjw5YBVo?si=r-ShhXsesSQTKDc1
+
+---
+
+## 16. ข้อมูลเดิมจาก phase 1 and 2
+* Phase 1: วางแนวคิดสิ่งที่อยากทำ กำหนดขอบเขต รวบรวมฟีเจอร์ วางลำดับการใช้งานของผู้ใช้
+
+* Phase 2: ออกแบบหน้าตาเว็บ จัดวางตำแหน่งปุ่มและเนื้อหา ทำตัวต้นแบบที่กดคลิกเชื่อมโยงหน้าต่างๆ ได้เพื่อให้เห็นภาพของตัวเว็บ
+
+## 17. อธิบายการทำงานของ program (เช่น มี get กี่ method, post กี่ method, ใช้ template อย่างไร, มีการเรียก API หรือไม่อย่างไร, มีการคำนวนอะไร หรือ graph อะไร)
+
+* **ฟังก์ชันหลักและการประมวลผล**
+โปรแกรมทำงานผ่าน 3 ฟังก์ชันหลักที่จัดการข้อมูลคำถามและคำตอบ ดังนี้:
+
+  - checkAnswer(user, correct): ทำหน้าที่เปรียบเทียบคำตอบที่ผู้ใช้ส่งมากับเฉลยในรูปแบบ Boolean (true/false)
+
+  - calculateScore(answers, correctAnswers): ใช้ลูป (for loop) ในการตรวจทานชุดคำตอบทั้งหมด โดยจะเพิ่มค่าตัวแปร score ทีละ 1 คะแนน เมื่อคำตอบในตำแหน่งนั้นๆ ตรงกับเฉลย
+
+  - getQuestion(questions, index): ระบบดึงข้อมูลคำถามตามลำดับที่ระบุ โดยมีการตรวจสอบเงื่อนไข (Validation) เพื่อป้องกันข้อผิดพลาดกรณี Index น้อยกว่า 0 หรือเกินจำนวนคำถามที่มีอยู่จริง (จะคืนค่าเป็น null)
+
+  - มีการเรียก API โดยมีการใช้ Google Fonts API ผ่าน Link Tag เพื่อดึงฟอนต์ 'Prompt' มาใช้ในการจัดการหน้าเว็บ
+
+  - ใช้โครงสร้างข้อมูลแบบ Array ในการเก็บชุดคำถามและคำตอบ
+  - ใช้ระบบ Module Exports เพื่อรองรับการเรียกใช้ฟังก์ชันข้ามไฟล์และการทำ Testing
+
+---
+
+## 18. Test cases
+### 18.1 ตาราง Unit Test Cases (Data Structure)
 | TC | Function       | Input                          | Expected Result | Actual Result | Status |
 |----|----------------|--------------------------------|-----------------|---------------|--------|
 | 1  | calculateScore | ['A','B','C'],['A','B','C']    | 3               | 3             | Pass   |
@@ -299,14 +334,14 @@ Visual Studio Code
 | 9  | getQuestion    | [],0                           | null            | null          | Pass   |
 | 10 | calculateScore | [null,'B'],['A','B']           | 1               | 1             | Pass   |
 
-### 17.2 ตาราง Unit Test Cases (Function / Class อื่น)
+### 18.2 ตาราง Unit Test Cases (Function / Class อื่น)
 | TC | Function    | Input       | Expected Result | Actual Result | Status |
 |----|-------------|-------------|-----------------|---------------|--------|
 | 11 | checkAnswer | 'A','A'     | true            | true          | Pass   |
 | 12 | checkAnswer | 'A','B'     | false           | false         | Pass   |
 | 13 | checkAnswer | 'a','A'     | false           | false         | Pass   |
 
- ### 17.3 ตัวอย่าง Test Case Code
+ ### 18.3 ตัวอย่าง Test Case Code
 const {
   checkAnswer,
   calculateScore,
@@ -375,35 +410,132 @@ describe('Quiz Web App Test (11 Cases)', () => {
 
 });
 
-### 17.4 Test Coverage Report
-![alt text](image.png)
+### 18.4 Test Coverage Report
+![alt text](readme_images/image.png)
 แสดงให้เห็นว่า:
 ไม่มีส่วนของโค้ดที่ไม่ได้รับการทดสอบ (No dead code)
 ลดความเสี่ยงของ bug ใน logic หลักของระบบ
 รองรับการพัฒนาใน Phase ถัดไปได้ง่าย
 
-## 18. รายงาน Static profiling และ Dynamic profiling (Structural method)
-### 18.1 Static profiling
-| Metric                  | Value |
-|------------------------|-------|
-| Lines of Code (LOC)    | 20-30 |
-| Number of Functions    | 3     |
-| Cyclomatic Complexity  | Low   |
-| Data Structures Used   | Array |
-
-### 18.2 Dynamic profiling
-| Function        | Execution Time | Memory Usage |
-|----------------|---------------|-------------|
-| checkAnswer    | ~2 ms         | Low         |
-| calculateScore | ~1 ms         | Low         |
-| getQuestion    | ~1 ms         | Low         |
+---
 
 ## 19. สิ่งที่ยังไม่เสร็จสมบูรณ์
+* **Frontend:** โครงสร้างเว็บและ UI/UX เสร็จสมบูรณ์ พร้อมแสดงฟังก์ชันและฟีเจอร์หลักทั้งหมด
+
+* **Backend:** อยู่ระหว่างการพัฒนาส่วนระบบหลังบ้าน การจัดการฐานข้อมูล และการเชื่อมต่อ API (Data Integration) เพื่อให้ระบบทำงานได้อย่างเต็มรูปแบบ
+
+---
 
 ## 20. Website screenshot
+- หน้า index
+![Index_1](readme_images/Index.png)
+- หน้า index(ต่อ)
+![Index_2](readme_images/Index_2.png)
+
+- หน้า login
+![Login](readme_images/Login.png)
+
+- หน้า register
+![Register](readme_images/Register.png)
+
+- หน้า dashboard
+![dashboard](readme_images/dashboard.png)
+
+- หน้า join quiz
+![join quiz](readme_images/join.png)
+
+- หน้า create quiz
+![create quiz](readme_images/create.png)
+
+- หน้า edit quiz
+![edit quiz](readme_images/edit1.png)
+- หน้า edit(ต่อ 1)
+![edit quiz](readme_images/edit2.png)
+- หน้า edit(ต่อ 2)
+![edit quiz](readme_images/edit3.png)
+
+- หน้า play quiz
+![play quiz](readme_images/play.png)
+
+- หน้า admin
+![admin](readme_images/admin.png)
+
+
+---
 
 ## 21. สิ่งเปลี่ยนแปลงจาก รายงาน phase 1 and 2 และ เหดุผลที่เปลี่ยน
+**มีการพัฒนาจากแผนงานสู่การปฏิบัติจริง :**
+
+* **การพัฒนา:** เปลี่ยนจากโครงร่างไอเดียและดีไซน์ใน Figma (Phase 1-2) มาเป็นการ เขียน Code จริง จนตัวเว็บเริ่มเป็นรูปเป็นร่างตามที่ออกแบบไว้
+* **ฟังก์ชัน & คุณภาพ:** นำฟังก์ชันที่เคยร่างไว้มาทำให้ใช้งานได้จริง (Functional) แม้จะยังไม่สมบูรณ์ 100% แต่มีการเพิ่ม Test Case เข้ามาช่วยตรวจสอบความถูกต้องควบคู่ไปด้วย
+* **การบริหารจัดการ:** ปรับปรุงกระบวนการทำงานในทีมให้มีระเบียบมากขึ้น แบ่งหน้าที่ชัดเจนว่าใครรับผิดชอบส่วนไหน และวางแผนการพัฒนาในลำดับถัดไปอย่างเป็นระบบ
+* **เหตุผลที่เปลี่ยน:** เพื่อเปลี่ยนจาก "แนวคิด" ให้กลายเป็น "ซอฟต์แวร์ที่ใช้งานได้" โดยเน้นความสำคัญที่โครงสร้างระบบ การทดสอบ และการทำงานร่วมกันอย่างมืออาชีพ
+
+---
 
 ## 22. อธิบายกระบวนการทำงาน โดยใช้ process, methods, and tools ที่เพิ่มเติมจาก phase 1 and 2 เช่น การบริหาร project, การ monitor build, การจัดการ bugs  
+* **การจัดการคุณภาพโค้ดและ Bugs**
+  - Automated Unit Testing: มีการใช้ชุดทดสอบ (Test Cases) จำนวน 11 กรณี ผ่านไฟล์ quiz.test.js เพื่อตรวจสอบความถูกต้องของ Logic ก่อนนำไปใช้งานจริง ซึ่งช่วยดักจับ Bug ในส่วนการคำนวณคะแนนและการดึงข้อมูลคำถาม
+
+* **กระบวนการพัฒนา**
+  - จัดระเบียบโค้ดโดยใช้ระบบ module.exports เพื่อแยกส่วน Logic (quiz.js) ออกจากส่วนทดสอบ (quiz.test.js)
+
+* **เครื่องมือที่ใช้**
+  - Jest / Istanbul: ใช้สำหรับรันชุดทดสอบและสร้างรายงานผลการทดสอบ
+  - VS Code Search & Monitor: ใช้ฟีเจอร์การค้นหาและตรวจสอบสถานะไฟล์ เพื่อติดตามการเปลี่ยนแปลงของไฟล์ README.md และโค้ดในโปรเจกต์
+
+---
 
 ## 23. สรุปการประชุม Retrospective Phase 3
+
+ทีมงานได้มีการจัดประชุม Retrospective หลังการดำเนินงานในช่วงการออกแบบและวางโครงสร้าง โดยมีข้อสรุปดังนี้
+
+* **สิ่งที่ทำได้ดี:** ส่วนของการพัฒนา frontend จนเห็นรูปแบบฟังก์ชันและ UI/UX ที่พร้อมใช้งาน มีการแบ่งหน้าที่รับผิดชอบที่ชัดเจนและสื่อสารกันได้ดีขึ้น และทีมมีความเชี่ยวชาญในการใช้ Git ผ่าน Terminal หรือ command ได้ดียิ่งขึ้นจากเฟสก่อนๆ
+* **สิ่งที่ควรปรับปรุง:** การจัดการเวลาในการทำ ทำให้การเชื่อมโยงข้อมูลและการจัดเก็บข้อมูลในส่วน Backend ยังทำได้ไม่ครบถ้วนตามแผน
+* **แนวทางการพัฒนาในอนาคต:** มุ่งเน้นการพัฒนาส่วนหลังบ้านและระบบฐานข้อมูลให้สมบูรณ์ และนำฟีเจอร์ที่วางโครงร่างไว้มาเชื่อมต่อกับ API เพื่อให้ตัวเว็บทำงานได้จริง
+
+ลิงก์วิดีโอ Retrospective : https://youtu.be/iHDMbaRjDIQ?si=-huqMsOPw68BX2do
+
+---
+## 24. Website screenshot
+
+## 25. สร้าง 5 UI testcases.
+
+## 26. เช็คให้แน่ใจว่า testcases โดยที่ทุก testcase ต้องมี การเช็คค่าสำหรับ expected results
+
+## 27. ผล profiling (Static profiling และ Dynamic profiling) เทีบยกับ phase 3
+
+## 28. อธิบายการทำ CI/CD ที่ใช้ในการทำ product โดยที่ CI (Pipeline) ให้ใช้ script ที่มีให้ (จำเป็นต้องมี free tier parallel job) 
+
+## 29. อธิบายกระบวนการทำงาน โดยใช้ process, methods, and tools ที่เพิ่มเติมจาก phase 1,2 and 3 เช่น การบริหาร project, การ monitor build, การจัดการ bugs  
+
+## 30. Final Retrospective 
+Link to Retrospective Youtube video: 
+
+
+
+Phase 4 :  Final product (5 pt)
+
+Website ที่สมบูรณ์ และไม่ควรมี bug ถ้าไม่เสร็จให้อธิบายเหตุผล คะแนนจะพิจารณาจากเหตุผล
+Report ประกอบด้วย (อย่าลืมระบุรายชื่อสมาชิกกลุ่ม)
+ข้อมูลเดิมจาก phase 1,2 and 3
+Website screenshot
+สร้าง 5 UI testcases.
+เช็คให้แน่ใจว่า testcases โดยที่ทุก testcase ต้องมี การเช็คค่าสำหรับ expected results
+ผล profiling (Static profiling และ Dynamic profiling) เทีบยกับ phase 3
+อธิบายการทำ CI/CD ที่ใช้ในการทำ product โดยที่ CI (Pipeline) ให้ใช้ script ที่มีให้ (จำเป็นต้องมี free tier parallel job)   
+อธิบายกระบวนการทำงาน โดยใช้ process, methods, and tools ที่เพิ่มเติมจาก phase 1,2 and 3 เช่น การบริหาร project, การ monitor build, การจัดการ bugs  
+เขียนสรุปการประชุม Final Retrospective และ Link to Retrospective Youtube video
+Onsite presentation (อยากให้ทำ video presentation เป็นการซ้อม และเผื่อให้รุ่นน้องดู แล้วแต่สมัครใจ)
+อธิบายกระบวนการทำ project และค่า profiling ด้วย PPT ที่เหลือเปิดเว็บส์อธิบายได้เลย
+ไม่ต้องอธิบายรายบรรทัดของ code ต้องการทราบกระบวนการเท่านั้น ไม่ต้องการดู code 
+แสดง website code ใน git
+แสดง test code ใน git และ run test ให้ดู พร้อมอธิบายผล
+แสดง การทำ profiling (both dynamic and static) พร้อมผลที่ได้ อธิบายเปรียบเทียบ ผลเทียบกับ phase 3
+แสดงการทำงานของ CI process and CD 
+Demo การทำงานของ website
+
+Link to submit report + Source code ใน zip file (ไม่เอา node_module หรือ report folder ที่สามารถสร้างใหม่ตอน run program ได้)  อย่าลืมใส่ presentation video link in the report
+
+
+

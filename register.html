@@ -1,253 +1,175 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="th">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Register | quizWeb</title>
-<link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600&display=swap" rel="stylesheet">
-
-<style>
-*{
-    margin:0;
-    padding:0;
-    box-sizing:border-box;
-    font-family:'Prompt',sans-serif;
-}
-
-/* ===== Navbar ===== */
-nav{
-    background:#ffffff;
-    padding:15px 40px;
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-    box-shadow:0 2px 10px rgba(0,0,0,0.05);
-}
-
-.logo{
-    font-weight:600;
-    font-size:18px;
-    color:#2d6a4f;
-}
-
-.nav-links a{
-    margin-left:20px;
-    text-decoration:none;
-    color:#333;
-    font-size:14px;
-}
-
-.nav-links a:hover{
-    color:#2d6a4f;
-}
-
-/* ===== Layout ===== */
-body{
-    min-height:100vh;
-    background:linear-gradient(135deg,#e8fdf5,#ffffff);
-}
-
-.page{
-    height:calc(100vh - 70px);
-    display:flex;
-    justify-content:center;
-    align-items:center;
-}
-
-/* ===== Register Box ===== */
-.container{
-    background:#fff;
-    padding:40px;
-    width:380px;
-    border-radius:15px;
-    box-shadow:0 10px 30px rgba(0,0,0,0.08);
-}
-
-h2{
-    text-align:center;
-    margin-bottom:25px;
-    color:#2d6a4f;
-}
-
-.input-group{
-    margin-bottom:18px;
-}
-
-label{
-    font-size:14px;
-    font-weight:500;
-}
-
-input{
-    width:100%;
-    padding:10px;
-    margin-top:5px;
-    border-radius:8px;
-    border:1px solid #ccc;
-    outline:none;
-}
-
-input:focus{
-    border-color:#2d6a4f;
-}
-
-button{
-    width:100%;
-    padding:12px;
-    border:none;
-    border-radius:8px;
-    background:#2d6a4f;
-    color:#fff;
-    font-weight:500;
-    cursor:pointer;
-    transition:0.3s;
-}
-
-button:hover{
-    background:#1b4332;
-}
-
-.error{
-    color:red;
-    font-size:13px;
-    margin-top:5px;
-}
-
-.footer{
-    text-align:center;
-    margin-top:15px;
-    font-size:14px;
-}
-
-.footer a{
-    color:#2d6a4f;
-    text-decoration:none;
-}
-</style>
+<link href="https://fonts.googleapis.com/css2?family=Prompt:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/index.css">
+<link rel="stylesheet" href="css/register.css">
 </head>
 
 <body>
 
+<!-- ===== NAVBAR ===== -->
 <nav>
-    <div class="logo">quizWeb</div>
-    <div class="nav-links">
-        <a href="index.html">หน้าแรก</a>
-        <span id="authArea"></span>
+    <div class="container nav-inner">
+        <div class="logo" onclick="location.href='index.html'">
+            <div class="logo-badge">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/>
+                    <circle cx="12" cy="12" r="10"/>
+                    <line x1="12" y1="17" x2="12.01" y2="17"/>
+                </svg>
+            </div>
+            <div class="logo-text">
+                <strong>quizWeb</strong>
+                <span>สร้าง &bull; แชร์ &bull; เล่นควิซออนไลน์</span>
+            </div>
+        </div>
+
+        <div class="nav-right">
+            <div class="auth-area">
+                <div id="profileMenuWrap" class="profile-menu-wrap">
+                    <button id="profilePill" class="profile-pill" type="button">
+                        <div class="profile-avatar">
+                            <span class="profile-avatar-fallback" id="navAvatarFallback">U</span>
+                            <img id="navAvatarImg" alt="user avatar" style="display:none;">
+                        </div>
+                        <div class="profile-pill-text">
+                            <strong id="navUserName">ผู้ใช้</strong>
+                            <span>กดเพื่อเปิดเมนู</span>
+                        </div>
+                        <div class="profile-pill-arrow">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+                                <polyline points="6 9 12 15 18 9"/>
+                            </svg>
+                        </div>
+                    </button>
+
+                    <div class="profile-dropdown">
+                        <button class="dropdown-item" type="button" onclick="goDashboard()">
+                            <svg class="di-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+                            <span>ไปคลังข้อสอบ</span>
+                        </button>
+                        <button class="dropdown-item" type="button" onclick="openAvatarModal()">
+                            <svg class="di-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+                            <span>เปลี่ยนรูปโปรไฟล์</span>
+                        </button>
+                        <div class="dropdown-divider"></div>
+                        <button class="dropdown-item danger" type="button" onclick="handleLogout()">
+                            <svg class="di-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+                            <span>ออกจากระบบ</span>
+                        </button>
+                    </div>
+                </div>
+
+                <button id="loginBtn" class="solid-btn login-inline-btn" type="button" onclick="goLogin()">เข้าสู่ระบบ</button>
+            </div>
+        </div>
     </div>
 </nav>
 
+<!-- ===== BACKGROUND ===== -->
+<div class="blob blob-1"></div>
+<div class="blob blob-2"></div>
+<div class="particles" id="particles"></div>
+
+<!-- ===== PAGE ===== -->
 <div class="page">
-<div class="container">
-    <h2>Create Account</h2>
+    <div class="register-card">
 
-    <form id="registerForm">
-        <div class="input-group">
-            <label>Username</label>
-            <input type="text" id="username" required>
-            <div class="error" id="userError"></div>
+        <!-- Header -->
+        <div class="register-header">
+            <div class="register-icon">
+                <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" width="40" height="40">
+                    <circle cx="20" cy="20" r="20" fill="rgba(31,122,90,0.10)"/>
+                    <circle cx="20" cy="16" r="5" stroke="#1f7a5a" stroke-width="2"/>
+                    <path d="M10 32c0-5.523 4.477-10 10-10s10 4.477 10 10" stroke="#1f7a5a" stroke-width="2" stroke-linecap="round"/>
+                    <path d="M27 10l2 2 4-4" stroke="#1f7a5a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+            </div>
+            <h1>สร้างบัญชีใหม่</h1>
+            <p>กรอกข้อมูลเพื่อเริ่มต้นใช้งาน quizWeb</p>
         </div>
 
-        <div class="input-group">
-            <label>Email</label>
-            <input type="email" id="email" required>
-            <div class="error" id="emailError"></div>
+        <!-- Form -->
+        <form id="registerForm">
+
+            <div class="field-group">
+                <label class="field-label" for="username">
+                    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                        <circle cx="10" cy="7" r="3.5"/>
+                        <path d="M3 18c0-3.866 3.134-7 7-7s7 3.134 7 7"/>
+                    </svg>
+                    Username
+                </label>
+                <input class="field-input" type="text" id="username" placeholder="อย่างน้อย 4 ตัวอักษร" autocomplete="username">
+                <div class="error-text" id="userError"></div>
+            </div>
+
+            <div class="field-group">
+                <label class="field-label" for="email">
+                    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                        <rect x="2" y="5" width="16" height="11" rx="2"/>
+                        <path d="M2 7l8 5 8-5"/>
+                    </svg>
+                    Email
+                </label>
+                <input class="field-input" type="email" id="email" placeholder="example@email.com" autocomplete="email">
+                <div class="error-text" id="emailError"></div>
+            </div>
+
+            <div class="field-group">
+                <label class="field-label" for="password">
+                    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                        <rect x="5" y="9" width="10" height="8" rx="1.5"/>
+                        <path d="M7 9V7a3 3 0 016 0v2"/>
+                    </svg>
+                    Password
+                </label>
+                <div class="input-wrapper">
+                    <input class="field-input" type="password" id="password" placeholder="A-Z, a-z, ตัวเลข อย่างน้อย 8 ตัว" autocomplete="new-password">
+                    <button type="button" class="toggle-pw" id="togglePw" onclick="togglePassword('password','togglePw')">
+                        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" width="16" height="16">
+                            <path d="M1 10s3.5-6 9-6 9 6 9 6-3.5 6-9 6-9-6-9-6z"/>
+                            <circle cx="10" cy="10" r="2.5"/>
+                        </svg>
+                    </button>
+                </div>
+                <div class="error-text" id="passError"></div>
+            </div>
+
+            <div class="field-group">
+                <label class="field-label" for="confirmPassword">
+                    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                        <path d="M4 10l4 4 8-8"/>
+                    </svg>
+                    Confirm Password
+                </label>
+                <div class="input-wrapper">
+                    <input class="field-input" type="password" id="confirmPassword" placeholder="กรอก Password อีกครั้ง" autocomplete="new-password">
+                    <button type="button" class="toggle-pw" id="toggleConfirmPw" onclick="togglePassword('confirmPassword','toggleConfirmPw')">
+                        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" width="16" height="16">
+                            <path d="M1 10s3.5-6 9-6 9 6 9 6-3.5 6-9 6-9-6-9-6z"/>
+                            <circle cx="10" cy="10" r="2.5"/>
+                        </svg>
+                    </button>
+                </div>
+                <div class="error-text" id="confirmError"></div>
+            </div>
+
+            <button type="submit" class="btn-submit">สมัครสมาชิก</button>
+        </form>
+
+        <!-- Footer -->
+        <div class="register-footer">
+            <p>มีบัญชีอยู่แล้ว? <a href="login.html" class="link-login">เข้าสู่ระบบ</a></p>
         </div>
-
-        <div class="input-group">
-            <label>Password</label>
-            <input type="password" id="password" required>
-            <div class="error" id="passError"></div>
-        </div>
-
-        <div class="input-group">
-            <label>Confirm Password</label>
-            <input type="password" id="confirmPassword" required>
-            <div class="error" id="confirmError"></div>
-        </div>
-
-        <button type="submit">Register</button>
-    </form>
-
-    <div class="footer">
-        Already have an account? <a href="login.html">Login</a>
     </div>
 </div>
-</div>
 
-<script src="auth.js"></script>
-<script>
-redirectIfLoggedIn();
-loadAuthArea();
-
-const form = document.getElementById("registerForm");
-
-form.addEventListener("submit", function(e){
-    e.preventDefault();
-
-    const username = document.getElementById("username").value.trim();
-    const email = document.getElementById("email").value.trim().toLowerCase();
-    const password = document.getElementById("password").value;
-    const confirmPassword = document.getElementById("confirmPassword").value;
-
-    const userError = document.getElementById("userError");
-    const emailError = document.getElementById("emailError");
-    const passError = document.getElementById("passError");
-    const confirmError = document.getElementById("confirmError");
-
-    userError.textContent = "";
-    emailError.textContent = "";
-    passError.textContent = "";
-    confirmError.textContent = "";
-
-    if(username.length < 4){
-        userError.textContent = "Username ต้องอย่างน้อย 4 ตัวอักษร";
-        return;
-    }
-
-    const passwordPattern = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/;
-    if(!passwordPattern.test(password)){
-        passError.textContent = "Password ต้องมี A-Z, a-z และตัวเลข อย่างน้อย 8 ตัว";
-        return;
-    }
-
-    if(password !== confirmPassword){
-        confirmError.textContent = "Confirm Password ไม่ตรงกัน";
-        return;
-    }
-
-    let users = getUsers();
-
-    const duplicateUsername = users.find(user => user.username === username);
-    if(duplicateUsername){
-        userError.textContent = "Username นี้ถูกใช้แล้ว";
-        return;
-    }
-
-    const duplicateEmail = users.find(user => user.email === email);
-    if(duplicateEmail){
-        emailError.textContent = "Email นี้ถูกใช้แล้ว";
-        return;
-    }
-
-    const newUser = {
-        username,
-        email,
-        password
-    };
-
-    users.push(newUser);
-    saveUsers(users);
-
-    // login ทันทีหลังสมัคร
-    localStorage.setItem("user", JSON.stringify({
-        username: newUser.username,
-        email: newUser.email
-    }));
-
-    alert("สมัครสมาชิกสำเร็จ!");
-    window.location.href = "index.html";
-});
-</script>
-
+<script src="js/auth.js"></script>
+<script src="js/register_func.js"></script>
 </body>
 </html>
