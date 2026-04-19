@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<coverage generated="1775831839710" clover="3.2.0">
-  <project timestamp="1775831839710" name="All files">
+<coverage generated="1776604250467" clover="3.2.0">
+  <project timestamp="1776604250467" name="All files">
     <metrics statements="9" coveredstatements="9" conditionals="6" coveredconditionals="6" methods="3" coveredmethods="3" elements="18" coveredelements="18" complexity="0" loc="9" ncloc="9" packages="1" files="1" classes="1"/>
     <file name="quiz.js" path="C:\quizwebapp\quiz.js">
       <metrics statements="9" coveredstatements="9" conditionals="6" coveredconditionals="6" methods="3" coveredmethods="3"/>
