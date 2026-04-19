@@ -498,6 +498,37 @@ describe('Quiz Web App Test (11 Cases)', () => {
 
 ---
 ## 24. Website screenshot
+- หน้า index
+![Index_1](readme_images/web%20screenshot/WebIndex.png)
+- หน้า index & join
+![Index_2& join](readme_images/web%20screenshot/WebIndex%20&%20join.png)
+
+- หน้า login
+![Login](readme_images/web%20screenshot/WebLogin.png)
+
+- หน้า register
+![Register](readme_images/web%20screenshot/WebRegister.png)
+
+- หน้า dashboard
+![dashboard](readme_images/web%20screenshot/WebDeashboard.png)
+
+
+- หน้า create quiz
+![create quiz](readme_images/web%20screenshot/WebCreate.png)
+
+- หน้า edit quiz
+![edit quiz](readme_images/web%20screenshot/WebEdit.png)
+
+
+- หน้า play quiz
+![play quiz](readme_images/web%20screenshot/WebPlay.png)
+- หน้า play quiz สรุปผลหลังเล่น
+![play quiz](readme_images/web%20screenshot/Webplay_2.png)
+
+- หน้า admin (จัดการ user)
+![admin](readme_images/web%20screenshot/WedAdmin_1.png)
+- หน้า admin (จัดการ quiz)
+![admin](readme_images/web%20screenshot/WebAdmin_2.png)
 
 ## 25. สร้าง 5 UI testcases.
 (เช็คให้แน่ใจว่า testcases โดยที่ทุก testcase ต้องมี การเช็คค่าสำหรับ expected results)
