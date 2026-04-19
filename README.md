@@ -534,7 +534,18 @@ describe('Quiz Web App Test (11 Cases)', () => {
 (เช็คให้แน่ใจว่า testcases โดยที่ทุก testcase ต้องมี การเช็คค่าสำหรับ expected results)
 
 
-## 26. ผล profiling (Static profiling และ Dynamic profiling) เทีบยกับ phase 3
+## 26. ผล profiling (Static profiling และ Dynamic profiling) เทียบกับ phase 3
+
+* Static Profiling :
+- Phase 3: โค้ดส่วนใหญ่เป็น Hard-coded data และ Array ธรรมดา ความซับซ้อนต่ำแต่จัดการยาก
+
+- Phase 4: เปลี่ยนมาใช้ Asynchronous Programming (async/await) ในการดึงข้อมูลจาก Supabase ทำให้โครงสร้างโค้ดมีความเป็นระเบียบแบบ Model-Controller มากขึ้น ลดความซ้ำซ้อนของโค้ด (Code Duplication) ด้วยการทำ Middleware สำหรับตรวจสอบ Session
+
+* Dynamic Profiling :
+
+- Memory Usage: การใช้ Supabase ช่วยลดภาระการเก็บข้อมูลใน Memory (RAM) ของ Server เพราะข้อมูลไปฝากไว้ที่ Cloud แทนการใช้ Local Variable
+
+- Response Time: อาจมีหน่วงเพิ่มขึ้นเล็กน้อย (ประมาณ 100-200ms) เนื่องจากการเรียก API ไปยัง Supabase แต่แลกมาด้วยความเสถียรของข้อมูลที่มากกว่า SQLite ใน Phase ก่อน
 
 ## 27. อธิบายการทำ CI/CD ที่ใช้ในการทำ product โดยที่ CI (Pipeline) ให้ใช้ script ที่มีให้ (จำเป็นต้องมี free tier parallel job) 
 
