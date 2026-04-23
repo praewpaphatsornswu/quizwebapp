@@ -534,7 +534,7 @@ describe('Quiz Web App Test (11 Cases)', () => {
 ## 25. สร้าง 5 UI testcases.
 (เช็คให้แน่ใจว่า testcases โดยที่ทุก testcase ต้องมี การเช็คค่าสำหรับ expected results)
 
-# TC-UI-01: Login — validate empty username / password
+## TC-UI-01: Login — validate empty username / password
 describe('TC-UI-01: Login Form Validation — กรอกข้อมูลว่างเปล่า', () => {
 
   test('[Expected] error = "กรุณากรอก Username และ Password" เมื่อทั้งสองช่องว่าง', () => {
@@ -561,7 +561,7 @@ describe('TC-UI-01: Login Form Validation — กรอกข้อมูลว�
 });
 
 
-# TC-UI-02: Register — validate password mismatch
+## TC-UI-02: Register — validate password mismatch
 describe('TC-UI-02: Register Form Validation — รหัสผ่านไม่ตรงกัน', () => {
 
   test('[Expected] field = "confirmError", error = "Confirm Password ไม่ตรงกัน"', () => {
@@ -602,7 +602,7 @@ describe('TC-UI-02: Register Form Validation — รหัสผ่านไม�
 });
 
 
-# TC-UI-03: Join Quiz — กรอกรหัสว่างเปล่า
+## TC-UI-03: Join Quiz — กรอกรหัสว่างเปล่า
 
 describe('TC-UI-03: Join Quiz — กรอกรหัสว่างเปล่า', () => {
   let storage;
@@ -635,7 +635,7 @@ describe('TC-UI-03: Join Quiz — กรอกรหัสว่างเปล�
 });
 
 
-#  TC-UI-04: Join Quiz — กรอกรหัสที่ไม่มีในระบบ
+##  TC-UI-04: Join Quiz — กรอกรหัสที่ไม่มีในระบบ
 
 describe('TC-UI-04: Join Quiz — กรอกรหัสผิดหรือหมดอายุ', () => {
   let storage;
@@ -684,7 +684,7 @@ describe('TC-UI-04: Join Quiz — กรอกรหัสผิดหรือ�
 });
 
 
-#  TC-UI-05: Play Quiz — select answer → update UI state
+##  TC-UI-05: Play Quiz — select answer → update UI state
 
 describe('TC-UI-05: Play Quiz — กดเลือกคำตอบแล้ว state ต้องอัปเดต', () => {
   let state;
