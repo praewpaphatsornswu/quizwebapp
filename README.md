@@ -3,8 +3,6 @@
 ## โครงการพัฒนาเว็บทำข้อสอบออนไลน์ (quizWeb)
 [![Render Live](https://img.shields.io/website?label=Render&up_message=Live&url=https%3A%2F%2Fquizwebapp-6qqf.onrender.com)](https://quizwebapp-6qqf.onrender.com)
 
-![Deploy Status](https://img.shields.io/website?label=Render&up_message=Live&url=https%3A%2F%2Fquizwebapp-6qqf.onrender.com)
-
 ---
 
 ## 1. ข้อมูลทั่วไปของโครงการ
