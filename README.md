@@ -743,16 +743,45 @@ describe('TC-UI-05: Play Quiz — กดเลือกคำตอบแล้�
 
 ## 26. ผล profiling (Static profiling และ Dynamic profiling) เทียบกับ phase 3
 
-* Static Profiling :
-- Phase 3: โค้ดส่วนใหญ่เป็น Hard-coded data และ Array ธรรมดา ความซับซ้อนต่ำแต่จัดการยาก
+### Static Profiling
 
-- Phase 4: เปลี่ยนมาใช้ Asynchronous Programming (async/await) ในการดึงข้อมูลจาก Supabase ทำให้โครงสร้างโค้ดมีความเป็นระเบียบแบบ Model-Controller มากขึ้น ลดความซ้ำซ้อนของโค้ด (Code Duplication) ด้วยการทำ Middleware สำหรับตรวจสอบ Session
+**Phase 3:**
+- โค้ดส่วนใหญ่เป็น Hard-coded data และ Array ธรรมดา ความซับซ้อนต่ำแต่จัดการยาก
+- ระบบ Authentication เก็บ Password แบบ Plaintext ใน localStorage — มีความเสี่ยงด้านความปลอดภัยสูง
+- ไม่มี Backend จริง ข้อมูลทั้งหมดอยู่ใน localStorage ของ Browser
 
-* Dynamic Profiling :
+**Phase 4:**
+- ย้ายระบบ Auth ไปยัง Backend (Express.js + Supabase) และใช้ `bcrypt` ในการ Hash Password ก่อนบันทึก — แก้ไข Security Issue เดิมแล้ว
+- เพิ่ม `server.js` ขนาด 19,246 bytes / 635 บรรทัด รองรับ REST API ครบถ้วน (Register, Login, Quiz CRUD, Admin)
+- ใช้ Asynchronous Programming (async/await) ในการดึงข้อมูลจาก Supabase ทำให้โครงสร้างโค้ดเป็นระเบียบแบบ Model-Controller
+- Cyclomatic Complexity สูงสุดอยู่ที่ CC = 8 (`normalizeQuestion`) ทุกฟังก์ชันอยู่ในเกณฑ์ที่ยอมรับได้ (CC < 10)
+- ยังพบ Code Duplication ~379 บรรทัดในส่วน Navbar Helper ที่ซ้ำกันระหว่างไฟล์ JS
 
-- Memory Usage: การใช้ Supabase ช่วยลดภาระการเก็บข้อมูลใน Memory (RAM) ของ Server เพราะข้อมูลไปฝากไว้ที่ Cloud แทนการใช้ Local Variable
+| หัวข้อ | Phase 3 | Phase 4 |
+|-------|:-------:|:-------:|
+| ขนาดโค้ด JS รวม | ~120 KB | ~143 KB |
+| มี Backend จริง | ❌ (localStorage) | ✅ (Express + Supabase) |
+| Password Security | ❌ Plaintext | ✅ bcrypt hashed |
+| Cyclomatic Complexity สูงสุด | CC = 8 | CC = 8 |
+| Code Duplication | ~379 บรรทัด | ~379 บรรทัด |
 
-- Response Time: อาจมีหน่วงเพิ่มขึ้นเล็กน้อย (ประมาณ 100-200ms) เนื่องจากการเรียก API ไปยัง Supabase แต่แลกมาด้วยความเสถียรของข้อมูลที่มากกว่า SQLite ใน Phase ก่อน
+---
+
+### Dynamic Profiling
+
+**Phase 3 → Phase 4 (ผลการรัน Jest):**
+
+| Metric | Phase 3 | Phase 4 |
+|--------|:-------:|:-------:|
+| Test Suites | 2 passed | 2 passed |
+| Tests ทั้งหมด | 28/28 PASS | 28/28 PASS |
+| เวลารันเทส | 0.742 วินาที | **0.466 วินาที** |
+| Code Coverage (`quiz.js`) | 100% | 100% |
+
+- **Core Logic Coverage:** `quiz.js` มี Statement / Branch / Function / Line Coverage **100%** ทุก metric ทั้งใน Phase 3 และ 4 ไม่มี Dead Code
+- **UI Logic Tests:** 17 test cases จาก 5 Test Suites (Login, Register, Join, Play) ผ่านทั้งหมด
+- **Runtime Performance:** เวลารันเทสลดลงจาก 0.742s → **0.466 วินาที** (~37% เร็วขึ้น)
+- **Memory/Response:** การย้ายไปใช้ Supabase ทำให้ Server ไม่ต้องเก็บข้อมูลใน RAM แต่อาจมี Network Latency เพิ่มขึ้นเล็กน้อย (~100–200ms) จากการเรียก API
 
 ## 27. อธิบายการทำ CI/CD ที่ใช้ในการทำ product โดยที่ CI (Pipeline) ให้ใช้ script ที่มีให้ (จำเป็นต้องมี free tier parallel job) 
 

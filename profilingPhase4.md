@@ -18,31 +18,32 @@ Static Profiling คือการวิเคราะห์โครงสร
 | ไฟล์ | ประเภท | ขนาด (Bytes) | จำนวนบรรทัด | หน้าที่หลัก |
 |------|--------|:-----------:|:-----------:|------------|
 | `quiz.js` | Core Logic | 490 | 24 | `checkAnswer`, `calculateScore`, `getQuestion` |
-| `js/login_func.js` | UI Logic | 7,513 | 183 | จัดการ Login / Navbar |
-| `js/register_func.js` | UI Logic | 9,980 | 228 | จัดการ Register / Navbar |
-| `js/dashboard_func.js` | UI Logic | 22,324 | 514 | แสดงรายการควิซ / สถิติ |
-| `js/play_func.js` | UI Logic | 18,791 | 576 | ระบบเล่นข้อสอบ / Timer / Submit |
-| `js/create.js` | UI Logic | 13,764 | ~350 | สร้างข้อสอบใหม่ |
-| `js/edit_func.js` | UI Logic | 18,879 | ~480 | แก้ไขข้อสอบ |
-| `js/index_func.js` | UI Logic | 11,171 | ~280 | หน้าแรก |
-| `js/admin_func.js` | Admin Logic | 14,666 | ~380 | ระบบ Admin |
-| `js/auth.js` | Auth Helper | 2,143 | ~55 | Helper สำหรับ Authentication |
-| `js/join_func.js` | UI Logic | 841 | ~25 | เข้าร่วมควิซด้วยรหัส |
-| **รวมทั้งหมด** | | **~120,562** | **~3,097** | |
+| `server.js` | Backend | 19,246 | 635 | Express API, Supabase, bcrypt, session |
+| `js/login_func.js` | UI Logic | 6,749 | ~170 | จัดการ Login / Navbar |
+| `js/register_func.js` | UI Logic | 9,624 | ~240 | จัดการ Register / Navbar |
+| `js/dashboard_func.js` | UI Logic | 23,800 | ~590 | แสดงรายการควิซ / สถิติ |
+| `js/play_func.js` | UI Logic | 21,074 | ~530 | ระบบเล่นข้อสอบ / Timer / Submit |
+| `js/create.js` | UI Logic | 14,519 | ~365 | สร้างข้อสอบใหม่ |
+| `js/edit_func.js` | UI Logic | 19,641 | ~495 | แก้ไขข้อสอบ |
+| `js/index_func.js` | UI Logic | 11,593 | ~290 | หน้าแรก |
+| `js/admin_func.js` | Admin Logic | 11,040 | ~280 | ระบบ Admin |
+| `js/auth.js` | Auth Helper | 4,101 | ~105 | Helper สำหรับ Authentication |
+| `js/join_func.js` | UI Logic | 1,368 | ~40 | เข้าร่วมควิซด้วยรหัส |
+| **รวมทั้งหมด** | | **~143,245** | **~3,764** | |
 
 #### ตารางสรุปไฟล์ HTML
 
 | ไฟล์ HTML | ขนาด (Bytes) | หน้าที่ |
 |-----------|:-----------:|--------|
-| `index.html` | 17,570 | หน้าแรก |
-| `login.html` | 6,394 | หน้า Login |
-| `register.html` | 9,557 | หน้า Register |
-| `dashboard.html` | 8,482 | คลังข้อสอบ |
-| `create.html` | 14,621 | สร้างข้อสอบ |
-| `edit.html` | 16,383 | แก้ไขข้อสอบ |
-| `play.html` | 9,910 | เล่นข้อสอบ |
-| `join.html` | 1,391 | เข้าร่วมด้วยรหัส |
-| `admin.html` | 6,187 | หน้า Admin |
+| `index.html` | 18,176 | หน้าแรก |
+| `login.html` | 7,000 | หน้า Login |
+| `register.html` | 10,163 | หน้า Register |
+| `dashboard.html` | 9,088 | คลังข้อสอบ |
+| `create.html` | 15,227 | สร้างข้อสอบ |
+| `edit.html` | 16,989 | แก้ไขข้อสอบ |
+| `play.html` | 10,516 | เล่นข้อสอบ |
+| `join.html` | 1,528 | เข้าร่วมด้วยรหัส |
+| `admin.html` | 5,923 | หน้า Admin |
 
 ---
 
@@ -119,11 +120,11 @@ Cyclomatic Complexity (CC) คือตัวชี้วัดความซ�
 
 | Issue | ตำแหน่ง | ระดับความเสี่ยง | คำอธิบาย |
 |-------|---------|:--------------:|---------|
-| **Password เก็บเป็น Plaintext** | `register_func.js` บรรทัด 189 | 🔴 สูง | `const newUser = { username, email, password }` — ไม่มีการ Hash password ก่อนบันทึก localStorage |
-| **Login เปรียบเทียบ Password ตรงๆ** | `login_func.js` บรรทัด 138–139 | 🔴 สูง | ระบบ login เปรียบเทียบ password โดยไม่ผ่าน hashing |
-| **XSS Risk จาก innerHTML** | `play_func.js` บรรทัด 519 | 🟡 ปานกลาง | `document.body.innerHTML = \`...\`` — ใช้ template string แต่มี `escapeHtml()` ป้องกัน user content แล้ว |
+| **Password hashing** | `server.js` บรรทัด 131 | 🟢 แก้ไขแล้ว | ย้ายระบบ Auth ไปยัง Backend — ใช้ `bcrypt.hashSync(password, 10)` ก่อน insert ลง Supabase |
+| **Login ผ่าน bcrypt** | `server.js` บรรทัด 166 | 🟢 แก้ไขแล้ว | เปรียบเทียบ password ผ่าน `bcrypt.compareSync()` แทนการ compare ตรงๆ |
+| **XSS Risk จาก innerHTML** | `play_func.js` | 🟡 ปานกลาง | ใช้ template string แต่มี `escapeHtml()` ป้องกัน user content แล้ว |
 | **Code Duplication** | JS ทุกไฟล์ | 🟡 ปานกลาง | Helper functions ซ้ำกันในทุกไฟล์ (ดูหัวข้อ 1.3) |
-| **Global variable `submitted`** | `play_func.js` บรรทัด 205 | 🟢 ต่ำ | ใช้ global variable แทน closure เพื่อป้องกัน double submit |
+| **Global variable `submitted`** | `play_func.js` | 🟢 ต่ำ | ใช้ global variable แทน closure เพื่อป้องกัน double submit |
 | **`alert()` แทน UI Dialog** | `play_func.js`, `dashboard_func.js` | 🟢 ต่ำ | ใช้ `alert()` ของ browser ซึ่งไม่ consistent กับ UI Design |
 
 ---
@@ -133,11 +134,17 @@ Cyclomatic Complexity (CC) คือตัวชี้วัดความซ�
 | Dependency | ประเภท | วิธีใช้งาน | หมายเหตุ |
 |-----------|:------:|-----------|---------|
 | Jest v30.3.0 | Dev Dependency | รัน Unit Tests (`quiz.test.js`, `ui.test.js`) | ระบุใน `package.json` |
+| Express v4.21.2 | Production | Web Server / REST API routing | `server.js` |
+| @supabase/supabase-js v2.102.1 | Production | Database (users, quizzes, scores) | แทนที่ localStorage |
+| bcryptjs v3.0.2 | Production | Hash และ verify password | `server.js` บรรทัด 131, 166 |
+| express-session v1.19.0 | Production | Session management (userId) | `server.js` |
+| dotenv v17.4.1 | Production | โหลด SUPABASE_URL, SESSION_SECRET จาก `.env` | `server.js` |
+| cors v2.8.5 | Production | Cross-Origin Resource Sharing | `server.js` |
+| body-parser v1.20.3 | Production | Parse JSON / URL-encoded body | `server.js` |
 | Google Fonts API (Prompt) | External CDN | `<link>` tag ใน HTML | ใช้เพื่อดึงฟอนต์ภาษาไทย |
-| localStorage (Web API) | Browser Built-in | เก็บข้อมูล user, quizzes, results | ไม่มี backend database |
 | URLSearchParams | Browser Built-in | อ่าน query string (`?code=...`) | ใช้ใน `play_func.js`, `dashboard_func.js` |
 
-> **สรุป:** โปรเจกต์นี้มี **external dependency น้อยมาก** เพียง Jest สำหรับ testing และ Google Fonts เท่านั้น ทำให้ไม่มี supply-chain risk และ deploy ได้ง่าย
+> **สรุป:** โปรเจกต์ได้ **อัปเกรด Architecture** จาก localStorage-only เป็น Full-stack (Express + Supabase) ทำให้มี production dependencies เพิ่มขึ้น แต่ได้ความปลอดภัยและ scalability ที่ดีขึ้น Dev dependency ยังคงมีเพียง Jest เท่านั้น
 
 ---
 
@@ -145,11 +152,11 @@ Cyclomatic Complexity (CC) คือตัวชี้วัดความซ�
 
 | หัวข้อ | ผลการวิเคราะห์ | ประเมิน |
 |-------|:-------------:|:-------:|
-| ขนาดโค้ด | ~120 KB, ~3,097 บรรทัด (JS), 9 หน้า HTML | เหมาะสมกับขนาดโปรเจกต์ ✓ |
+| ขนาดโค้ด | ~143 KB, ~3,764 บรรทัด (JS + Backend), 9 หน้า HTML | เหมาะสมกับขนาดโปรเจกต์ ✓ |
 | Cyclomatic Complexity | ค่าสูงสุด CC=8 (`normalizeQuestion`) | ทุกฟังก์ชันอยู่ในเกณฑ์ดี ✓ |
 | Code Duplication | ~379 บรรทัดซ้ำ ใน helper/navbar | ควรปรับปรุงในอนาคต ⚠️ |
-| Security Issues | Password เก็บ plaintext | ต้องแก้ไขหาก deploy จริง ⚠️ |
-| External Dependencies | น้อยมาก (Jest + Google Fonts) | ดีมาก ✓ |
+| Security Issues | Password hash ด้วย bcrypt แล้ว | แก้ไขแล้ว ✓ |
+| External Dependencies | Production: Express, Supabase, bcrypt ฯลฯ / Dev: Jest | เหมาะสมกับ Full-stack App ✓ |
 
 ---
 
@@ -373,13 +380,13 @@ function calculateScore(answers, correctAnswers) {
 
 | Metric | ค่าที่วัดได้ |
 |--------|:----------:|
-| เวลารันเทสทั้งหมด | **0.742 วินาที** |
+| เวลารันเทสทั้งหมด | **0.466 วินาที** |
 | จำนวน Test Suite | 2 suites |
 | จำนวน Test Cases ทั้งหมด | 28 cases |
-| เวลาเฉลี่ยต่อ test | ~0.026 วินาที/test |
+| เวลาเฉลี่ยต่อ test | ~0.017 วินาที/test |
 | Test ล้มเหลว | 0 |
 
-> **สรุป:** ชุดเทสทั้งหมดรันเสร็จใน **< 1 วินาที** ซึ่งเร็วมาก เนื่องจากเทสทุกตัวเป็น Pure Unit Test ที่ไม่ต้องรอ I/O, Network และไม่ต้องโหลด browser
+> **สรุป:** ชุดเทสทั้งหมดรันเสร็จใน **< 0.5 วินาที** ซึ่งเร็วมาก เนื่องจากเทสทุกตัวเป็น Pure Unit Test ที่ไม่ต้องรอ I/O, Network และไม่ต้องโหลด browser
 
 ---
 
@@ -415,15 +422,16 @@ function calculateScore(answers, correctAnswers) {
 - **Core Logic มีความซับซ้อนต่ำ** — `quiz.js` มี CC เฉลี่ย 2.0 อ่านและบำรุงรักษาง่าย
 - **Test Coverage 100%** — Core Logic (`quiz.js`) ไม่มี Dead Code ทุก path ถูกทดสอบแล้ว
 - **Test ผ่านทั้งหมด** — 28/28 ทั้ง Core Logic และ UI Logic แสดงว่า logic ทำงานถูกต้อง
-- **External Dependencies น้อยมาก** — ลด risk จาก third-party supply chain
+- **Password hashing ด้วย bcrypt** — แก้ไข Security Issue เดิมแล้ว ระบบ Auth ย้ายไป Backend ใช้ `bcrypt.hashSync` / `bcrypt.compareSync`
+- **Full-stack Architecture** — ใช้ Express + Supabase แทน localStorage-only ทำให้รองรับ multi-user จริงได้
 - **มีการป้องกัน XSS** — ใช้ `escapeHtml()` ก่อน inject HTML ใน user content
 
 ### 4.2 จุดที่ควรปรับปรุง (Areas for Improvement)
 
-- **Security:** ควร Hash password (เช่น bcrypt) ก่อนเก็บใน localStorage หรือย้ายไปใช้ Backend
 - **Code Duplication:** ควรรวม Navbar/Helper functions ไปไว้ในไฟล์ `shared.js` เพื่อลดการซ้ำซ้อน ~379 บรรทัด
 - **Coverage ของ UI Files:** ไฟล์ JS หน้าอื่น (`play_func.js`, `dashboard_func.js` ฯลฯ) ยังไม่อยู่ใน Coverage Report เนื่องจากต้องโหลดร่วมกับ browser
 - **`alert()` dialog:** ควรเปลี่ยนเป็น custom modal dialog เพื่อ UX ที่ดีขึ้นและ consistent กับ design
+- **server.js Coverage:** Backend logic (~635 บรรทัด) ยังไม่มี automated test ครอบคลุม
 
 ---
 
@@ -431,8 +439,8 @@ function calculateScore(answers, correctAnswers) {
 
 การทำ Profiling ของโปรเจกต์ **quizWeb** ครอบคลุม 2 มิติหลักคือ:
 
-1. **Static Profiling** — วิเคราะห์โครงสร้างโค้ดโดยไม่รัน พบว่าโค้ดมีความซับซ้อนต่ำ (CC สูงสุด **8**) มี Code Duplication สูงในส่วน Navbar Helper (~379 บรรทัด) และมีความเสี่ยงด้าน Security จากการเก็บ Password แบบ Plaintext ซึ่งควรปรับปรุงหาก deploy จริง
+1. **Static Profiling** — วิเคราะห์โครงสร้างโค้ดโดยไม่รัน พบว่าโค้ดมีความซับซ้อนต่ำ (CC สูงสุด **8**) มี Code Duplication สูงในส่วน Navbar Helper (~379 บรรทัด) และ **Security Issue ด้าน Password ได้รับการแก้ไขแล้ว** โดยย้ายระบบ Auth ไปยัง Backend (Express + Supabase) และใช้ bcrypt hash password
 
-2. **Dynamic Profiling** — รันชุดเทสทั้งหมด **28 test** ผ่าน Jest ผลลัพธ์คือ **ผ่านทั้งหมด 100%** และ Code Coverage ของ Core Logic (`quiz.js`) อยู่ที่ **100% ในทุก metric** (Statements, Branch, Function, Line) แสดงให้เห็นว่าชุดเทสครอบคลุมทุก execution path ของโค้ดหลักอย่างสมบูรณ์
+2. **Dynamic Profiling** — รันชุดเทสทั้งหมด **28 test** ผ่าน Jest ผลลัพธ์คือ **ผ่านทั้งหมด 100%** ใน **0.466 วินาที** และ Code Coverage ของ Core Logic (`quiz.js`) อยู่ที่ **100% ในทุก metric** (Statements, Branch, Function, Line) แสดงให้เห็นว่าชุดเทสครอบคลุมทุก execution path ของโค้ดหลักอย่างสมบูรณ์
 
 การทำ Profiling ทั้ง 2 ประเภทนี้ช่วยให้ทีมพัฒนาเข้าใจสถานะของโค้ดได้ครบทุกมิติ ทั้งด้านคุณภาพโครงสร้าง (Static) และความถูกต้องในการทำงานจริง (Dynamic) ซึ่งเป็นพื้นฐานสำคัญของการพัฒนาซอฟต์แวร์คุณภาพสูง
