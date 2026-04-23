@@ -3,6 +3,8 @@
 ## โครงการพัฒนาเว็บทำข้อสอบออนไลน์ (quizWeb)
 [![Deploy Status](https://api.render.com/deploy/srv-d7kub1faqqkc73ccknlg?key=pM6H9W_3Z6o&type=badge)](https://quizwebapp-6qqf.onrender.com)
 
+![Deploy Status](https://img.shields.io/website?label=Render&up_message=Live&url=https%3A%2F%2Fquizwebapp-6qqf.onrender.com)
+
 ---
 
 ## 1. ข้อมูลทั่วไปของโครงการ
