@@ -756,7 +756,32 @@ describe('TC-UI-05: Play Quiz — กดเลือกคำตอบแล้�
 
 ## 27. อธิบายการทำ CI/CD ที่ใช้ในการทำ product โดยที่ CI (Pipeline) ให้ใช้ script ที่มีให้ (จำเป็นต้องมี free tier parallel job) 
 
+* **CI (Continuous Integration)** ด้วย GitHub Actions:
+
+- Pipeline Script: ใช้ main.yml ในการกำหนดขั้นตอนการทำงานอัตโนมัติ ทุกครั้งที่มีการ push โค้ดขึ้นไป ระบบจะทำการสร้างสภาพแวดล้อมจำลอง  และรันคำสั่งตาม Script ที่เขียนไว้
+
+- กระบวนการ: เริ่มจาก npm install เพื่อติดตั้ง Library จากนั้นรัน npm test เพื่อตรวจสอบความถูกต้องของโค้ด เช่น Logic ของ Quiz และ UI
+
+- Free Tier Parallel Job: ใช้ GitHub Actions ซึ่งให้โควตาใช้งานฟรีสำหรับ Public Repository โดยระบบสามารถรัน Job หลายตัวขนานกันได้ ทำให้การตรวจโค้ดทำได้รวดเร็ว
+
+* **CD (Continuous Deployment)** ด้วย Render:
+
+- เมื่อ CI ผ่านเครื่องหมายถูกสีเขียวแล้ว ระบบจะทำการส่งสัญญาณไปยัง Render เพื่อให้ทำการ "Deploy" อัตโนมัติ โดยการดึงโค้ดล่าสุดไปอัปเดตบน Server จริงทันที ทำให้ผู้ใช้เห็นฟีเจอร์ใหม่ ได้แบบ Real-time
+
 ## 28. อธิบายกระบวนการทำงาน โดยใช้ process, methods, and tools ที่เพิ่มเติมจาก phase 1,2 and 3 เช่น การบริหาร project, การ monitor build, การจัดการ bugs  
+ใน Phase 4 นี้ทีมได้ยกระดับการทำงานให้มีความเป็นมืออาชีพมากขึ้น โดยใช้เครื่องมือและวิธีการดังนี้:
+* การบริหาร Project
+  - ใช้ .gitignore อย่างเป็นระบบเพื่อแยก Source Code ออกจาก Dependency (node_modules) และความลับของระบบ (.env) ทำให้ Repository เบาและปลอดภัย
+  - มีการใช้ Branch Management และการ Merge งานเพื่อรวมฟีเจอร์จากสมาชิกหลายคนเข้าด้วยกันอย่างเป็นระบบ
+
+* การ Monitor Build
+  - เฝ้าติดตามสถานะการ Build ผ่าน GitHub Actions Tab เพื่อดู Log การทำงานแบบ Real-time ทำให้รู้ได้ทันทีว่า Code พังที่ขั้นตอนไหน
+
+* การจัดการ Bugs
+  - เปลี่ยนจากการ Manual Test มาเป็นการใช้ Automated Testing
+  - ใช้ Jest เป็น Testing Framework หลักในการรันข้อสอบอัตโนมัติ และใช้ Render ในการทำ Automatic Deployment
+
+
 
 ## 29. Final Retrospective 
 
